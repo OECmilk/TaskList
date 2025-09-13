@@ -11,11 +11,12 @@ export type Task = {
   due_date: string;
 };
 
-interface Params {
-    params: { id: string }
-}
+type EditTaskPageProps = {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
-const EditTaskPage = async ({ params }: Params) => {
+const EditTaskPage = async ({ params }: EditTaskPageProps) => {
   const id = params.id;
 
   const cookieStore = cookies();
