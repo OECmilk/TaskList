@@ -12,12 +12,12 @@ export type Task = {
 };
 
 type EditTaskPageProps = {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>;
 };
 
+
 const EditTaskPage = async ({ params }: EditTaskPageProps) => {
-  const id = params.id;
+  const { id } = await params;
 
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
