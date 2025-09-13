@@ -1,5 +1,4 @@
 import TaskCard from "@/components/TaskCard/TaskCard";
-import Image from "next/image";
 import Link from "next/link";
 import { MdAddTask } from "react-icons/md";
 import { createClient } from "@/utils/supabase/server";

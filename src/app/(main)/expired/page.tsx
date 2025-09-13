@@ -15,7 +15,7 @@ const ExpiredTaskPage = async () => {
   const supabase = createClient(cookieStore);
 
   // Supabaseから status が true の TaskList データのみを取得
-  const { data: tasks, error } = await supabase
+  const { data: tasks } = await supabase
     .from("TaskList")
     .select("*")
     .eq('status', false) // statusがfalseのレコードに絞り込む
