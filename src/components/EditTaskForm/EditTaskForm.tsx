@@ -34,7 +34,7 @@ const EditTaskForm = ({ task }: EditTaskFormProps) => {
 
             {/* --- SubTask表示エリア --- */}
             <div className="mt-8">
-              <h3 className="text-lg font-medium mb-2 border-b pb-1">Sub Tasks</h3>
+              <h3 className="text-lg font-medium mb-2 border-b pb-1">SubTasks</h3>
               <div className="space-y-3 max-h-48 overflow-y-auto p-2">
                 {task.sub_tasks && task.sub_tasks.length > 0 ? (
                   task.sub_tasks.map(subtask => (
@@ -58,13 +58,13 @@ const EditTaskForm = ({ task }: EditTaskFormProps) => {
                 Edit
             </button>
             <button type="button" onClick={() => router.back()} className="mt-4 py-2 w-full rounded-md text-white bg-red-500 hover:bg-red-400 text-sm font-semibold shadow-sm">
-              Cancel
+              Go Back
             </button>
         </form>
 
         {/* --- SubTask追加フォーム --- */}
         <div className="mt-6 pt-6 border-t">
-          <h4 className="text-lg font-medium mb-2">Add Sub Task</h4>
+          <h4 className="text-lg font-medium mb-2">Add Subtask</h4>
           <form action={addSubTask}>
               {/* どのタスクの子であるかを伝えるためのhiddenフィールド */}
               <input type="hidden" name="task_id" value={task.id} />

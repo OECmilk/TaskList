@@ -3,6 +3,7 @@
 import { useState } from "react";
 import TaskDeleteButton from "./TaskDeleteButton/TaskDeleteButton";
 import TaskCompleteButton from "./TaskCompleteButton/TaskCompleteButton";
+import ProgressBar from "./ProgressBar/ProgressBar";
 import { Task } from "@/app/(main)/page";
 import Link from "next/link";
 import { FaCheck } from "react-icons/fa";
@@ -10,13 +11,19 @@ import { FaCheck } from "react-icons/fa";
 const TaskCard = ({ task }: { task: Task }) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
+  // タスクの進捗を計算
+  const totalSubTasks = task.sub_tasks ? task.sub_tasks.length : 0;
+  const completedSubTasks = task.sub_tasks ? task.sub_tasks.filter(subtask => subtask.status).length : 0;
+
   return (
     <Link
         href={`/edit/${task.id}`} 
         prefetch={true}
-        className="w-64 h-52 p-4 bg-white rounded-md shadow-md flex flex-col justify-between">
+        className="w-64 h-52 p-4 bg-white rounded-md shadow-md flex flex-col justify-between"
+    >
         <header>
-            <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between" onClick={(e) => e.stopPropagation()}>
+                <ProgressBar total={totalSubTasks} completed={completedSubTasks} status={task.status}/>
                 <TaskCompleteButton id={ task.id } status={ task.status }/>
             </div>
             <h1 className="text-lg font-semibold">{ task.title }</h1>
