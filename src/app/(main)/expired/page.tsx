@@ -2,21 +2,13 @@ import TaskCard from "@/components/TaskCard/TaskCard"
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
-export type Task = {
-  id: number;
-  title: string;
-  description: string | null;
-  status: boolean;
-  due_date: string;
-};
-
 const ExpiredTaskPage = async () => {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
   // Supabaseから status が true の TaskList データのみを取得
   const { data: tasks } = await supabase
-    .from("TaskList")
+    .from("tasks")
     .select("*")
     .eq('status', false) // statusがfalseのレコードに絞り込む
     .lt('due_date', new Date().toISOString().split('T')[0]) // due_dateが現在の日付より前のレコードに絞り込む
@@ -38,4 +30,4 @@ const ExpiredTaskPage = async () => {
   )
 }
 
-export default ExpiredTaskPage
+export default ExpiredTaskPage;

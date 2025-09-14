@@ -9,7 +9,7 @@ const TaskDeleteButton: React.FC<TaskDeleteButtonProps> = ({ id }) => {
   return (
     <form action={deleteTask}>
         <input type="hidden" name="id" value={id} />
-        <button type="submit" className="hover:text-gray-700 text-lg cursor-pointer">
+        <button type="submit" className="mt-3 hover:text-gray-600 text-lg cursor-pointer">
             <FaTrashAlt />
         </button>
     </form>

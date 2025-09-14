@@ -2,21 +2,13 @@ import TaskCard from "@/components/TaskCard/TaskCard";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
-export type Task = {
-  id: number;
-  title: string;
-  description: string | null;
-  status: boolean;
-  due_date: string;
-};
-
 const CompletedTaskPage = async () => {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
   // Supabaseから status が true の TaskList データのみを取得
   const { data: tasks } = await supabase
-    .from("TaskList")
+    .from("tasks")
     .select("*")
     .eq('status', true) // statusがtrueのレコードに絞り込む
     .order("due_date", { ascending: true });

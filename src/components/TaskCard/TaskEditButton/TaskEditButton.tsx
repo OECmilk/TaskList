@@ -6,7 +6,7 @@ interface TaskEditButtonProps {
 }
 const TaskEditButton: React.FC<TaskEditButtonProps> = ({ id }) => {
   return (
-    <Link href={`/edit/${id}`}>
+    <Link href={`/edit/${id}`} prefetch={true}>
         <FaPen className="hover:text-gray-700 text-lg cursor-pointer" />
     </Link>
   )

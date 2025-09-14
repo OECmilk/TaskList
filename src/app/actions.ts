@@ -18,7 +18,7 @@ export const createNewTask = async (formData: FormData) => {
     const dueDate = formData.get('dueDate') as string;
 
     // Supabaseの'TaskList'テーブルに新しいタスクを挿入
-    const { error } = await supabase.from('TaskList').insert([
+    const { error } = await supabase.from('tasks').insert([
         {
             title: title,
             description: description,
@@ -37,9 +37,38 @@ export const createNewTask = async (formData: FormData) => {
 };
 
 /**
+ * 新しいサブタスクを追加するサーバーアクション
+ */
+export async function addSubTask(formData: FormData) {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    // フォームからデータを取得
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const taskId = formData.get('task_id') as string;
+
+    // sub_tasksテーブルに新しいレコードを挿入
+    const { error } = await supabase.from('sub_tasks').insert([
+        {
+            title: title,
+            description: description,
+            task_id: taskId,
+            status: false // サブタスクの初期状態は未完了
+        },
+    ]);
+
+    if (error) {
+        console.error('Error creating subtask:', error);
+        throw new Error('Failed to create subtask');
+    }
+
+    // データ更新後、キャッシュをクリアして編集ページを再描画する
+    revalidatePath(`/edit/${taskId}`);
+}
+
+/**
  * タスクの完了状態を更新するサーバーアクション
- * @param id 更新するタスクのID
- * @param currentStatus 現在の完了状態 (true/false)
  */
 export async function updateTaskStatus(formData: FormData) {
     const cookieStore = cookies();
@@ -50,7 +79,7 @@ export async function updateTaskStatus(formData: FormData) {
     const currentStatus = formData.get('status') === 'true'; // 文字列をbooleanに変換
 
     const { error } = await supabase
-        .from('TaskList')
+        .from('tasks')
         .update({ status: !currentStatus }) // 現在の状態を反転
         .eq('id', id);
 
@@ -60,6 +89,27 @@ export async function updateTaskStatus(formData: FormData) {
     }
 
     revalidatePath('/');
+}
+
+/**
+ * サブタスクの完了状態を更新するサーバーアクション
+ */
+export async function updateSubTaskStatus(id: number, taskId: number, currentStatus: boolean) {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase
+        .from('sub_tasks')
+        .update({ status: !currentStatus }) // 現在の状態を反転
+        .eq('id', id)
+        .eq('task_id', taskId);
+
+    if (error) {
+        console.error('Error updating task status:', error);
+        throw new Error('Failed to update sub_task status');
+    }
+
+    revalidatePath(`/edit/${taskId}`);
 }
 
 /**
@@ -80,7 +130,7 @@ export async function editTask(formData: FormData) {
     const due_date = formData.get('dueDate') as string;
 
     const { error } = await supabase
-        .from('TaskList')
+        .from('tasks')
         .update({
             title: title,
             description: description,
@@ -108,7 +158,7 @@ export async function deleteTask(formData: FormData) {
     const id = formData.get('id') as string;
 
     const { error } = await supabase
-        .from('TaskList')
+        .from('tasks')
         .delete()
         .eq('id', id);
     if (error) {

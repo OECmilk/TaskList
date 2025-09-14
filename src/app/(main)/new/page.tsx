@@ -1,4 +1,4 @@
-import NewTaskForm from "@/components/NewTaskForm/NewTaskForm"
+import NewTaskForm from "@/components/NewTaskForm/NewTaskForm";
 
 const NewTaskPage = () => {
   return (
@@ -9,4 +9,4 @@ const NewTaskPage = () => {
   )
 }
 
-export default NewTaskPage
+export default NewTaskPage;

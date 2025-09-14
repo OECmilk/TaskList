@@ -3,14 +3,6 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
-export type Task = {
-  id: number;
-  title: string;
-  description: string | null;
-  status: boolean;
-  due_date: string;
-};
-
 type EditTaskPageProps = {
   params: Promise<{ id: string }>;
 };
@@ -24,8 +16,14 @@ const EditTaskPage = async ({ params }: EditTaskPageProps) => {
 
   // URLのIDに一致するタスクをSupabaseから取得
   const { data: task, error } = await supabase
-    .from("TaskList")
-    .select("*")
+    .from("tasks")
+    .select(`
+      *,
+      sub_tasks (
+        *
+      )
+    `)
+    .order('id', { foreignTable: 'sub_tasks', ascending: true })
     .eq("id", id)
     .single(); // 単一のレコードを取得
 

@@ -1,6 +1,10 @@
+"use client";
+
 import { createNewTask } from "@/app/actions";
+import { useRouter } from "next/navigation";
 
 const NewTaskForm = () => {
+  const router = useRouter();
   const today = new Date().toISOString().split('T')[0];
 
   return (
@@ -22,6 +26,9 @@ const NewTaskForm = () => {
             </div>
             <button type="submit" className="mt-8 py-2 w-full rounded-md text-white bg-gray-800 hover:bg-gray-700 text-sm font-semibold shadow-sm">
                 Create
+            </button>
+            <button type="button" onClick={() => router.back()} className="mt-4 py-2 w-full rounded-md text-white bg-red-500 hover:bg-red-400 text-sm font-semibold shadow-sm">
+              Cancel
             </button>
         </form>
     </div>

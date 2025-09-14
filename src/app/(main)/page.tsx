@@ -4,6 +4,15 @@ import { MdAddTask } from "react-icons/md";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
+// subTaskの型を定義
+export type SubTask = {
+  id: number;
+  task_id: number;
+  title: string;
+  description: string | null;
+  status: boolean;
+};
+
 // Taskの型定義
 export type Task = {
   id: number;
@@ -11,6 +20,7 @@ export type Task = {
   description: string | null;
   status: boolean;
   due_date: string;
+  sub_tasks?: SubTask[];
 };
 
 export default async function MainPage() {
@@ -18,15 +28,20 @@ export default async function MainPage() {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
-  // SupabaseからTaskListデータを取得
+  // Supabaseからデータを取得
   const { data: tasks, error } = await supabase
-    .from("TaskList")
-    .select("*")
-    .order("due_date", { ascending: true });
-
-    if (error) {
-      console.error('Error fetching tasks:', error);
-    }
+    .from("tasks")
+    .select(`
+      *,
+      sub_tasks (
+        *
+      )
+    `)
+    .order("due_date", { ascending: true })
+    .order("id", { foreignTable: "sub_tasks", ascending: true });
+  if (error) {
+    console.error('Error fetching tasks:', error);
+  }
 
   return (
     <div className="text-gray-800 p-8 h-full overflow-y-auto pb-24">
@@ -46,4 +61,4 @@ export default async function MainPage() {
       </div>
     </div>
   );
-}
+};

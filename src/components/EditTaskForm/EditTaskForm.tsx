@@ -1,11 +1,17 @@
+"use client";
+
 import { Task } from "@/app/(main)/page";
-import { editTask } from "@/app/actions";
+import { editTask, addSubTask } from "@/app/actions";
+import { useRouter } from "next/navigation";
+import SubTaskCompleteButton from "./SubTaskCompleteButton/SubTaskCompleteButton";
 
 interface EditTaskFormProps {
   task: Task;
 }
 
 const EditTaskForm = ({ task }: EditTaskFormProps) => {
+  const router = useRouter();
+
   return (
     <div className="mt-10 mx-auto w-full max-w-sm">
         <form action={editTask}>
@@ -25,12 +31,71 @@ const EditTaskForm = ({ task }: EditTaskFormProps) => {
                 min="2025-08-03" max="2100-12-31"
                 className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300" />
             </div>
+
+            {/* --- SubTask表示エリア --- */}
+            <div className="mt-8">
+              <h3 className="text-lg font-medium mb-2 border-b pb-1">Sub Tasks</h3>
+              <div className="space-y-3 max-h-48 overflow-y-auto p-2">
+                {task.sub_tasks && task.sub_tasks.length > 0 ? (
+                  task.sub_tasks.map(subtask => (
+                    <div key={subtask.id} className="p-2 border rounded-md shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-semibold">{subtask.title}</h4>
+                        
+                        <SubTaskCompleteButton id={ subtask.id } taskId={ subtask.task_id } status={ subtask.status }/>
+
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{subtask.description}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">このタスクのサブタスクはありません。</p>
+                )}
+              </div>
+            </div>
+
             <button type="submit" className="mt-8 py-2 w-full rounded-md text-white bg-gray-800 hover:bg-gray-700 text-sm font-semibold shadow-sm">
                 Edit
             </button>
+            <button type="button" onClick={() => router.back()} className="mt-4 py-2 w-full rounded-md text-white bg-red-500 hover:bg-red-400 text-sm font-semibold shadow-sm">
+              Cancel
+            </button>
         </form>
+
+        {/* --- SubTask追加フォーム --- */}
+        <div className="mt-6 pt-6 border-t">
+          <h4 className="text-lg font-medium mb-2">Add Sub Task</h4>
+          <form action={addSubTask}>
+              {/* どのタスクの子であるかを伝えるためのhiddenフィールド */}
+              <input type="hidden" name="task_id" value={task.id} />
+              <div className="mb-2">
+                  <label htmlFor="subtask_title" className="sr-only">Subtask Title</label>
+                  <input 
+                      id="subtask_title"
+                      name="title"
+                      type="text" 
+                      required 
+                      placeholder="タイトル"
+                      className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300" 
+                  />
+              </div>
+              <div className="mb-2">
+                  <label htmlFor="subtask_description" className="sr-only">Subtask Description</label>
+                  <textarea 
+                      id="subtask_description"
+                      name="description" 
+                      rows={2}
+                      placeholder="説明"
+                      className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300"
+                  ></textarea>
+              </div>
+              <button type="submit" className="mt-2 py-2 w-full rounded-md text-white bg-blue-600 hover:bg-blue-500 text-sm font-semibold shadow-sm">
+                  Add Subtask
+              </button>
+          </form>
+        </div>
     </div>
   )
 }
 
-export default EditTaskForm
+export default EditTaskForm;
