@@ -24,4 +24,4 @@ const NavList = () => {
   )
 }
 
-export default NavList
+export default NavList;

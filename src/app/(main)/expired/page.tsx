@@ -20,7 +20,7 @@ const ExpiredTaskPage = async () => {
     .select("*")
     .eq('status', false) // statusがfalseのレコードに絞り込む
     .lt('due_date', new Date().toISOString().split('T')[0]) // due_dateが現在の日付より前のレコードに絞り込む
-    .order("id", { ascending: true });
+    .order("due_date", { ascending: true });
 
   return (
     <div className="text-gray-800 p-8 h-full overflow-y-auto pb-24">

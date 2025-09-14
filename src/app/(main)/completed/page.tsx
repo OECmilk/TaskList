@@ -19,7 +19,7 @@ const CompletedTaskPage = async () => {
     .from("TaskList")
     .select("*")
     .eq('status', true) // statusがtrueのレコードに絞り込む
-    .order("id", { ascending: true });
+    .order("due_date", { ascending: true });
 
   return (
     <div className="text-gray-800 p-8 h-full overflow-y-auto pb-24">
