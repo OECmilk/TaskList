@@ -2,7 +2,7 @@
 
 import NavList from "./NavList/NavList";
 import { useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { FaBars } from "react-icons/fa";
 
 const SideMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +14,7 @@ const SideMenu = () => {
         onClick={() => setIsOpen(!isOpen)}
         aria-label="サイドメニューを開閉する"
       >
-        {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+        {isOpen ? <></> : <FaBars size={20} />}
       </button>
     <div className={`w-56 pt-8 bg-gray-800 text-white fixed h-full z-20 transform transition-transform duration-300 ease-in-out 
         ${isOpen ? "translate-x-0" : "-translate-x-full"}

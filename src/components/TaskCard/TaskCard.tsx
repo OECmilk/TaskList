@@ -19,7 +19,7 @@ const TaskCard = ({ task }: { task: Task }) => {
     <Link
         href={`/edit/${task.id}`} 
         prefetch={true}
-        className="w-64 h-52 p-4 bg-white rounded-md shadow-md flex flex-col justify-between"
+        className="w-64 h-54 p-3 bg-white rounded-md shadow-md flex flex-col justify-between"
     >
         <header>
             <div className="flex justify-between" onClick={(e) => e.stopPropagation()}>
@@ -30,21 +30,27 @@ const TaskCard = ({ task }: { task: Task }) => {
             <div className="mt-1 text-sm line-clamp-3">{ task.description }</div>
         </header>
         <div>
-            <div className="text-sm">{ task.due_date }</div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between">
+                <div className="text-sm pt-3">{ task.due_date }</div>
+                <div className="" onClick={(e) => e.stopPropagation()}>
+                    <TaskDeleteButton id={ task.id }/>
+                </div>
+            </div>
+            <hr className="my-1"></hr>
+            <div className="items-center">
                 <div
                     className="relative"
                     onMouseEnter={() => setIsDropdownVisible(true)} // ホバー時に表示
                     onMouseLeave={() => setIsDropdownVisible(false)}// ホバー終了で非表示
                 >
-                    <div className="w-40 mt-1 text-sm px-2 py-1 w-24 text-center font-bold border-1 shadow-sm">
+                    <div className="mt-1 text-sm w-full text-center font-bold">
                         SubTasks
                     </div>
 
                     {/* 4. isDropdownVisibleがtrue、かつサブタスクが存在する場合にプルダウンメニューを表示 */}
                     {isDropdownVisible && task.sub_tasks && task.sub_tasks.length > 0 && (
                     <div
-                    className="absolute top-full left-0 w-40 bg-white border shadow-lg z-10"
+                    className="absolute top-full -left-3 w-64 bg-white shadow-lg z-10 rounded-md"
                     onClick={(e) => e.stopPropagation()}
                     >
                     <ul className="py-1 max-h-75 overflow-y-auto">
@@ -61,13 +67,10 @@ const TaskCard = ({ task }: { task: Task }) => {
                     </div>
                     )}
                 </div>
-                <div className="flex gap-4" onClick={(e) => e.stopPropagation()}>
-                    <TaskDeleteButton id={ task.id }/>
-                </div>
             </div>
         </div>
     </Link>
-  )
-}
+  );
+};
 
 export default TaskCard;
