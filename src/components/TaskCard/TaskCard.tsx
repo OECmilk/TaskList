@@ -47,7 +47,7 @@ const TaskCard = ({ task }: { task: Task }) => {
                     className="absolute top-full left-0 w-40 bg-white border shadow-lg z-10"
                     onClick={(e) => e.stopPropagation()}
                     >
-                    <ul className="py-1 max-h-40 overflow-y-auto">
+                    <ul className="py-1 max-h-75 overflow-y-auto">
                         {task.sub_tasks.map(subtask => (
                         <li key={subtask.id} className="flex justify-between items-center px-4 py-2 text-sm text-gray-700 truncate">
                             <span className="truncate">{subtask.title}</span>
