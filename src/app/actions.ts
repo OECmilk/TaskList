@@ -149,7 +149,7 @@ export async function editTask(formData: FormData) {
 
 /**
  * タスクを削除するサーバーアクション
- * @param id 削除するタスクのID
+ * @param id 削除するサブタスクのID
  */
 export async function deleteTask(formData: FormData) {
     const cookieStore = cookies();
@@ -167,4 +167,25 @@ export async function deleteTask(formData: FormData) {
     }
     revalidatePath('/');
     redirect('/');
+}
+
+/**
+ * サブタスクを削除するサーバーアクション
+ * @param id 削除するタスクのID
+ * @param taskId 削除するタスクのID
+ */
+export async function deleteSubTask(id: number, taskId: number) {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const { error } = await supabase
+        .from('sub_tasks')
+        .delete()
+        .eq('id', id);
+    if (error) {
+        console.error('Error deleting task:', error);
+        throw new Error('Failed to delete task');
+    }
+    
+    revalidatePath(`/edit/${taskId}`);
 }

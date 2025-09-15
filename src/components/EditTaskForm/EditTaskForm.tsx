@@ -4,6 +4,7 @@ import { Task } from "@/app/(main)/page";
 import { editTask, addSubTask } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import SubTaskCompleteButton from "./SubTaskCompleteButton/SubTaskCompleteButton";
+import SubTaskDeleteButton from "./SubTaskDeleteButton/SubTaskDeleteButton";
 
 interface EditTaskFormProps {
   task: Task;
@@ -45,7 +46,10 @@ const EditTaskForm = ({ task }: EditTaskFormProps) => {
                         <SubTaskCompleteButton id={ subtask.id } taskId={ subtask.task_id } status={ subtask.status }/>
 
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{subtask.description}</p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm text-gray-600 mt-1">{subtask.description}</p>
+                        <SubTaskDeleteButton id={ subtask.id } taskId={ subtask.task_id }/>
+                      </div>
                     </div>
                   ))
                 ) : (
