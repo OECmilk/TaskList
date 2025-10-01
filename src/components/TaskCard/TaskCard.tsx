@@ -37,7 +37,7 @@ const TaskCard = ({ task }: { task: Task }) => {
                 </div>
             </div>
             <hr className="my-1"></hr>
-            <div className="items-center">
+            <div className="items-center" onClick={(e) => e.stopPropagation()}>
                 <div
                     className="relative"
                     onMouseEnter={() => setIsDropdownVisible(true)} // ホバー時に表示
@@ -51,7 +51,10 @@ const TaskCard = ({ task }: { task: Task }) => {
                     {isDropdownVisible && task.sub_tasks && task.sub_tasks.length > 0 && (
                     <div
                     className="absolute top-full -left-3 w-64 bg-white shadow-lg z-10 rounded-md"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }}
                     >
                     <ul className="py-1 max-h-75 overflow-y-auto">
                         {task.sub_tasks.map(subtask => (
