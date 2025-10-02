@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MdAddTask } from "react-icons/md";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import TaskFilter from "@/components/TaskFilter/TaskFilter";
 
 // subTaskの型を定義
 export type SubTask = {
@@ -23,22 +24,41 @@ export type Task = {
   sub_tasks?: SubTask[];
 };
 
-export default async function MainPage() {
+export default async function MainPage(
+    {
+    searchParams,
+  }: {
+    searchParams: { [key: string]: string | string[] | undefined };
+  }) {
+  // URLに show_incomplete=false があれば 'false'、それ以外は 'true' と解釈する
+  const showIncompleteOnly = searchParams.show_incomplete !== 'false';
+
   //Supabaseクライアントの初期化
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
-  // Supabaseからデータを取得
-  const { data: tasks, error } = await supabase
+  // 💡 Supabaseクエリの構築
+  let query = supabase
     .from("tasks")
-    .select(`
-      *,
-      sub_tasks (
-        *
-      )
-    `)
+    .select(
+      `
+        *,
+        sub_tasks (
+          *
+        )
+      `
+    )
     .order("due_date", { ascending: true })
     .order("id", { foreignTable: "sub_tasks", ascending: true });
+
+  // 💡 フィルタリング条件の適用
+  if (showIncompleteOnly) {
+    // showIncompleteがtrueの場合、statusがfalse（未完了）のタスクのみを取得
+    query = query.eq('status', false);
+  }
+
+  // Supabaseからデータを取得
+  const { data: tasks, error } = await query;
   if (error) {
     console.error('Error fetching tasks:', error);
   }
@@ -46,7 +66,10 @@ export default async function MainPage() {
   return (
     <div className="text-gray-800 p-8 h-full overflow-y-auto pb-24">
       <header className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold flex items-center">All Tasks</h1>
+        <div className="flex items-center gap-10">
+          <h1 className="text-2xl font-bold flex items-center">All Tasks</h1>
+          <TaskFilter />
+        </div>
         <Link href="/new" prefetch={true} className="flex items-center gap-1 font-semibold border px-4 py-2 rounded-full shadow-sm text-white bg-gray-800 hover:bg-gray-700">
           <MdAddTask className="size-5"/>
           <div>Add Task</div>
