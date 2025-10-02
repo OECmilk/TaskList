@@ -50,7 +50,12 @@ const TaskCard = ({ task }: { task: Task }) => {
                 </div>
             </div>
             <hr className="my-1"></hr>
-            <div className="items-center" onClick={(e) => e.stopPropagation()}>
+            <div 
+            className="items-center" 
+            onClick={(e) => {
+                e.stopPropagation(); 
+                e.preventDefault();
+            }}>
                 <div
                     className="relative"
                     onMouseEnter={() => setIsDropdownVisible(true)} // ホバー時に表示
