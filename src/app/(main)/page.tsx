@@ -25,11 +25,10 @@ export type Task = {
 };
 
 export default async function MainPage(
-    {
-    searchParams,
-  }: {
-    searchParams: { [key: string]: string | string[] | undefined };
-  }) {
+  props: { searchParams:  Promise<{[key: string]: string | string[] | undefined }> }){
+  
+  const searchParams = await props.searchParams;
+
   // URLに show_incomplete=false があれば 'false'、それ以外は 'true' と解釈する
   const showIncompleteOnly = searchParams.show_incomplete !== 'false';
 
