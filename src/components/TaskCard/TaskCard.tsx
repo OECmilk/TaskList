@@ -7,6 +7,7 @@ import ProgressBar from "./ProgressBar/ProgressBar";
 import { Task } from "@/app/(main)/page";
 import Link from "next/link";
 import { FaCheck } from "react-icons/fa";
+import { FaRegClock } from "react-icons/fa6";
 
 const TaskCard = ({ task }: { task: Task }) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
@@ -14,6 +15,9 @@ const TaskCard = ({ task }: { task: Task }) => {
   // タスクの進捗を計算
   const totalSubTasks = task.sub_tasks ? task.sub_tasks.length : 0;
   const completedSubTasks = task.sub_tasks ? task.sub_tasks.filter(subtask => subtask.status).length : 0;
+
+  const today = new Date().toISOString().split('T')[0]; // 今日の日付
+  const isOverdue = task.due_date < today && task.status === false; // 期限切れかつ未完了のタスクかどうか
 
   return (
     <Link
@@ -31,7 +35,16 @@ const TaskCard = ({ task }: { task: Task }) => {
         </header>
         <div>
             <div className="flex justify-between">
-                <div className="text-sm pt-3">{ task.due_date }</div>
+                <div className="text-sm pt-3 flex justify-between">
+                    { task.due_date }
+
+                    {/* タスクの期限がきれている場合、時計マークを表示 */}
+                    {isOverdue && (
+                    <div className="text-red-500 ml-1" title="期限切れ">
+                        <FaRegClock className="size-3.5" />
+                    </div>
+                )}
+                </div>
                 <div className="" onClick={(e) => e.stopPropagation()}>
                     <TaskDeleteButton id={ task.id }/>
                 </div>
