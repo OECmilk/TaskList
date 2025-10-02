@@ -39,15 +39,15 @@ const TaskFilter = () => {
   }, [searchParams]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1">
       <input
         id="incomplete-filter"
         type="checkbox"
         checked={showIncomplete}
         onChange={handleCheckboxChange}
-        className="w-4 h-4 text-red-600 bg-red-500 border-red-300 rounded focus:ring-red-500 [accent-color:theme(colors.red.600)]"
+        className="w-5 h-5 text-red-600 bg-red-500 border-red-300 rounded focus:ring-red-500 [accent-color:theme(colors.red.600)]"
       />
-      <label htmlFor="incomplete-filter" className="text-base font-semibold text-gray-800 cursor-pointer select-none">
+      <label htmlFor="incomplete-filter" className="text-lg font-semibold text-gray-800 cursor-pointer select-none">
         InComplete
       </label>
     </div>
