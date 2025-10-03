@@ -7,21 +7,50 @@ import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";
 import Link from "next/link";
 
+type Profile = {
+  name: string;
+  icon: string | null;
+};
+
 const SideMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
-
   const [user, setUser] = useState<User | null>(null);
 
-  // コンポーネントのマウント時にユーザー情報を取得する
+  const [profile, setProfile] = useState<Profile | null>(null);
+
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserData = async () => {
       const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
+      
+      // 1. まず認証ユーザー情報を取得
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      // 2. ユーザーが存在する場合、profilesテーブルから対応するプロフィールを取得
+      if (user) {
+        const { data: profileData, error } = await supabase
+          .from('users')
+          .select('name, icon')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else {
+          setProfile(profileData);
+        }
+      }
     };
 
-    fetchUser();
+    fetchUserData();
   }, []); // 空の配列を渡すことで、初回レンダリング時のみ実行
+
+  // 表示する名前を決定するヘルパー関数
+  const getDisplayName = () => {
+    if (!profile && !user) return null;
+    // 優先順: 1. users.name, 2. email
+    return profile?.name || user?.user_metadata.name;
+  }
 
   return (
     <>
@@ -43,14 +72,19 @@ const SideMenu = () => {
             {user && (
                 <div className="p-4 border-t border-gray-700">
                     <Link href="/profile" className="block hover:bg-gray-700 rounded-md p-2 transition-colors">
-                        <p className="text-sm font-medium">Signed in as</p>
-                        <p className="text-sm font-semibold truncate" title={user.email || ''}>
-                            {user.email}
-                        </p>
+                      {user.user_metadata.avatar_url && (
+                        <img 
+                            src={user.user_metadata.avatar_url}
+                            alt="User Icon"
+                            className="w-10 h-10 rounded-full mt-2"
+                        />
+                      )}
+                      <p className="mt-2 text-lg font-semibold truncate" title={getDisplayName() || ''}>
+                          {getDisplayName()}
+                      </p>
                     </Link>
                 </div>
             )}
-            {!user && (<div>ログイン出来てないで</div>)}
 
           <NavList />
       </div>

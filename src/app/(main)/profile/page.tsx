@@ -22,11 +22,8 @@ export default async function ProfilePage() {
                     Profile
                 </h1>
                 <div className="space-y-4">
-                    <p className="text-gray-700">
-                        ようこそ、
-                        <span className="font-semibold">{user.email}</span>
-                        さん
-                    </p>
+                    <p className='font-semibold'>{user.user_metadata.name}</p>
+                    <p className="font-semibold">{user.email}</p>
 
                     {/* ログアウトボタン */}
                     <form action={signOut}>
