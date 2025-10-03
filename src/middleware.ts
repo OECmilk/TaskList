@@ -1,17 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createClient } from '@/utils/supabase/middleware'
+import { createClient } from '@/utils/supabase/middleware-client'
 
 export async function middleware(request: NextRequest) {
+  console.log('--- MIDDLEWARE EXECUTION STARTED ---');
+  console.log('Request Path:', request.nextUrl.pathname);
+  
   try {
-    // This `try/catch` block is only here for the interactive tutorial.
-    // Feel free to remove once you have Supabase connected.
     const { supabase, response } = createClient(request)
 
-    // Refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/auth-helpers/nextjs#managing-session-with-middleware
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    // デバッグ
+    console.log('User in middleware:', user);
 
     // ユーザーが未認証で、かつログインページ以外にアクセスしようとした場合
     if (!user && !request.nextUrl.pathname.startsWith('/login')) {
@@ -28,9 +30,8 @@ export async function middleware(request: NextRequest) {
     return response
 
   } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
+    console.error('Middleware Error:', e); 
+
     return NextResponse.next({
       request: {
         headers: request.headers,
@@ -46,8 +47,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - auth routes (callback)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|auth).*)',
   ],
 }
