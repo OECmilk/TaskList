@@ -1,0 +1,44 @@
+import { createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { signOut } from '@/app/auth/actions';
+
+export default async function ProfilePage() {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    // ユーザーセッションを取得
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // ユーザーが存在しない場合はログインページにリダイレクト
+    if (!user) {
+        return redirect('/login');
+    }
+
+    return (
+        <div className="flex justify-center items-center min-h-screen bg-gray-50">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md text-center">
+                <h1 className="text-2xl font-bold text-gray-900">
+                    Profile
+                </h1>
+                <div className="space-y-4">
+                    <p className="text-gray-700">
+                        ようこそ、
+                        <span className="font-semibold">{user.email}</span>
+                        さん
+                    </p>
+
+                    {/* ログアウトボタン */}
+                    <form action={signOut}>
+                        <button 
+                            type="submit"
+                            className="w-full px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        >
+                            Sign Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+}
