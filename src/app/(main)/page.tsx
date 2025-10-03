@@ -4,6 +4,7 @@ import { MdAddTask } from "react-icons/md";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import TaskFilter from "@/components/TaskFilter/TaskFilter";
+import { UUID } from "crypto";
 
 // subTaskの型を定義
 export type SubTask = {
@@ -21,6 +22,7 @@ export type Task = {
   description: string | null;
   status: boolean;
   due_date: string;
+  user_id: UUID;
   sub_tasks?: SubTask[];
 };
 
@@ -37,6 +39,10 @@ export default async function MainPage(
   const supabase = createClient(cookieStore);
 
   // 💡 Supabaseクエリの構築
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   let query = supabase
     .from("tasks")
     .select(
@@ -47,6 +53,7 @@ export default async function MainPage(
         )
       `
     )
+    .eq('user_id', user?.id)
     .order("due_date", { ascending: true })
     .order("id", { foreignTable: "sub_tasks", ascending: true });
 

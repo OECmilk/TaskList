@@ -38,6 +38,7 @@ export async function signup(formData: FormData) {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
+  const name = formData.get('name') as string;
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
@@ -49,11 +50,20 @@ export async function signup(formData: FormData) {
     options: {
       // ユーザーが確認メールのリンクをクリックした後のリダイレクト先
       emailRedirectTo: `${origin}/auth/callback`,
+
+      data: {
+        name: name,
+      }
     },
   });
 
   if (error) {
     console.error('Signup error:', error.message);
+    
+    if (error.message === 'User already registered') {
+        return redirect('/login?message=This email is already registered. Please sign in.');
+    }
+
     return redirect('/login?message=Could not authenticate user');
   }
 
