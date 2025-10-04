@@ -1,11 +1,12 @@
 "use client";
 
 import NavList from "./NavList/NavList";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { FaBars } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type Profile = {
   name: string;
@@ -52,6 +53,8 @@ const SideMenu = () => {
     return profile?.name || user?.user_metadata.name;
   }
 
+  const pathname = usePathname();
+
   return (
     <>
     <button
@@ -68,7 +71,7 @@ const SideMenu = () => {
       <div>
         {/* 下部のユーザー情報 (userが存在する場合のみ表示) */}
         {user && (
-          <Link href="/profile" className="block hover:bg-cyan-800 rounded-md p-2 transition-colors">
+          <Link href="/profile" className={`block hover:bg-cyan-800 p-4 transition-colors ${pathname === '/profile' ? 'bg-cyan-900 border-r-5 border-r-orange-200': ''}`}>
             {user.user_metadata.avatar_url && (
               <img 
                   src={user.user_metadata.avatar_url}

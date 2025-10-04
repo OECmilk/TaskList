@@ -23,7 +23,7 @@ const TaskCard = ({ task }: { task: Task }) => {
     <Link
         href={`/edit/${task.id}`} 
         prefetch={true}
-        className="w-64 h-54 p-3 bg-white rounded-md shadow-md flex flex-col justify-between"
+        className="w-full h-60 sm:w-64 sm:h-54 p-3 bg-white rounded-md shadow-md flex flex-col justify-between"
     >
         <header>
             <div className="flex justify-between" onClick={(e) => e.stopPropagation()}>
@@ -68,7 +68,7 @@ const TaskCard = ({ task }: { task: Task }) => {
                     {/* 4. isDropdownVisibleがtrue、かつサブタスクが存在する場合にプルダウンメニューを表示 */}
                     {isDropdownVisible && task.sub_tasks && task.sub_tasks.length > 0 && (
                     <div
-                    className="absolute top-full -left-3 w-64 bg-white shadow-lg z-10 rounded-md"
+                    className="absolute top-full -left-3 w-78 sm:w-64 bg-white shadow-lg z-10 rounded-md"
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();

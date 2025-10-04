@@ -70,7 +70,7 @@ export default async function MainPage(
   }
 
   return (
-    <div className="text-gray-800 p-10 h-full overflow-y-auto pb-24">
+    <div className="text-gray-800 p-8 sm:p-10 h-full overflow-y-auto pb-24">
       <header className="flex justify-between items-center">
         <div className="flex items-center gap-10">
           <h1 className="hidden sm:inline text-2xl font-bold flex items-center">All Tasks</h1>

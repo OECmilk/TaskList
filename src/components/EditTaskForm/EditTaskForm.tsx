@@ -14,7 +14,7 @@ const EditTaskForm = ({ task }: EditTaskFormProps) => {
   const router = useRouter();
 
   return (
-    <div className="mt-10 mx-auto w-full max-w-sm">
+    <div className="mt-10 mx-auto w-80 sm:w-full max-w-sm">
         <form action={editTask}>
             <input type="hidden" name="id" value={task.id} />
             <div>
@@ -62,7 +62,7 @@ const EditTaskForm = ({ task }: EditTaskFormProps) => {
                 Edit
             </button>
             <button type="button" onClick={() => router.back()} className="mt-4 py-2 w-full rounded-md text-gray-800 bg-white border border-orange-300 hover:bg-gray-50 text-sm font-semibold shadow-sm">
-              Go Back
+              Cancel
             </button>
         </form>
 

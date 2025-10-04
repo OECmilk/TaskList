@@ -11,12 +11,12 @@ interface NavItemType {
 
 const NavList = () => {
     const navList: NavItemType[] = [
-        {id: 1, label: "All Tasks", link: "/", icon: <FaTasks className="size-5"/>},
+        {id: 1, label: "Tasks", link: "/", icon: <FaTasks className="size-5"/>},
         // {id: 2, label: "Completed Tasks", link: "/completed", icon: <FaRegCheckSquare className="size-5"/>},
         // {id: 3, label: "Expired Tasks", link: "/expired", icon: <FaRegClock className="size-5"/>},
     ];
   return (
-    <div className="mt-24">
+    <div className="mt-8">
         {navList.map((item) => (
             <NavItem key={item.id} label={item.label} link={item.link} icon={item.icon} />
         ))}
