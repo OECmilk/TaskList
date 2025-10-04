@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
 import { login, signup, signInWithOAuth } from '@/app/auth/actions';
-import { FaGithub, FaGoogle } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
 import Messages from './messages';
+import GoogleIcon from '@/components/icons/GoogleIcon';
 
 export default function LoginPage() {
     return (
@@ -93,7 +94,7 @@ export default function LoginPage() {
                             type="submit"
                             className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:border-cyan-700 rounded-md shadow-sm hover:bg-gray-100"
                         >
-                            <FaGoogle />
+                            <GoogleIcon />
                             Continue with Google
                         </button>
                     </form>
@@ -103,7 +104,7 @@ export default function LoginPage() {
                             type="submit"
                             className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:border-cyan-700 rounded-md shadow-sm hover:bg-gray-100"
                         >
-                            <FaGithub />
+                            <FaGithub className='size-5' />
                             Continue with GitHub
                         </button>
                     </form>
