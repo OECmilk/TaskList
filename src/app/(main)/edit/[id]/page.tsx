@@ -38,14 +38,27 @@ const EditTaskPage = async ({ params }: EditTaskPageProps) => {
     return notFound();
   }
 
-  // ユーザが所属する全てのプロジェクトを取得
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('*')
+  // ログインユーザーがメンバーとして参加しているプロジェクトIDのリストを取得
+  const { data: memberProjectIds, error: memberError } = await supabase
+    .from('project_members')
+    .select('project_id')
     .eq('user_id', user?.id);
 
-  if (!task) {
-    notFound();
+  if (memberError) {
+    console.error('Error fetching project memberships:', memberError);
+    return <div>Error loading project list.</div>;
+  }
+
+  // 取得したIDのリストに一致するプロジェクト情報を取得
+  const projectIds = memberProjectIds.map(p => p.project_id);
+  const { data: projects, error: projectsError } = await supabase
+    .from('projects')
+    .select('*')
+    .in('id', projectIds);
+
+  if (projectsError) {
+    console.error('Error fetching projects:', projectsError);
+    return <div>Error loading project list.</div>;
   }
 
   return (

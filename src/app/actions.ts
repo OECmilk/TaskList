@@ -194,3 +194,123 @@ export async function deleteSubTask(id: number, taskId: number) {
     
     revalidatePath(`/edit/${taskId}`);
 }
+
+/**
+ * 新しいプロジェクトを作成するサーバーアクション
+ */
+export async function createProject(formData: FormData) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const name = formData.get('projectName') as string;
+
+  // 1. まず、projectsテーブルに新しいレコードを挿入し、その結果を受け取ります
+  const { data: newProject, error: projectError } = await supabase
+    .from('projects')
+    .insert([
+      {
+        name: name,
+        owner: user.id,
+        status: false,
+      },
+    ])
+    .select() // 挿入したレコードを返してもらう
+    .single(); // 1件だけ取得
+
+  if (projectError || !newProject) {
+    console.error('Error creating project:', projectError);
+    throw new Error('Failed to create project');
+  }
+
+  // 2. 次に、作成したプロジェクトのIDとオーナーのIDをproject_membersテーブルに挿入します
+  const { error: memberError } = await supabase
+    .from('project_members')
+    .insert([
+      {
+        project_id: newProject.id,
+        user_id: user.id,
+      },
+    ]);
+
+  if (memberError) {
+    console.error('Error adding project owner to members:', memberError);
+    // ここで、作成したプロジェクトを削除するなどのロールバック処理を追加することも可能です
+    throw new Error('Failed to add owner to project members');
+  }
+
+  revalidatePath('/projects');
+}
+
+/**
+ * プロジェクトに新しいメンバーを追加するサーバーアクション
+ */
+export async function addProjectMember(formData: FormData) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const projectId = formData.get('projectId') as string;
+  const email = formData.get('email') as string;
+
+  if (!projectId || !email) {
+    throw new Error('Project ID and email are required.');
+  }
+
+  // 1. RPCを呼び出して、emailからuser_idを取得
+  const { data: userId, error: rpcError } = await supabase.rpc('get_user_id_by_email', {
+    email_address: email,
+  });
+
+  if (rpcError || !userId) {
+    console.error('Error finding user by email:', rpcError);
+    // TODO: エラーメッセージをユーザーに表示する
+    return;
+  }
+
+  // 2. project_membersテーブルに新しいレコードを挿入
+  const { error: insertError } = await supabase.from('project_members').insert({
+    project_id: projectId,
+    user_id: userId,
+  });
+
+  if (insertError) {
+    // ユーザーが既にメンバーである場合のエラー(unique constraint violation)は無視する
+    if (insertError.code === '23505') {
+      console.log('User is already a member.');
+    } else {
+      console.error('Error adding project member:', insertError);
+      throw new Error('Failed to add member to the project.');
+    }
+  }
+
+  revalidatePath(`/projects/${projectId}`);
+}
+
+/**
+ * お問い合わせフォームを送信するサーバーアクション
+ */
+export async function submitContactForm(formData: FormData) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const message = formData.get('message') as string;
+
+  const { error } = await supabase.from('contacts').insert({
+    message: message,
+  });
+
+  if (error) {
+    console.error('Error submitting contact form:', error);
+    const errorMessage = encodeURIComponent('Failed to send message. Please try again.');
+    return redirect(`/contact?error=${errorMessage}`);
+  }
+
+  // 成功したら感謝のメッセージを表示
+  const successMessage = encodeURIComponent('Thank you!');
+  redirect(`/contact?message=${successMessage}`);
+}

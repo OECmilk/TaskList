@@ -1,6 +1,5 @@
 'use client';
 
-import { truncate } from "fs/promises";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -19,7 +18,7 @@ const NavItem: React.FC<NavItemProps> = ({
   return (
     <Link href={link} prefetch={true} className={`flex p-4 items-center w-full hover:bg-cyan-800 font-medium
         ${pathname === link ? 'bg-cyan-900 border-r-5 border-r-orange-200': ''}`}>
-        <div className="mr-1">{icon}</div>
+        <div className="mr-2">{icon}</div>
         <div>{label}</div>
     </Link>
   )

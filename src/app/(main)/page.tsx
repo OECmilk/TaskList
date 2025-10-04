@@ -18,10 +18,8 @@ export type SubTask = {
 // Projectの型を定義
 export type Project = {
   id: number;
-  user_id: UUID;
-  task_id: number | null;
   name: string;
-  ownewr: string;
+  owner: string;
   status: boolean;
 };
 
@@ -52,12 +50,24 @@ export default async function MainPage(
   const supabase = createClient(cookieStore);
 
   // 💡 Supabaseクエリの構築
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return null;
   }
+
+  // ログインユーザーがメンバーとして参加しているプロジェクトIDのリストを取得
+  const { data: projectMembers, error: memberError } = await supabase
+    .from('project_members')
+    .select('project_id')
+    .eq('user_id', user.id);
+
+  if (memberError) {
+    console.error('Error fetching project members:', memberError);
+    return <div>Error loading projects.</div>;
+  }
+
+  // プロジェクトIDの配列
+  const projectIds = projectMembers.map(member => member.project_id);
 
   let query = supabase
     .from("tasks")
@@ -72,7 +82,7 @@ export default async function MainPage(
         )
       `
     )
-    .eq('user_id', user.id)
+    .or(`user_id.eq.${user.id},project_id.in.(${projectIds.join(',')})`)
     .order("due_date", { ascending: true })
     .order("id", { foreignTable: "sub_tasks", ascending: true });
 
@@ -88,6 +98,9 @@ export default async function MainPage(
     console.error('Error fetching tasks:', error);
   }
 
+  // デバッグ
+  console.log("----tasks----");
+  console.log(tasks);
 
   return (
     <div className="text-gray-800 p-8 sm:p-10 h-full overflow-y-auto pb-24">

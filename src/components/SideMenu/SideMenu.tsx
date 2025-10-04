@@ -1,7 +1,7 @@
 "use client";
 
 import NavList from "./NavList/NavList";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { FaBars } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";

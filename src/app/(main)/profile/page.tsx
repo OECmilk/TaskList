@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { signOut } from '@/app/auth/actions';
+import Image from 'next/image';
+
 
 export default async function ProfilePage() {
     const cookieStore = cookies();
@@ -21,10 +23,11 @@ export default async function ProfilePage() {
                 <header className="text-2xl font-bold text-gray-900">
                     Profile
                 </header>
-                <div className="space-y-4">
-                    <img 
+                    <Image
                         src={user.user_metadata.avatar_url}
-                        alt="User Icon"
+                        alt="User Avatar"
+                        width={80}
+                        height={80}
                         className="w-20 h-20 rounded-full mt-2 justify-center mx-auto"
                     />
                     <p className='font-semibold'>{user.user_metadata.name}</p>
@@ -39,7 +42,6 @@ export default async function ProfilePage() {
                             Sign Out
                         </button>
                     </form>
-                </div>
             </div>
         </div>
     );
