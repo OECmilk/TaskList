@@ -76,7 +76,7 @@ export default async function MainPage(
           <h1 className="hidden sm:inline text-2xl font-bold flex items-center">All Tasks</h1>
           <TaskFilter />
         </div>
-        <Link href="/new" prefetch={true} className="flex items-center gap-1 font-semibold border px-4 py-2 rounded-full shadow-sm text-white bg-gray-800 hover:bg-gray-700">
+        <Link href="/new" prefetch={true} className="flex items-center gap-1 font-semibold border px-4 py-2 rounded-full shadow-sm text-white bg-cyan-700 hover:bg-cyan-600">
           <MdAddTask className="size-5"/>
           <div className="hidden sm:inline">Add Task</div>
         </Link>

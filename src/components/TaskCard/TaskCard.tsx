@@ -40,7 +40,7 @@ const TaskCard = ({ task }: { task: Task }) => {
 
                     {/* タスクの期限がきれている場合、時計マークを表示 */}
                     {isOverdue && (
-                    <div className="text-red-500 ml-1" title="期限切れ">
+                    <div className="text-orange-400 ml-1" title="期限切れ">
                         <FaRegClock className="size-3.5" />
                     </div>
                 )}
@@ -80,7 +80,7 @@ const TaskCard = ({ task }: { task: Task }) => {
                             <span className="truncate">{subtask.title}</span>
                             {/* 2. subtask.statusがtrueの場合に緑色のチェックマークを表示 */}
                             {subtask.status && (
-                                <FaCheck className="text-green-500 ml-2 flex-shrink-0" />
+                                <FaCheck className="text-cyan-700 ml-2 flex-shrink-0" />
                             )}
                         </li>
                         ))}

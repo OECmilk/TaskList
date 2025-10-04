@@ -64,14 +64,14 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             formAction={login}
-                            className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="w-full px-4 py-2 text-sm font-medium text-white bg-cyan-700 rounded-md hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             Sign In
                         </button>
                         <button
                             type="submit"
                             formAction={signup}
-                            className="w-full px-4 py-2 text-sm font-medium text-indigo-600 bg-white border border-indigo-600 rounded-md hover:bg-indigo-50"
+                            className="w-full px-4 py-2 text-sm font-medium text-cyan-700 bg-white border border-cyan-700 rounded-md hover:bg-cyan-50"
                         >
                             Sign Up
                         </button>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                         <input type="hidden" name="provider" value="google" />
                         <button
                             type="submit"
-                            className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
+                            className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:border-cyan-700 rounded-md shadow-sm hover:bg-gray-100"
                         >
                             <FaGoogle />
                             Continue with Google
@@ -101,7 +101,7 @@ export default function LoginPage() {
                         <input type="hidden" name="provider" value="github" />
                         <button
                             type="submit"
-                            className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
+                            className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:border-cyan-700 rounded-md shadow-sm hover:bg-gray-100"
                         >
                             <FaGithub />
                             Continue with GitHub

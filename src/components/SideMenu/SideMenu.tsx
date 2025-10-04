@@ -61,32 +61,30 @@ const SideMenu = () => {
       >
         {isOpen ? <></> : <FaBars size={20} />}
       </button>
-    <div className={`w-56 pt-8 bg-gray-800 text-white fixed h-full z-20 transform transition-transform duration-300 ease-in-out 
+    <div className={`w-62 pt-8 bg-cyan-900 text-white fixed h-full z-20 transform transition-transform duration-300 ease-in-out 
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         md:relative md:translate-x-0`}
     >
       <div>
-          <h1 className="px-4 text-2xl font-bold">Your Tasks</h1>
-
-          {/* 下部のユーザー情報 (userが存在する場合のみ表示) */}
-            {user && (
-                <div className="p-4 border-t border-gray-700">
-                    <Link href="/profile" className="block hover:bg-gray-700 rounded-md p-2 transition-colors">
-                      {user.user_metadata.avatar_url && (
-                        <img 
-                            src={user.user_metadata.avatar_url}
-                            alt="User Icon"
-                            className="w-10 h-10 rounded-full mt-2"
-                        />
-                      )}
-                      <p className="mt-2 text-lg font-semibold truncate" title={getDisplayName() || ''}>
-                          {getDisplayName()}
-                      </p>
-                    </Link>
-                </div>
+        {/* 下部のユーザー情報 (userが存在する場合のみ表示) */}
+        {user && (
+          <Link href="/profile" className="block hover:bg-cyan-800 rounded-md p-2 transition-colors">
+            {user.user_metadata.avatar_url && (
+              <img 
+                  src={user.user_metadata.avatar_url}
+                  alt="User Icon"
+                  className="w-10 h-10 rounded-full mt-2"
+              />
             )}
+            <p className="mt-2 mb-2 text-lg font-semibold truncate" title={getDisplayName() || ''}>
+                {getDisplayName()}
+            </p>
+            <div className="p-4 border-t border-orange-100">
+            </div>
+          </Link>
+        )}
 
-          <NavList />
+        <NavList />
       </div>
     </div>
     {isOpen && (

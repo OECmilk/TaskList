@@ -45,7 +45,7 @@ const TaskFilter = () => {
         type="checkbox"
         checked={showIncomplete}
         onChange={handleCheckboxChange}
-        className="w-5 h-5 text-red-600 bg-red-500 border-red-300 rounded focus:ring-red-500 [accent-color:theme(colors.red.600)]"
+        className="w-5 h-5 rounded [accent-color:theme(colors.cyan.900)]"
       />
       <label htmlFor="incomplete-filter" className="text-lg font-semibold text-gray-800 cursor-pointer select-none">
         InComplete
