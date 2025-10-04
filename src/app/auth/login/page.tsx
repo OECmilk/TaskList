@@ -3,6 +3,7 @@ import { login, signup, signInWithOAuth } from '@/app/auth/actions';
 import { FaGithub } from "react-icons/fa";
 import Messages from './messages';
 import GoogleIcon from '@/components/icons/GoogleIcon';
+import ReadEchoesIcon from '@/components/icons/ReadEchoesIcon';
 
 export default function LoginPage() {
     return (
@@ -106,6 +107,18 @@ export default function LoginPage() {
                         >
                             <FaGithub className='size-5' />
                             Continue with GitHub
+                        </button>
+                    </form>
+
+                    {/* 未実装: ReadEchoes認証 */}
+                    <form action={signInWithOAuth}>
+                        <input type="hidden" name="provider" value="readEchoes" />
+                        <button
+                            type="submit"
+                            className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:border-cyan-700 rounded-md shadow-sm hover:bg-gray-100"
+                        >
+                            <ReadEchoesIcon className='size-5' />
+                            Continue with ReadEchoes
                         </button>
                     </form>
                 </div>

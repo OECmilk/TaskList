@@ -76,10 +76,16 @@ export async function signup(formData: FormData) {
  * @param provider - 'google' または 'github'
  */
 export async function signInWithOAuth(formData: FormData) {
-    const provider = formData.get('provider') as 'google' | 'github';
+    const provider = formData.get('provider') as 'google' | 'github' | 'readEchoes';
+
+    console.log('OAuth provider:', provider);
     
     if (!provider) {
         return redirect('/auth/login?message=No provider selected');
+    }
+    else if (provider === 'readEchoes') {
+        const message = encodeURIComponent('すまん、ReadEchoesの認証機能は今後実装するで。');
+        return redirect(`/auth/login?message=${message}`);;
     }
 
     const cookieStore = cookies();
