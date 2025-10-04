@@ -16,12 +16,17 @@ export default async function ProfilePage() {
     }
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-50">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md text-center">
-                <h1 className="text-2xl font-bold text-gray-900">
+        <div className="flex justify-center items-center h-full bg-gray-50">
+            <div className="w-full max-w-md p-8 space-y-6 text-center">
+                <header className="text-2xl font-bold text-gray-900">
                     Profile
-                </h1>
+                </header>
                 <div className="space-y-4">
+                    <img 
+                        src={user.user_metadata.avatar_url}
+                        alt="User Icon"
+                        className="w-20 h-20 rounded-full mt-2 justify-center mx-auto"
+                    />
                     <p className='font-semibold'>{user.user_metadata.name}</p>
                     <p className="font-semibold">{user.email}</p>
 

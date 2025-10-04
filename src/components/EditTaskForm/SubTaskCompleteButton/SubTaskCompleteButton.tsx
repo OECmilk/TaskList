@@ -15,7 +15,7 @@ const SubTaskCompleteButton: React.FC<SubTaskCompleteButtonProps> = ({ id, taskI
 
     return (
         <button type="submit" formAction={actionWithArgs} className="hover:opacity-70 text-lg cursor-pointer">
-            <FaCheckCircle className={status ? "text-green-500" : "text-gray-400"} />
+            <FaCheckCircle className={status ? "text-cyan-500" : "text-gray-400"} />
         </button>
   )
 }

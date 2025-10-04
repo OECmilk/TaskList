@@ -14,7 +14,7 @@ const TaskCompleteButton: React.FC<TaskCompleteButtonProps> = ({ id, status }) =
         <input type="hidden" name="status" value={status.toString()} />
 
         <button type="submit" className="hover:opacity-70 text-lg cursor-pointer">
-            <FaCheckCircle className={status ? "text-cyan-700" : "text-gray-400"} />
+            <FaCheckCircle className={status ? "text-cyan-500" : "text-gray-400"} />
         </button>
     </form>
   )

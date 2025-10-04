@@ -71,9 +71,9 @@ export default async function MainPage(
 
   return (
     <div className="text-gray-800 p-8 sm:p-10 h-full overflow-y-auto pb-24">
-      <header className="flex justify-between items-center">
+      <header className="flex justify-between items-center mt-2">
         <div className="flex items-center gap-10">
-          <h1 className="hidden sm:inline text-2xl font-bold flex items-center">All Tasks</h1>
+          <h1 className="hidden sm:inline text-2xl font-bold flex items-center">Tasks</h1>
           <TaskFilter />
         </div>
         <Link href="/new" prefetch={true} className="flex items-center gap-1 font-semibold border px-4 py-2 rounded-full shadow-sm text-white bg-cyan-700 hover:bg-cyan-600">

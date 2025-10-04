@@ -6,8 +6,8 @@ import GoogleIcon from '@/components/icons/GoogleIcon';
 
 export default function LoginPage() {
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-50">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <div className="flex justify-center items-center h-full bg-gray-50">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white">
                 <h1 className="text-2xl font-bold text-center text-gray-900">
                     Welcome
                 </h1>
