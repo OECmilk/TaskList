@@ -24,7 +24,7 @@ export async function login(formData: FormData) {
   if (error) {
     console.error('Login error:', error.message);
     // エラーメッセージをクエリパラメータとしてリダイレクト
-    return redirect(`/login?message=Could not authenticate user`);
+    return redirect(`/auth/login?message=Could not authenticate user`);
   }
 
   revalidatePath('/', 'layout');
@@ -59,16 +59,16 @@ export async function signup(formData: FormData) {
 
   if (error) {
     console.error('Signup error:', error.message);
-    
+
     if (error.message === 'User already registered') {
-        return redirect('/login?message=This email is already registered. Please sign in.');
+        return redirect('/auth/login?message=This email is already registered. Please sign in.');
     }
 
-    return redirect('/login?message=Could not authenticate user');
+    return redirect('/auth/login?message=Could not authenticate user');
   }
 
   // 新規登録後は確認メールを送信した旨のメッセージを表示
-  return redirect('/login?message=Check email to continue sign in process');
+  return redirect('/auth/login?message=Check email to continue sign in process');
 }
 
 /**
@@ -79,7 +79,7 @@ export async function signInWithOAuth(formData: FormData) {
     const provider = formData.get('provider') as 'google' | 'github';
     
     if (!provider) {
-        return redirect('/login?message=No provider selected');
+        return redirect('/auth/login?message=No provider selected');
     }
 
     const cookieStore = cookies();
@@ -95,7 +95,7 @@ export async function signInWithOAuth(formData: FormData) {
 
     if (error) {
         console.error('OAuth error:', error.message);
-        return redirect('/login?message=Could not authenticate with provider');
+        return redirect('/auth/login?message=Could not authenticate with provider');
     }
 
     // ユーザーをプロバイダーの認証ページにリダイレクト
@@ -113,5 +113,5 @@ export async function signOut() {
   await supabase.auth.signOut();
   
   revalidatePath('/', 'layout');
-  return redirect('/login');
+  return redirect('/auth/login');
 }

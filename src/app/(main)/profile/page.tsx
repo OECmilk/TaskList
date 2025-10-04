@@ -12,7 +12,7 @@ export default async function ProfilePage() {
 
     // ユーザーが存在しない場合はログインページにリダイレクト
     if (!user) {
-        return redirect('/login');
+        return redirect('/auth/login');
     }
 
     return (

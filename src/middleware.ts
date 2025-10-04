@@ -16,13 +16,13 @@ export async function middleware(request: NextRequest) {
     console.log('User in middleware:', user);
 
     // ユーザーが未認証で、かつログインページ以外にアクセスしようとした場合
-    if (!user && !request.nextUrl.pathname.startsWith('/login')) {
+    if (!user && !request.nextUrl.pathname.startsWith('/auth/login')) {
       // ログインページにリダイレクト
-      return NextResponse.redirect(new URL('/login', request.url))
+      return NextResponse.redirect(new URL('/auth/login', request.url))
     }
 
     // ユーザーが認証済みで、かつログインページにアクセスしようとした場合
-    if (user && request.nextUrl.pathname.startsWith('/login')) {
+    if (user && request.nextUrl.pathname.startsWith('/auth/login')) {
       // ホームページにリダイレクト
       return NextResponse.redirect(new URL('/', request.url))
     }
