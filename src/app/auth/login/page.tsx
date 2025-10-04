@@ -8,8 +8,8 @@ import ReadEchoesIcon from '@/components/icons/ReadEchoesIcon';
 export default function LoginPage() {
     return (
         <div className="flex justify-center items-center h-full bg-gray-50">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white">
-                <h1 className="text-2xl font-bold text-center text-gray-900">
+            <div className="w-full max-w-md p-8 space-y-4 sm:space-y-4 bg-white">
+                <h1 className="text-lg sm:text-2xl font-bold text-center text-gray-900">
                     Welcome
                 </h1>
 

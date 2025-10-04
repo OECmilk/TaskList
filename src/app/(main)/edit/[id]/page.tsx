@@ -14,15 +14,22 @@ const EditTaskPage = async ({ params }: EditTaskPageProps) => {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
+  const { data: { user } } = await supabase.auth.getUser();
+
   // URLのIDに一致するタスクをSupabaseから取得
   const { data: task, error } = await supabase
     .from("tasks")
-    .select(`
-      *,
-      sub_tasks (
-        *
-      )
-    `)
+    .select(
+      `
+        *,
+        sub_tasks (
+          *
+        ),
+        projects (
+          *
+        )
+      `
+    )
     .order('id', { foreignTable: 'sub_tasks', ascending: true })
     .eq("id", id)
     .single(); // 単一のレコードを取得
@@ -31,10 +38,20 @@ const EditTaskPage = async ({ params }: EditTaskPageProps) => {
     return notFound();
   }
 
+  // ユーザが所属する全てのプロジェクトを取得
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('user_id', user?.id);
+
+  if (!task) {
+    notFound();
+  }
+
   return (
     <div className="flex flex-col justify-center py-20">
         <h2 className="text-center text-2xl font-bold">Edit Task</h2>
-        <EditTaskForm task={task}/>
+        <EditTaskForm task={task} projects={projects || []}/>
     </div>
   )
 };

@@ -15,6 +15,17 @@ export type SubTask = {
   status: boolean;
 };
 
+// Projectの型を定義
+export type Project = {
+  id: number;
+  user_id: UUID;
+  task_id: number | null;
+  name: string;
+  ownewr: string;
+  status: boolean;
+};
+
+
 // Taskの型定義
 export type Task = {
   id: number;
@@ -23,7 +34,9 @@ export type Task = {
   status: boolean;
   due_date: string;
   user_id: UUID;
+  project_id: number | null;
   sub_tasks?: SubTask[];
+  projects?: Project;
 };
 
 export default async function MainPage(
@@ -42,6 +55,9 @@ export default async function MainPage(
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) {
+    return null;
+  }
 
   let query = supabase
     .from("tasks")
@@ -50,10 +66,13 @@ export default async function MainPage(
         *,
         sub_tasks (
           *
+        ),
+        projects (
+          *
         )
       `
     )
-    .eq('user_id', user?.id)
+    .eq('user_id', user.id)
     .order("due_date", { ascending: true })
     .order("id", { foreignTable: "sub_tasks", ascending: true });
 
@@ -68,6 +87,7 @@ export default async function MainPage(
   if (error) {
     console.error('Error fetching tasks:', error);
   }
+
 
   return (
     <div className="text-gray-800 p-8 sm:p-10 h-full overflow-y-auto pb-24">

@@ -2,9 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/utils/supabase/middleware-client'
 
 export async function middleware(request: NextRequest) {
-  console.log('--- MIDDLEWARE EXECUTION STARTED ---');
-  console.log('Request Path:', request.nextUrl.pathname);
-  
+
   try {
     const { supabase, response } = createClient(request)
 
@@ -12,8 +10,6 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // デバッグ
-    console.log('User in middleware:', user);
 
     // ユーザーが未認証で、かつログインページ以外にアクセスしようとした場合
     if (!user && !request.nextUrl.pathname.startsWith('/auth/login')) {

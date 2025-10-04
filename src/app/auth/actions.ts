@@ -77,8 +77,6 @@ export async function signup(formData: FormData) {
  */
 export async function signInWithOAuth(formData: FormData) {
     const provider = formData.get('provider') as 'google' | 'github' | 'readEchoes';
-
-    console.log('OAuth provider:', provider);
     
     if (!provider) {
         return redirect('/auth/login?message=No provider selected');

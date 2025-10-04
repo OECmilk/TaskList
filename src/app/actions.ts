@@ -118,6 +118,7 @@ export async function updateSubTaskStatus(id: number, taskId: number, currentSta
  * @param title タイトル
  * @param description 説明
  * @param due_date 期限
+ * @param project_id
  */
 export async function editTask(formData: FormData) {
     const cookieStore = cookies();
@@ -128,6 +129,9 @@ export async function editTask(formData: FormData) {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const due_date = formData.get('dueDate') as string;
+    const projectIdString = formData.get('projectId') as string;
+
+    const project_id = projectIdString ? parseInt(projectIdString, 10) : null;
 
     const { error } = await supabase
         .from('tasks')
@@ -135,6 +139,7 @@ export async function editTask(formData: FormData) {
             title: title,
             description: description,
             due_date: due_date,
+            project_id: project_id, 
         })
         .eq('id', id);
 

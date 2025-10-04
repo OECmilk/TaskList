@@ -1,6 +1,6 @@
 "use client";
 
-import { Task } from "@/app/(main)/page";
+import { Task, Project } from "@/app/(main)/page";
 import { editTask, addSubTask } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import SubTaskCompleteButton from "./SubTaskCompleteButton/SubTaskCompleteButton";
@@ -8,10 +8,14 @@ import SubTaskDeleteButton from "./SubTaskDeleteButton/SubTaskDeleteButton";
 
 interface EditTaskFormProps {
   task: Task;
+  projects: Project[];
 }
 
-const EditTaskForm = ({ task }: EditTaskFormProps) => {
+const EditTaskForm = ({ task, projects }: EditTaskFormProps ) => {
   const router = useRouter();
+
+  console.log("-----projects-----");
+  console.log(projects);
 
   return (
     <div className="mt-10 mx-auto w-80 sm:w-full max-w-sm">
@@ -31,6 +35,25 @@ const EditTaskForm = ({ task }: EditTaskFormProps) => {
                 <input type="date" id="dueDate" name="dueDate" required defaultValue={task.due_date}
                 min="2025-08-03" max="2100-12-31"
                 className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300" />
+            </div>
+
+            {/* --- ▼ Project選択プルダウンを追加 ▼ --- */}
+            <div className="mt-6">
+              <label htmlFor="projectId" className="block text-sm font-medium">プロジェクト</label>
+              <select
+                id="projectId"
+                name="projectId"
+                // 現在タスクに紐づいているプロジェクトをデフォルトで選択
+                defaultValue={task.project_id ? task.project_id : ""}
+                className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300"
+              >
+                <option value="">プロジェクトなし</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* --- SubTask表示エリア --- */}
