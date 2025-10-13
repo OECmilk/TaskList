@@ -39,7 +39,7 @@ const TaskCard = ({ task }: { task: Task }) => {
                     <ProgressBar total={totalSubTasks} completed={completedSubTasks} status={task.status}/>
                     <TaskCompleteButton id={ task.id } status={ task.status }/>
                 </div>
-                <h1 className="text-lg font-semibold">{ task.title }</h1>
+                <h1 className="text-lg font-semibold truncate">{ task.title }</h1>
                 <div className="mt-1 text-sm line-clamp-3">{ task.description }</div>
             </header>
             <div>

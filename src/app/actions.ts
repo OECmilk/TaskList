@@ -195,6 +195,37 @@ export async function deleteSubTask(id: number, taskId: number) {
     revalidatePath(`/edit/${taskId}`);
 }
 
+
+/**
+ * ガントチャートのドラッグ操作によってタスクの開始日と終了日を更新する
+ */
+export async function updateTaskDates(
+  taskId: number,
+  newStartDate: string,
+  newEndDate: string
+) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const { error } = await supabase
+    .from('tasks')
+    .update({ 
+      start_date: newStartDate, 
+      due_date: newEndDate 
+    })
+    .eq('id', taskId);
+
+  if (error) {
+    console.error('Error updating task dates:', error);
+    // エラーを投げて、クライアント側で捕捉できるようにする
+    throw new Error('Failed to update task dates.');
+  }
+
+  // ガントチャートページのキャッシュをクリアして再描画をトリガー
+  revalidatePath('/gantt');
+}
+
+
 /**
  * 新しいプロジェクトを作成するサーバーアクション
  */

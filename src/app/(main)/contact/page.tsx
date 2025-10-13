@@ -6,7 +6,7 @@ export default function ContactPage() {
   return (
     <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold">Contact Us</h1>
+        <h1 className="text-2xl font-bold">Contact Us</h1>
         <p className="text-gray-600 mt-2">
           バグの報告や、実装してほしい機能のご要望など、お気軽にお寄せください。
         </p>

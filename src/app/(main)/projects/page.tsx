@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { Project } from "@/app/(main)/page"; 
 import CreateProjectButton from "@/components/Project/CreateProjectButton";
 import Link from "next/link";
-import { RiTeamFill } from "react-icons/ri";
 import Image from "next/image";
 
 type ProjectWithOwner = Project & {
