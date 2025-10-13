@@ -23,8 +23,9 @@ export async function login(formData: FormData) {
 
   if (error) {
     console.error('Login error:', error.message);
-    // エラーメッセージをクエリパラメータとしてリダイレクト
-    return redirect(`/auth/login?message=Could not authenticate user`);
+    
+    const message = encodeURIComponent('サインインに失敗しました');
+    return redirect(`/auth/login?message=${message}`);
   }
 
   revalidatePath('/', 'layout');
@@ -61,14 +62,18 @@ export async function signup(formData: FormData) {
     console.error('Signup error:', error.message);
 
     if (error.message === 'User already registered') {
-        return redirect('/auth/login?message=This email is already registered. Please sign in.');
+
+      const message = encodeURIComponent('すでに登録されているメールアドレスです');
+      return redirect(`/auth/login?message=${message}`);
     }
 
-    return redirect('/auth/login?message=Could not authenticate user');
+    const message = encodeURIComponent('サインアップに失敗しました');
+    return redirect(`/auth/login?message=${message}`);
   }
 
   // 新規登録後は確認メールを送信した旨のメッセージを表示
-  return redirect('/auth/login?message=Check email to continue sign in process');
+  const message = encodeURIComponent('確認メールを送信しました。メールのリンクをクリックしてサインインしてください');
+  return redirect(`/auth/login?message=${message}`);
 }
 
 /**
