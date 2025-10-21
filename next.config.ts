@@ -6,7 +6,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
+        hostname: 'avatars.githubusercontent.com', // githubからのアイコン画像を取得
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ycwpuagwratqkojqadpg.supabase.co', // SupabaseのStrageから画像を取得
         port: '',
         pathname: '/**',
       },

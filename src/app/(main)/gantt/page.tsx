@@ -6,10 +6,11 @@ import { notFound } from "next/navigation";
 // ガントチャートで扱うタスクの型を定義
 export type GanttTask = {
     id: number; // Server Actionに渡すため、stringからnumberに変更
-    name: string;
+    title: string;
     start: string;
     end: string;
     project: string | null;
+    name: string;
 };
 
 const GanttPage = async () => {
@@ -29,10 +30,16 @@ const GanttPage = async () => {
             title,
             start_date,
             due_date,
-            projects ( name )
+            users( name ),
+            projects!inner (
+                name,
+                project_members!inner (
+                    user_id
+                )
+            )
         `)
-        .eq('user_id', user.id)
         .eq('status', false)
+        .eq('projects.project_members.user_id', user.id)
         .order('id', { ascending: true });
 
     if (error) {
@@ -40,17 +47,24 @@ const GanttPage = async () => {
         return <p className="p-8">Error loading tasks.</p>;
     }
 
+    console.log("--- Fetched Tasks Data 1 ---");
+    console.log(JSON.stringify(tasks, null, 2));
+
     const ganttTasks: GanttTask[] = tasks.map(task => {
         const startDate = new Date(task.start_date);
 
         return {
             id: task.id, // idを数値型に
-            name: task.title,
+            title: task.title,
             start: startDate.toISOString().split('T')[0],
             end: task.due_date,
             project: task.projects?.[0]?.name || null,
+            name: task.users.name,
         };
     });
+
+    console.log("--- Fetched Tasks Data 2 ---");
+    console.log(JSON.stringify(ganttTasks, null, 2));
 
     return (
         <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">

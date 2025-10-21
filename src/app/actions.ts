@@ -345,3 +345,81 @@ export async function submitContactForm(formData: FormData) {
   const successMessage = encodeURIComponent('Thank you!');
   redirect(`/contact?message=${successMessage}`);
 }
+
+/**
+ * プロフィール情報を更新するサーバアクション
+ */
+export async function updateProfile(formData: FormData) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  // ログインしているユーザー情報を取得
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    const message = encodeURIComponent('You must be logged in to update your profile.');
+    return redirect(`/auth/login?message=${message}`);
+  }
+
+  // フォームから更新後の値を取得
+  const userName = formData.get('userName') as string;
+  const email = formData.get('email') as string;
+  const iconFile = formData.get('icon') as File;
+
+  let newIconUrl: string | null = null;
+
+  // 新しいアイコンファイルがアップロードされた場合のみ、Supabaseストレージに保存
+  if (iconFile && iconFile.size > 0) {
+    const fileExt = iconFile.name.split('.').pop(); // 拡張子だけを取得
+    const filePath = `${user.id}/${Date.now()}.${fileExt}`; // ファイル名を作成（日本語などを避けるため）
+
+    const { error: uploadError } = await supabase.storage
+      .from('icons')
+      .upload(filePath, iconFile, { upsert: true });
+
+    if (uploadError) {
+      console.error('Icon upload error:', uploadError.message);
+      const message = encodeURIComponent('Failed to upload icon.');
+      return redirect(`/profile?message=${message}`);
+    }
+
+    // アップロードしたファイルの公開URLを取得
+    const { data: { publicUrl }} = supabase.storage
+      .from('icons')
+      .getPublicUrl(filePath);
+
+    newIconUrl = publicUrl;
+  }
+
+  // public.usersの更新するカラムを決定
+  const updates: {name: string, icon?: string} = {
+    name: userName,
+  };
+  if (newIconUrl) {
+    updates.icon = newIconUrl;
+  }
+
+  // 更新
+  const { error: profileError } = await supabase
+  .from('users')
+  .update(updates)
+  .eq('id', user.id);
+  if (profileError) {
+    console.error('Profile update error:', profileError.message);
+    const message = encodeURIComponent('Failed to update profile name.');
+    return redirect(`/profile/edit?message=${message}`);
+  }
+
+  if (email !== user.email) {
+    const { error: authError} = await supabase.auth.updateUser({
+      email: email,
+    });
+    if (authError) {
+      console.error('Auth update error:', authError.message);
+      const message = encodeURIComponent('Failed to update email. It may already be in use.');
+      return redirect(`/profile/edit?message=${message}`);
+    }
+  }
+
+  revalidatePath('/profile');
+  redirect('/profile');
+}

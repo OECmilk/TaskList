@@ -3,45 +3,70 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { signOut } from '@/app/auth/actions';
 import Image from 'next/image';
+import EditProfileButton from '@/components/Button/EditProfileButton';
 
+export type Profile = {
+    name: string;
+    icon: string | null;
+    email: string;
+};
 
 export default async function ProfilePage() {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    // ユーザーセッションを取得
     const { data: { user } } = await supabase.auth.getUser();
 
-    // ユーザーが存在しない場合はログインページにリダイレクト
     if (!user) {
         return redirect('/auth/login');
     }
 
-    return (
-        <div className="flex justify-center items-center h-full bg-gray-50">
-            <div className="w-full max-w-md p-8 space-y-6 text-center">
-                <header className="text-2xl font-bold text-gray-900">
-                    Profile
-                </header>
-                    <Image
-                        src={user.user_metadata.avatar_url}
-                        alt="User Avatar"
-                        width={80}
-                        height={80}
-                        className="w-20 h-20 rounded-full mt-2 justify-center mx-auto"
-                    />
-                    <p className='font-semibold'>{user.user_metadata.name}</p>
-                    <p className="font-semibold">{user.email}</p>
+    // usersテーブルからプロフィール情報を取得
+    const { data: profileData } = await supabase
+        .from('users')
+        .select('name, icon')
+        .eq('id', user.id)
+        .single();
 
-                    {/* ログアウトボタン */}
-                    <form action={signOut}>
-                        <button 
-                            type="submit"
-                            className="w-full px-4 py-2 text-sm font-medium text-white bg-cyan-700 rounded-md hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                        >
-                            Sign Out
-                        </button>
-                    </form>
+    const profile: Profile = {
+        name: profileData?.name,
+        icon: profileData?.icon || null,
+        email: user.email || '',
+    };
+
+    return (
+        <div className="p-8 sm:p-10 h-full bg-gray-50">
+            <header className="w-full max-w-xl">
+                <h1 className="text-2xl font-bold text-gray-900">
+                    Profile
+                </h1>
+            </header>
+            <div className="max-w-xl mx-auto p-8 space-y-6 text-center">
+                <Image
+                    src={profile?.icon || "/default_icon.svg"}
+                    alt="User Avatar"
+                    width={96} // w-24
+                    height={96} // h-24
+                    className="w-24 h-24 rounded-full mx-auto border-2 border-gray-300 p-1 object-cover"
+                />
+                {/* ユーザー名とEmailを表示 */}
+                <div className="space-y-1">
+                    <p className='text-xl font-semibold'>{profile?.name || 'No name set'}</p>
+                    <p className="text-gray-500">{user.email}</p>
+                </div>
+                
+                {/* Edit Profileボタン */}
+                <EditProfileButton {...profile}/>
+
+                {/* ログアウトボタン */}
+                <form action={signOut}>
+                    <button 
+                        type="submit"
+                        className="w-full px-4 py-2 text-sm font-medium text-cyan-700 bg-white border border-cyan-700 rounded-md hover:bg-cyan-50"
+                    >
+                        Sign Out
+                    </button>
+                </form>
             </div>
         </div>
     );

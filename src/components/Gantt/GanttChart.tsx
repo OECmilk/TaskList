@@ -38,7 +38,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
         const endDates = localTasks.map(t => new Date(t.end));
         const minDate = new Date(Math.min(...startDates.map(d => d.getTime())));
         const maxDate = new Date(Math.max(...endDates.map(d => d.getTime())));
-        minDate.setDate(minDate.getDate() - 2);
+        minDate.setDate(minDate.getDate() - 4);
         maxDate.setDate(maxDate.getDate() + 2);
         const diffInMs = maxDate.getTime() - minDate.getTime();
         const days = Math.round(diffInMs / DAY_IN_MS);
@@ -152,11 +152,11 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
 
                         // 今日の日付かどうかを判定
                         const isToday = date.toISOString().split('T')[0] === todayString;
-                        const dateTextClass = isToday ? 'font-bold text-cyan-700' : 'text-gray-600';
+                        const dateBgClass = isToday ? 'font-bold bg-cyan-100' : '';
 
                         return (
-                             <div key={i} className="text-xs text-center border-r border-b border-gray-200 py-2 space-y-1">
-                                 <div className={dateTextClass}>{dateText}</div>
+                             <div key={i} className={`text-xs text-center border-r border-b border-gray-200 py-2 space-y-1 ${dateBgClass}`}>
+                                 <div>{dateText}</div>
                                  <div className={dayColorClass}>{dayText}</div>
                              </div>
                         );
@@ -173,12 +173,15 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
 
                         return (
                             <div key={task.id} className="h-12 flex items-center border-b border-gray-100 relative">
+                                <div className='text-sm border border-gray-100 rounded-lg bg-gray-200 w-24 text-center truncate p-1'>
+                                    {task.name}
+                                </div>
                                 <div
-                                    title={`${task.name} (${task.start} ~ ${task.end})`}
+                                    title={`${task.title} (${task.start} ~ ${task.end})`}
                                     className="absolute h-8 bg-cyan-600 rounded-md flex items-center px-2 text-white text-sm group transition-all duration-200"
                                     style={{ left: `${left}px`, width: `${width}px`, top: '8px' }}
                                 >
-                                    <span className="truncate">{task.project ? `[${task.project}] ` : ''}{task.name}</span>
+                                    <span className="truncate">{task.project ? `[${task.project}] ` : ''}{task.title}</span>
                                     {/* ドラッグハンドル */}
                                     <div 
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'start')}

@@ -14,9 +14,6 @@ interface EditTaskFormProps {
 const EditTaskForm = ({ task, projects }: EditTaskFormProps ) => {
   const router = useRouter();
 
-  console.log("-----projects-----");
-  console.log(projects);
-
   return (
     <div className="mt-10 mx-auto w-80 sm:w-full max-w-sm">
         <form action={editTask}>
@@ -82,7 +79,7 @@ const EditTaskForm = ({ task, projects }: EditTaskFormProps ) => {
             </div>
 
             <button type="submit" className="mt-8 py-2 w-full rounded-md text-white bg-cyan-700 hover:bg-cyan-600 text-sm font-semibold shadow-sm">
-                Edit
+              Edit
             </button>
             <button type="button" onClick={() => router.back()} className="mt-4 py-2 w-full rounded-md text-gray-800 bg-white border border-orange-300 hover:bg-gray-50 text-sm font-semibold shadow-sm">
               Cancel
