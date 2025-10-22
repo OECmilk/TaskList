@@ -51,17 +51,17 @@ const GanttPage = async () => {
     console.log(JSON.stringify(tasks, null, 2));
 
     const ganttTasks: GanttTask[] = tasks.map(task => {
-        const startDate = new Date(task.start_date);
-
-        return {
-            id: task.id, // idを数値型に
-            title: task.title,
-            start: startDate.toISOString().split('T')[0],
-            end: task.due_date,
-            project: task.projects?.[0]?.name || null,
-            name: task.users.name,
-        };
-    });
+            const startDate = new Date(task.start_date);
+    
+            return {
+                id: task.id, // idを数値型に
+                title: task.title,
+                start: startDate.toISOString().split('T')[0],
+                end: task.due_date,
+                project: task.projects?.[0]?.name || null,
+                name: task.users?.[0]?.name || '',
+            };
+        });
 
     console.log("--- Fetched Tasks Data 2 ---");
     console.log(JSON.stringify(ganttTasks, null, 2));

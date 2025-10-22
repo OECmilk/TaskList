@@ -17,7 +17,7 @@ return (
         Edit Profile
         </button>
 
-        <ProfileModal profile={profile} isOpenModal={isOpenModal} setIsOpenModal={setIsOpenModal} />
+        <ProfileModal isOpenModal={isOpenModal} setIsOpenModal={setIsOpenModal} />
     </div>
     )
 };
