@@ -13,6 +13,20 @@ export type GanttTask = {
     name: string;
 };
 
+// Supabaseから返ってくるデータの形を定義
+type TaskForGantt = {
+    id: number;
+    title: string;
+    start_date: string;
+    due_date: string;
+    projects: {
+        name: string;
+    } | null;
+    users: {
+        name: string;
+    };
+};
+
 const GanttPage = async () => {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
@@ -23,23 +37,31 @@ const GanttPage = async () => {
         return notFound();
     }
 
-    const { data: tasks, error } = await supabase
+    // ログインユーザーがメンバーとして参加しているプロジェクトIDのリストを取得
+    const { data: projectMembers, error: memberError } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('user_id', user.id);
+
+    if (memberError) {
+      console.error('Error fetching project members:', memberError);
+      return <p className="p-8">Error loading projects.</p>;
+    }
+
+    const projectIds = projectMembers.map(member => member.project_id);
+
+    const { data,  error } = await supabase
         .from('tasks')
         .select(`
             id,
             title,
             start_date,
             due_date,
-            users( name ),
-            projects!inner (
-                name,
-                project_members!inner (
-                    user_id
-                )
-            )
+            projects( name ),
+            users( name )
         `)
         .eq('status', false)
-        .eq('projects.project_members.user_id', user.id)
+        .or(`user_id.eq.${user.id}${projectIds.length > 0 ? `,project_id.in.(${projectIds.join(',')})` : ''}`)
         .order('id', { ascending: true });
 
     if (error) {
@@ -47,8 +69,11 @@ const GanttPage = async () => {
         return <p className="p-8">Error loading tasks.</p>;
     }
 
-    console.log("--- Fetched Tasks Data 1 ---");
-    console.log(JSON.stringify(tasks, null, 2));
+    // 取得したデータに型アサーションを適用
+    const tasks = data as unknown as TaskForGantt[];
+
+    // console.log("--- Fetched Tasks Data 1 ---");
+    // console.log(JSON.stringify(tasks, null, 2));
 
     const ganttTasks: GanttTask[] = tasks.map(task => {
             const startDate = new Date(task.start_date);
@@ -58,13 +83,13 @@ const GanttPage = async () => {
                 title: task.title,
                 start: startDate.toISOString().split('T')[0],
                 end: task.due_date,
-                project: task.projects?.[0]?.name || null,
-                name: task.users?.[0]?.name || '',
+                project: task.projects?.name || null,
+                name: task.users.name,
             };
         });
 
-    console.log("--- Fetched Tasks Data 2 ---");
-    console.log(JSON.stringify(ganttTasks, null, 2));
+    // console.log("--- Fetched Tasks Data 2 ---");
+    // console.log(JSON.stringify(ganttTasks, null, 2));
 
     return (
         <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">

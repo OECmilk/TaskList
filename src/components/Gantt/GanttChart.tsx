@@ -181,7 +181,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                                     className="absolute h-8 bg-cyan-600 rounded-md flex items-center px-2 text-white text-sm group transition-all duration-200"
                                     style={{ left: `${left}px`, width: `${width}px`, top: '8px' }}
                                 >
-                                    <span className="truncate">{task.project ? `[${task.project}] ` : ''}{task.title}</span>
+                                    <p className="whitespace-nowrap">{task.project ? `[${task.project}] ` : ''}{task.title}</p>
                                     {/* ドラッグハンドル */}
                                     <div 
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'start')}
