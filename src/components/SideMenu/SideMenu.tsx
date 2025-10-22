@@ -7,6 +7,8 @@ import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { useProfile } from "@/contexts/ProfileContext";
 
 type Profile = {
   name: string;
@@ -17,17 +19,17 @@ const SideMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile, setProfile } = useProfile();
 
   useEffect(() => {
     const fetchUserData = async () => {
       const supabase = createClient();
       
-      // 1. まず認証ユーザー情報を取得
+      // まず認証ユーザー情報を取得
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
-      // 2. ユーザーが存在する場合、profilesテーブルから対応するプロフィールを取得
+      // ユーザーが存在する場合、profilesテーブルから対応するプロフィールを取得
       if (user) {
         const { data: profileData, error } = await supabase
           .from('users')
@@ -37,20 +39,23 @@ const SideMenu = () => {
 
         if (error) {
           console.error('Error fetching profile:', error);
-        } else {
-          setProfile(profileData);
+        } else if (profileData) {
+          setProfile({ ...profileData, email: user.email || '' });
         }
       }
     };
 
-    fetchUserData();
-  }, []); // 空の配列を渡すことで、初回レンダリング時のみ実行
+    // まだプロフィールが読み込まれていない場合のみデータを取得
+    if (!profile) {
+      fetchUserData();
+    }
+  }, [profile, setProfile]); // profileが変更されたときにも再評価
 
   // 表示する名前を決定するヘルパー関数
   const getDisplayName = () => {
-    if (!profile && !user) return null;
+    if (!user) return null;
     // 優先順: 1. users.name, 2. email
-    return profile?.name || user?.user_metadata.name;
+    return profile?.name || user.email;
   }
 
   const pathname = usePathname();
@@ -69,16 +74,16 @@ const SideMenu = () => {
         md:relative md:translate-x-0`}
     >
       <div>
-        {/* 下部のユーザー情報 (userが存在する場合のみ表示) */}
-        {user && (
+        {/* userと、Contextから取得したprofileを使ってUIを構築 */}
+        {user && profile && (
           <Link href="/profile" className={`block hover:bg-cyan-800 p-4 transition-colors ${pathname === '/profile' ? 'bg-cyan-900 border-r-5 border-r-orange-200': ''}`}>
-            {user.user_metadata.avatar_url && (
-              <img 
-                  src={user.user_metadata.avatar_url}
-                  alt="User Icon"
-                  className="w-10 h-10 rounded-full mt-2"
-              />
-            )}
+            <Image
+              src={ profile.icon || "/default_icon.svg" }
+              width={24}
+              height={24}
+              alt="no image"
+              className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 "
+            />
             <p className="mt-2 mb-2 text-lg font-semibold truncate" title={getDisplayName() || ''}>
                 {getDisplayName()}
             </p>
