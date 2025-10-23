@@ -61,7 +61,7 @@ const GanttPage = async () => {
             users( name )
         `)
         .eq('status', false)
-        .or(`user_id.eq.${user.id}${projectIds.length > 0 ? `,project_id.in.(${projectIds.join(',')})` : ''}`)
+        .in('project_id', projectIds)
         .order('id', { ascending: true });
 
     if (error) {
