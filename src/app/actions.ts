@@ -16,6 +16,8 @@ export const createNewTask = async (formData: FormData) => {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const dueDate = formData.get('dueDate') as string;
+    const projectIdString = formData.get('projectId') as string;
+    const projectId = projectIdString ? parseInt(projectIdString, 10) : null;
 
     // Supabaseの'TaskList'テーブルに新しいタスクを挿入
     const { error } = await supabase.from('tasks').insert([
@@ -23,6 +25,7 @@ export const createNewTask = async (formData: FormData) => {
             title: title,
             description: description,
             due_date: dueDate,
+            project_id: projectId,
         },
     ]);
 
@@ -241,7 +244,7 @@ export async function createProject(formData: FormData) {
 
   const name = formData.get('projectName') as string;
 
-  // 1. まず、projectsテーブルに新しいレコードを挿入し、その結果を受け取ります
+  // projectsテーブルに新しいレコードを挿入し、その結果を受け取る
   const { data: newProject, error: projectError } = await supabase
     .from('projects')
     .insert([
