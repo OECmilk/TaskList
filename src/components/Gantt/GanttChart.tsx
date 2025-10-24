@@ -1,8 +1,9 @@
 'use client';
 
 import { GanttTask } from '@/app/(main)/gantt/page';
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { updateTaskDates } from '@/app/actions'; // Server Actionをインポート
+import { useMemo, useState, useEffect, useRef, useCallback, startTransition } from 'react';
+import { updateTaskDates, updateTaskUser } from '@/app/actions'; // Server Actionをインポート
+import Image from 'next/image';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DAY_WIDTH = 50; // 1日の幅 (px)
@@ -133,6 +134,32 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
 
     const todayString = new Date().toISOString().split('T')[0];
 
+    // タスクの担当者変更のイベントハンドラ
+    const handleUserChange = (event: React.ChangeEvent<HTMLSelectElement>, taskId: number) => {
+        console.log("ハンドラ発火開始");
+        const newUserId = event.target.value;
+
+        // 既存のDB更新大麻ーがあればキャンセル
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
+        }
+
+        // 1秒後にDBを更新するタイマーをセット
+        debounceTimer.current = setTimeout(() => {
+            startTransition(async () => {
+                try {
+                    await updateTaskUser(taskId, newUserId);
+                } catch (error) {
+                    console.error("Failed to update task user", error);
+                    setLocalTasks(tasks); // エラー時はUIを元のpropsの状態に戻す
+                }
+            });
+        }, 1000); // 1000ミリ秒 = 1秒
+
+        console.log("ハンドラ終了");
+    };
+
+
     return (
         <div ref={ganttRef} className="overflow-x-auto select-none">
             <div style={{ minWidth: `${(totalDays + 1) * DAY_WIDTH}px` }}>
@@ -173,8 +200,17 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
 
                         return (
                             <div key={task.id} className="h-12 flex items-center border-b border-gray-100 relative">
-                                <div className='text-sm border border-gray-100 rounded-lg bg-gray-200 w-24 text-center truncate p-1'>
-                                    {task.name}
+                                <div className="rounded-lg bg-gray-100">
+                                    <select
+                                        value={task.user_id}
+                                        onChange={(e) => handleUserChange(e, task.id)}
+                                        className='text-sm border w-30 text-center truncate p-1 rounded-lg p-1'>
+                                        {task.project && task.project_members?.map(member => (
+                                            <option key={member.user_id} value={member.user_id}>
+                                                {member.user_name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div
                                     title={`${task.title} (${task.start} ~ ${task.end})`}

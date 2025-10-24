@@ -55,20 +55,6 @@ export default async function MainPage(
     return null;
   }
 
-  // ログインユーザーがメンバーとして参加しているプロジェクトIDのリストを取得
-  const { data: projectMembers, error: memberError } = await supabase
-    .from('project_members')
-    .select('project_id')
-    .eq('user_id', user.id);
-
-  if (memberError) {
-    console.error('Error fetching project members:', memberError);
-    return <div>Error loading projects.</div>;
-  }
-
-  // プロジェクトIDの配列
-  const projectIds = projectMembers.map(member => member.project_id);
-
   let query = supabase
     .from("tasks")
     .select(
@@ -82,14 +68,15 @@ export default async function MainPage(
         )
       `
     )
-    .or(`user_id.eq.${user.id},project_id.in.(${projectIds.join(',')})`)
+    .eq('user_id', user.id)
     .order("due_date", { ascending: true })
     .order("id", { foreignTable: "sub_tasks", ascending: true });
 
   // 💡 フィルタリング条件の適用
   if (showIncompleteOnly) {
     // showIncompleteがtrueの場合、statusがfalse（未完了）のタスクのみを取得
-    query = query.eq('status', false);
+    query = query
+      .eq('status', false);
   }
 
   // Supabaseからデータを取得
