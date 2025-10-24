@@ -423,3 +423,25 @@ export async function updateProfile(formData: FormData) {
   revalidatePath('/profile');
   redirect('/profile');
 }
+
+
+/**
+ * タスクの担当者を更新するサーバーアクション
+ */
+export async function updateTaskUser(taskId: number, userId: string) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const { error } = await supabase
+    .from('tasks')
+    .update({ user_id: userId })
+    .eq('id', taskId);
+
+  if (error) {
+    console.error('Error updating task user:', error);
+    throw new Error('Failed to update task user.');
+  }
+
+  revalidatePath('/gantt');
+  revalidatePath('/');
+}

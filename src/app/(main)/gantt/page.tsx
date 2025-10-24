@@ -9,8 +9,13 @@ export type GanttTask = {
     title: string;
     start: string;
     end: string;
+    user_id: string;
+    user_name: string;
     project: string | null;
-    name: string;
+    project_members: {
+        user_id: string;
+        user_name: string;
+    }[] | null;
 };
 
 // Supabaseから返ってくるデータの形を定義
@@ -19,8 +24,15 @@ type TaskForGantt = {
     title: string;
     start_date: string;
     due_date: string;
+    user_id: string;
     projects: {
         name: string;
+        project_members: {
+            user_id: string;
+            users: {
+                name: string;
+            }
+        }[];
     } | null;
     users: {
         name: string;
@@ -57,7 +69,14 @@ const GanttPage = async () => {
             title,
             start_date,
             due_date,
-            projects( name ),
+            user_id,
+            projects( 
+                name,
+                project_members( 
+                    user_id,
+                    users( name )
+                    )
+                ),
             users( name )
         `)
         .eq('status', false)
@@ -77,14 +96,21 @@ const GanttPage = async () => {
 
     const ganttTasks: GanttTask[] = tasks.map(task => {
             const startDate = new Date(task.start_date);
+
+            const members = task.projects?.project_members.map(mamber => ({
+                user_id: mamber.user_id,
+                user_name: mamber.users.name,
+            })) || [];
     
             return {
                 id: task.id, // idを数値型に
                 title: task.title,
                 start: startDate.toISOString().split('T')[0],
                 end: task.due_date,
+                user_id: task.user_id,
+                user_name: task.users.name,
                 project: task.projects?.name || null,
-                name: task.users.name,
+                project_members: members,
             };
         });
 
