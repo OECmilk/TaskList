@@ -3,7 +3,11 @@
 import { createNewTask } from "@/app/actions";
 import { useRouter } from "next/navigation";
 
-const NewTaskForm = () => {
+interface NewTaskFormProps {
+  projects: { id: string; name: string }[];
+}
+
+const NewTaskForm = ({ projects }: NewTaskFormProps) => {
   const router = useRouter();
   const today = new Date().toISOString().split('T')[0];
 
@@ -23,6 +27,23 @@ const NewTaskForm = () => {
                 <input type="date" id="dueDate" name="dueDate" required 
                 min={today} max="2100-12-31"
                 className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300" />
+            </div>
+            <div className="mt-6">
+              <label htmlFor="projectId" className="block text-sm font-medium">プロジェクト</label>
+              <select
+                id="projectId"
+                name="projectId"
+                // 現在タスクに紐づいているプロジェクトをデフォルトで選択
+                defaultValue=""
+                className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300"
+              >
+                <option value="">プロジェクトなし</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <button type="submit" className="mt-8 py-2 w-full rounded-md text-white bg-cyan-700 hover:bg-cyan-600 text-sm font-semibold shadow-sm">
                 Create

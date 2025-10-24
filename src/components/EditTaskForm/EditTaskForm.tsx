@@ -34,7 +34,6 @@ const EditTaskForm = ({ task, projects }: EditTaskFormProps ) => {
                 className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300" />
             </div>
 
-            {/* --- ▼ Project選択プルダウンを追加 ▼ --- */}
             <div className="mt-6">
               <label htmlFor="projectId" className="block text-sm font-medium">プロジェクト</label>
               <select
