@@ -3,6 +3,7 @@
 import { GanttTask } from '@/app/(main)/gantt/page';
 import { useMemo, useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import { updateTaskDates, updateTaskUser } from '@/app/actions'; // Server Actionをインポート
+import { time } from 'console';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DAY_WIDTH = 50; // 1日の幅 (px)
@@ -226,22 +227,20 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                         const startOffsetDays = Math.max(0, Math.round((taskStart.getTime() - timelineStart.getTime()) / DAY_IN_MS));
                         const durationDays = Math.max(1, Math.round((taskEnd.getTime() - taskStart.getTime()) / DAY_IN_MS) + 1);
                         const left = startOffsetDays * DAY_WIDTH;
-                        const width = durationDays * DAY_WIDTH - 4;
+
+                        // タスクバーの幅を決定
+                        let width;
+                        if (taskEnd < timelineStart) { // タスク終了日がタイムライン開始日より前
+                            width = 0.4 * DAY_WIDTH; 
+                        } else if (taskStart < timelineStart) { // タスクの開始日が（今日 - 4日）より前の場合、タスクバーの幅を調整
+                            const diffDaysOfStart = timelineStart.getDate() - taskStart.getDate();
+                            width = (durationDays - diffDaysOfStart) * DAY_WIDTH - 4;
+                        } else {
+                            width = durationDays * DAY_WIDTH - 4;
+                        }
 
                         return (
                             <div key={task.id} className="h-12 flex items-center border-b border-gray-100 relative">
-                                {/* <div className="rounded-lg bg-gray-100">
-                                    <select
-                                        value={task.user_id}
-                                        onChange={(e) => handleUserChange(e, task.id)}
-                                        className='text-sm border w-30 text-center truncate p-1 rounded-lg p-1'>
-                                        {task.project && task.project_members?.map(member => (
-                                            <option key={member.user_id} value={member.user_id}>
-                                                {member.user_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div> */}
                                 <div
                                     title={`${task.title} (${task.start} ~ ${task.end})`}
                                     className="absolute h-8 bg-cyan-600/60 rounded-md flex items-center px-2 font-bold text-sm group transition-all duration-200"
@@ -250,10 +249,12 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                                     <p className="whitespace-nowrap">{task.project ? `[${task.project}] ` : ''}{task.title}</p>
 
                                     {/* ドラッグハンドル */}
+                                    {timelineStart <= taskEnd && (
                                     <div 
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'start')}
                                         className="absolute left-0 top-0 h-full w-4 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/10 rounded-l-md"
                                     />
+                                    )}
                                     <div 
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'end')}
                                         className="absolute right-0 top-0 h-full w-4 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/10 rounded-r-md"
