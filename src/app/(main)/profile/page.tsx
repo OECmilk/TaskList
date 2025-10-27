@@ -56,7 +56,7 @@ export default async function ProfilePage() {
                 </div>
                 
                 {/* Edit Profileボタン */}
-                <EditProfileButton {...profile}/>
+                <EditProfileButton />
 
                 {/* ログアウトボタン */}
                 <form action={signOut}>

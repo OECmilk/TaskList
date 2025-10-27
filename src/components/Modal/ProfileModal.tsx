@@ -186,8 +186,12 @@ const ProfileModal = (
                                 <input type="text" id="email" name="email" required defaultValue={profile.email} className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300" />
                             </div>
                             <div className="mt-8 flex justify-center gap-4">
-                                <button type="submit" className="w-45 px-8 py-2 rounded-md text-white font-semibold bg-cyan-700 hover:bg-cyan-600">
-                                    Save
+                                <button 
+                                    type="submit"
+                                    className="w-45 px-8 py-2 rounded-md text-white font-semibold bg-cyan-700 hover:bg-cyan-600"
+                                    disabled={isPending}
+                                >
+                                    {isPending ? 'Saving' : 'Save'}
                                 </button>
                                 <button 
                                 onClick={() => setIsOpenModal(false)}

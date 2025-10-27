@@ -10,10 +10,6 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useProfile } from "@/contexts/ProfileContext";
 
-type Profile = {
-  name: string;
-  icon: string | null;
-};
 
 const SideMenu = () => {
   const [isOpen, setIsOpen] = useState(false);

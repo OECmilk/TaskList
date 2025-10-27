@@ -34,12 +34,12 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
             tomorrow.setDate(today.getDate() + 1);
             return { timelineStart: today, totalDays: 1 };
         }
-        const startDates = localTasks.map(t => new Date(t.start));
+        const today = new Date();
         const endDates = localTasks.map(t => new Date(t.end));
-        const minDate = new Date(Math.min(...startDates.map(d => d.getTime())));
+        const minDate = new Date(today);
         const maxDate = new Date(Math.max(...endDates.map(d => d.getTime())));
         minDate.setDate(minDate.getDate() - 4);
-        maxDate.setDate(maxDate.getDate() + 2);
+        maxDate.setDate(maxDate.getDate() + 25);
         const diffInMs = maxDate.getTime() - minDate.getTime();
         const days = Math.round(diffInMs / DAY_IN_MS);
         return { timelineStart: minDate, totalDays: days };
@@ -102,7 +102,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
             clearTimeout(debounceTimer.current);
         }
 
-        // 0.5秒後にデータベースを更新するタイマーをセット
+        // 1.5秒後にデータベースを更新するタイマーをセット
         debounceTimer.current = setTimeout(async () => {
             const updatedTask = localTasks.find(t => t.id === dragging!.taskId);
             if (updatedTask) {
@@ -114,7 +114,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                     setLocalTasks(tasks);
                 }
             }
-        }, 500); // 500ミリ秒 = 0.5秒
+        }, 1500); // 1500ミリ秒 = 1.5秒
 
         setDragging(null);
     }, [dragging, localTasks, tasks]);
@@ -135,7 +135,6 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
 
     // タスクの担当者変更のイベントハンドラ
     const handleUserChange = (event: React.ChangeEvent<HTMLSelectElement>, taskId: number) => {
-        console.log("ハンドラ発火開始");
         const newUserId = event.target.value;
 
         // 既存のDB更新大麻ーがあればキャンセル
@@ -143,7 +142,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
             clearTimeout(debounceTimer.current);
         }
 
-        // 1秒後にDBを更新するタイマーをセット
+        // 1.5秒後にDBを更新するタイマーをセット
         debounceTimer.current = setTimeout(() => {
             startTransition(async () => {
                 try {
@@ -154,13 +153,28 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                 }
             });
         }, 500); // 500ミリ秒
-
-        console.log("ハンドラ終了");
     };
 
 
     return (
-        <div ref={ganttRef} className="overflow-x-auto select-none">
+        <div ref={ganttRef} className="overflow-x-auto select-none flex">
+            {/* タスク担当者用プルダウン */}
+            <div className="rounded-lg mr-2 mt-15">
+                {tasks.map((task) =>
+                <select
+                    key={task.id}
+                    value={task.user_id}
+                    onChange={(e) => handleUserChange(e, task.id)}
+                    className='text-sm border h-8 w-28 text-center truncate p-1 rounded-lg justify-center mb-4 flex bg-gray-100'>
+                    {task.project && task.project_members?.map(member => (
+                        <option key={member.user_id} value={member.user_id}>
+                            {member.user_name}
+                        </option>
+                    ))}
+                </select>
+                )}
+            </div>
+
             <div style={{ minWidth: `${(totalDays + 1) * DAY_WIDTH}px` }}>
                 <div className="grid sticky top-0 bg-white z-10" style={{ gridTemplateColumns: `repeat(${totalDays + 1}, ${DAY_WIDTH}px)` }}>
                     {dateHeaders.map((date, i) => {
@@ -181,14 +195,31 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                         const dateBgClass = isToday ? 'font-bold bg-cyan-100' : '';
 
                         return (
-                             <div key={i} className={`text-xs text-center border-r border-b border-gray-200 py-2 space-y-1 ${dateBgClass}`}>
-                                 <div>{dateText}</div>
-                                 <div className={dayColorClass}>{dayText}</div>
-                             </div>
+                            <div key={i} className={`text-xs text-center border-r border-b border-gray-300 py-2 space-y-1 ${dateBgClass}`}>
+                                <div>{dateText}</div>
+                                <div className={dayColorClass}>{dayText}</div>
+                            </div>
                         );
                     })}
                 </div>
                 <div className="relative">
+                    {/*グリッド*/}
+                    <div 
+                        className="absolute inset-0 z-0 grid" 
+                        style={{ gridTemplateColumns: `repeat(${totalDays + 1}, ${DAY_WIDTH}px)` }}
+                    >
+                        {dateHeaders.map((date, i) => {
+                            const isToday = date.toISOString().split('T')[0] === todayString;
+                            const dateBgClass = isToday ? 'bg-cyan-100' : '';
+                            return (
+                                <div
+                                    key={i}
+                                    className={`h-full border-r border-gray-300 ${dateBgClass}`}
+                                />
+                            );
+                        })}
+                    </div>
+
                     {localTasks.map((task) => {
                         const taskStart = new Date(task.start);
                         const taskEnd = new Date(task.end);
@@ -199,7 +230,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
 
                         return (
                             <div key={task.id} className="h-12 flex items-center border-b border-gray-100 relative">
-                                <div className="rounded-lg bg-gray-100">
+                                {/* <div className="rounded-lg bg-gray-100">
                                     <select
                                         value={task.user_id}
                                         onChange={(e) => handleUserChange(e, task.id)}
@@ -210,13 +241,14 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                                             </option>
                                         ))}
                                     </select>
-                                </div>
+                                </div> */}
                                 <div
                                     title={`${task.title} (${task.start} ~ ${task.end})`}
-                                    className="absolute h-8 bg-cyan-600 rounded-md flex items-center px-2 text-white text-sm group transition-all duration-200"
+                                    className="absolute h-8 bg-cyan-600/60 rounded-md flex items-center px-2 font-bold text-sm group transition-all duration-200"
                                     style={{ left: `${left}px`, width: `${width}px`, top: '8px' }}
                                 >
                                     <p className="whitespace-nowrap">{task.project ? `[${task.project}] ` : ''}{task.title}</p>
+
                                     {/* ドラッグハンドル */}
                                     <div 
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'start')}
