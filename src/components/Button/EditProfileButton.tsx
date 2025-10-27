@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import ProfileModal from '@/components/Modal/ProfileModal';
-import { Profile } from '@/app/(main)/profile/page';
 
-const EditProfileButton = (profile: Profile) => {
+const EditProfileButton = () => {
 
     const [isOpenModal, setIsOpenModal] = useState(false);
 
