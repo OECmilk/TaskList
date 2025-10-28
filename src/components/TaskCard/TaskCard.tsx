@@ -22,7 +22,7 @@ const TaskCard = ({ task }: { task: Task }) => {
   return (
     <div className="relative mt-4">
       
-      {/* 2. プロジェクトが存在する場合にのみ、タブを絶対配置で表示 */}
+      {/* プロジェクトが存在する場合にのみ、タブを絶対配置で表示 */}
       {task.project_id  && (
         <div className="absolute top-0 left-0 w-1/3 -translate-y-full bg-white px-3 py-1 rounded-t-md shadow-sm text-xs font-bold text-gray-700 text-center truncate z-1 border-x border-t border-orange-100">
           {task.projects?.name}
@@ -30,7 +30,7 @@ const TaskCard = ({ task }: { task: Task }) => {
       )}
 
         <Link
-            href={`/edit/${task.id}`} 
+            href={`/detail/${task.id}`} 
             prefetch={true}
             className="w-80 h-60 sm:w-64 sm:h-54 p-3 bg-white rounded-b-md rounded-tr-md shadow-md flex flex-col justify-between border border-orange-100"
         >
@@ -87,7 +87,7 @@ const TaskCard = ({ task }: { task: Task }) => {
                             {task.sub_tasks.map(subtask => (
                             <li key={subtask.id} className="flex justify-between items-center px-4 py-2 text-sm text-gray-700 truncate">
                                 <span className="truncate">{subtask.title}</span>
-                                {/* 2. subtask.statusがtrueの場合に緑色のチェックマークを表示 */}
+                                {/* subtask.statusがtrueの場合に緑色のチェックマークを表示 */}
                                 {subtask.status && (
                                     <FaCheck className="text-cyan-700 ml-2 flex-shrink-0" />
                                 )}

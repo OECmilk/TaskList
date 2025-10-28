@@ -38,7 +38,8 @@ export type Task = {
 };
 
 export default async function MainPage(
-  props: { searchParams:  Promise<{[key: string]: string | string[] | undefined }> }){
+  props: { searchParams:  Promise<{[key: string]: string | string[] | undefined }> }
+){
   
   const searchParams = await props.searchParams;
 
@@ -92,7 +93,7 @@ export default async function MainPage(
           <h1 className="hidden sm:inline text-2xl font-bold flex items-center">Tasks</h1>
           <TaskFilter />
         </div>
-        <Link href="/new" prefetch={true} className="flex items-center gap-1 font-semibold border px-4 py-2 rounded-full shadow-sm text-white bg-cyan-700 hover:bg-cyan-600">
+        <Link href="/new" prefetch={true} className="flex items-center gap-1 px-4 py-2 font-semibold text-white rounded-full shadow-sm bg-cyan-700 hover:bg-cyan-600">
           <MdAddTask className="size-5"/>
           <div className="hidden sm:inline">Add Task</div>
         </Link>
