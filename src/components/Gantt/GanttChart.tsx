@@ -3,7 +3,6 @@
 import { GanttTask } from '@/app/(main)/gantt/page';
 import { useMemo, useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import { updateTaskDates, updateTaskUser } from '@/app/actions'; // Server Actionをインポート
-import { time } from 'console';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DAY_WIDTH = 50; // 1日の幅 (px)
