@@ -1,6 +1,5 @@
 import EditTaskForm from "@/components/EditTaskForm/EditTaskForm";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 type EditTaskPageProps = {
@@ -11,8 +10,7 @@ type EditTaskPageProps = {
 const EditTaskPage = async ({ params }: EditTaskPageProps) => {
   const { id } = await params;
 
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
 

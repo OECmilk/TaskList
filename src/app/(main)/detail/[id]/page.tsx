@@ -1,9 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FaEdit } from "react-icons/fa";
-import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
 import { SubTask } from "../../page";
 
 
@@ -15,8 +13,7 @@ type PageProps = {
 const TaskDetailPage = async ({ params }: PageProps) => {
   const { id } = await params;
 
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   // IDに基づいてタスク、サブタスク、プロジェクト情報を取得
   const { data: task, error } = await supabase

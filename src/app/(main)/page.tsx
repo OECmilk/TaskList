@@ -46,9 +46,7 @@ export default async function MainPage(
   // URLに show_incomplete=false があれば 'false'、それ以外は 'true' と解釈する
   const showIncompleteOnly = searchParams.show_incomplete !== 'false';
 
-  //Supabaseクライアントの初期化
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   // 💡 Supabaseクエリの構築
   const { data: { user } } = await supabase.auth.getUser();

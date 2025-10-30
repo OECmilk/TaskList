@@ -1,11 +1,9 @@
 import NewTaskForm from "@/components/NewTaskForm/NewTaskForm";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 const NewTaskPage = async () => {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const { data: { user }} = await supabase.auth.getUser();
   if (!user) {
