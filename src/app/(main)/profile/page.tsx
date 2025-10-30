@@ -1,5 +1,4 @@
 import { createClient } from '@/utils/supabase/server';
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { signOut } from '@/app/auth/actions';
 import Image from 'next/image';
@@ -12,8 +11,7 @@ export type Profile = {
 };
 
 export default async function ProfilePage() {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
 

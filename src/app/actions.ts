@@ -9,8 +9,7 @@ import { cookies } from "next/headers";
  * タスクを追加するサーバーアクション
  */
 export const createNewTask = async (formData: FormData) => {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     // フォームからデータを取得
     const title = formData.get('title') as string;
@@ -43,8 +42,7 @@ export const createNewTask = async (formData: FormData) => {
  * 新しいサブタスクを追加するサーバーアクション
  */
 export async function addSubTask(formData: FormData) {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     // フォームからデータを取得
     const title = formData.get('title') as string;
@@ -74,8 +72,7 @@ export async function addSubTask(formData: FormData) {
  * タスクの完了状態を更新するサーバーアクション
  */
 export async function updateTaskStatus(formData: FormData) {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     //フォームデータからidとstatusを取得
     const id = formData.get('id') as string;
@@ -98,8 +95,7 @@ export async function updateTaskStatus(formData: FormData) {
  * サブタスクの完了状態を更新するサーバーアクション
  */
 export async function updateSubTaskStatus(id: number, taskId: number, currentStatus: boolean) {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     const { error } = await supabase
         .from('sub_tasks')
@@ -124,8 +120,7 @@ export async function updateSubTaskStatus(id: number, taskId: number, currentSta
  * @param project_id
  */
 export async function editTask(formData: FormData) {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     // フォームデータから各フィールドを取得
     const id = formData.get('id') as string;
@@ -160,8 +155,7 @@ export async function editTask(formData: FormData) {
  * @param id 削除するサブタスクのID
  */
 export async function deleteTask(formData: FormData) {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
     
     const id = formData.get('id') as string;
 
@@ -183,8 +177,7 @@ export async function deleteTask(formData: FormData) {
  * @param taskId 削除するタスクのID
  */
 export async function deleteSubTask(id: number, taskId: number) {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     const { error } = await supabase
         .from('sub_tasks')
@@ -207,8 +200,7 @@ export async function updateTaskDates(
   newStartDate: string,
   newEndDate: string
 ) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const { error } = await supabase
     .from('tasks')
@@ -233,8 +225,7 @@ export async function updateTaskDates(
  * 新しいプロジェクトを作成するサーバーアクション
  */
 export async function createProject(formData: FormData) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -285,8 +276,7 @@ export async function createProject(formData: FormData) {
  * プロジェクトに新しいメンバーを追加するサーバーアクション
  */
 export async function addProjectMember(formData: FormData) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const projectId = formData.get('projectId') as string;
   const email = formData.get('email') as string;
@@ -329,8 +319,7 @@ export async function addProjectMember(formData: FormData) {
  * お問い合わせフォームを送信するサーバーアクション
  */
 export async function submitContactForm(formData: FormData) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const message = formData.get('message') as string;
 
@@ -353,8 +342,7 @@ export async function submitContactForm(formData: FormData) {
  * プロフィール情報を更新するサーバアクション
  */
 export async function updateProfile(formData: FormData) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   // ログインしているユーザー情報を取得
   const { data: { user } } = await supabase.auth.getUser();
@@ -432,8 +420,7 @@ export async function updateProfile(formData: FormData) {
  * タスクの担当者を更新するサーバーアクション
  */
 export async function updateTaskUser(taskId: number, userId: string) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const { error } = await supabase
     .from('tasks')

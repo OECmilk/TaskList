@@ -19,6 +19,7 @@ const TaskCard = ({ task }: { task: Task }) => {
   const today = new Date().toISOString().split('T')[0]; // 今日の日付
   const isOverdue = task.due_date < today && task.status === false; // 期限切れかつ未完了のタスクかどうか
 
+
   return (
     <div className="relative mt-4">
       
@@ -30,7 +31,7 @@ const TaskCard = ({ task }: { task: Task }) => {
       )}
 
         <Link
-            href={`/detail/${task.id}`} 
+            href={`/detail/${task.id}?retunPath=/`} 
             prefetch={true}
             className="w-80 h-60 sm:w-64 sm:h-54 p-3 bg-white rounded-b-md rounded-tr-md shadow-md flex flex-col justify-between border border-orange-100"
         >

@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { Project } from "@/app/(main)/page"; 
 import CreateProjectButton from "@/components/Project/CreateProjectButton";
 import Link from "next/link";
@@ -13,8 +12,7 @@ type ProjectWithOwner = Project & {
 };
 
 export default async function ProjectsPage() {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     const { data: { user }} = await supabase.auth.getUser();
 

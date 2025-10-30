@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Project } from "@/app/(main)/page";
 import { addProjectMember } from "@/app/actions"; 
@@ -24,8 +23,7 @@ type PageProps = {
 export default async function ProjectDetailPage({ params }: PageProps) {
   const { id } = await params;
 
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const { data, error } = await supabase
     .from('projects')

@@ -1,43 +1,63 @@
+// ...existing code...
 'use client';
 
 import { useRouter } from 'next/navigation';
 import { FaArrowRight } from "react-icons/fa";
-import { useState } from 'react'; // 1. useStateをインポート
+import { useState } from 'react'; 
 
-const RouterBackButton = () => {
+interface RouterBackButtonProps {
+    returnPath: string; // 戻り先のパスを受け取る
+}
+
+const RouterBackButton = ({ returnPath }: RouterBackButtonProps) => {
     const router = useRouter();
-    // 2. アニメーション実行中かを管理するstate
     const [isClosing, setIsClosing] = useState(false);
+
+    const navigateBackOrReplace = () => {
+        // if (typeof window === 'undefined') {
+        //     // router.replace(returnPath);
+        //     router.push(returnPath);
+        //     return;
+        // }
+
+        router.push(returnPath);
+
+        // const idx = window.history?.state?.idx;
+        // if (typeof idx === 'number' && idx > 0) {
+        //     // router.back();
+        //     router.push("/");
+        // } else {
+        //     // router.replace(returnPath);
+        //     router.push(returnPath);
+        // }
+    };
 
     const handleClose = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // 3. 親要素であるドロワーパネル（アニメーションクラスを持っている要素）を見つける
-        //    '.animate-slideInFromRight'クラスを目印に探します
-        const panel = e.currentTarget.closest('.animate-slideInFromRight');
+        if (isClosing) return;
+        setIsClosing(true);
+
+        const panel = e.currentTarget.closest('.animate-slideInFromRight, .animate-slideOutToRight');
 
         if (panel) {
-            setIsClosing(true); // ボタンを無効化
-            
-            // 4. アニメーションクラスを「スライドイン」から「スライドアウト」に付け替える
             panel.classList.remove('animate-slideInFromRight');
             panel.classList.add('animate-slideOutToRight');
 
-            // 5. アニメーション時間(300ms)の後に、router.back()を実行
+            // アニメーション完了後に履歴に応じて戻る／置き換え
             setTimeout(() => {
-                router.push('/');
-            }, 300); // globals.cssで設定した 0.3s と合わせる
+                navigateBackOrReplace();
+            }, 300);
         } else {
-            // もし何らかの理由でパネルが見つからなければ、即座に戻る
-            router.push('/');
+            navigateBackOrReplace();
         }
     }
 
     return (
         <button
             onClick={handleClose}
-            disabled={isClosing} // 6. アニメーション実行中はボタンを無効化
+            disabled={isClosing}
             className="text-gray-500 hover:text-gray-800 disabled:opacity-50"
         >
             <FaArrowRight size={24} />
@@ -45,4 +65,3 @@ const RouterBackButton = () => {
     );
 }
 export default RouterBackButton;
-

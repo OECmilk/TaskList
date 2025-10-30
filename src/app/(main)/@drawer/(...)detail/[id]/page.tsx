@@ -1,20 +1,26 @@
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { FaEdit } from "react-icons/fa";
-import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
 import RouterBackButton from "@/components/Button/RouterBackButton";
 import { SubTask } from "@/app/(main)/page";
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // これは、右側からスライドインする「ドロワー」コンポーネントです
-const TaskDetailDrawer = async ({ params }: PageProps) => {
+const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
   const { id } = await params;
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const sp = await searchParams;
+  let returnPath = "/";
+  if (Array.isArray(sp.returnPath)) {
+    returnPath = sp.returnPath[0] || "/";
+  } else if (typeof sp.returnPath === "string") {
+    returnPath = sp.returnPath;
+  }
+
+  const supabase = createClient();
 
 
   //  スライドイン画面も、自身でデータを取得
@@ -38,14 +44,13 @@ const TaskDetailDrawer = async ({ params }: PageProps) => {
     <>
       {/*  スライドインするパネル本体 */}
       <div 
-        // onClick={(e) => e.stopPropagation()}
         className="fixed top-0 right-0 w-full max-w-lg h-full bg-white shadow-xl z-40 overflow-y-auto animate-slideInFromRight"
         >
         <div className="p-8 sm:p-10 text-gray-800">
           
           {/*  ヘッダー（閉じるボタンと編集ボタン） */}
           <header className="flex justify-between items-center mb-8 mt-2">
-            <RouterBackButton />
+            <RouterBackButton returnPath={returnPath}/>
             <a 
               href={`/edit/${task.id}`} 
               className="flex items-center gap-1 px-4 py-2 font-semibold text-white bg-cyan-700 rounded-full shadow-sm hover:bg-cyan-600"

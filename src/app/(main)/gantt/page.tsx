@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import GanttChart from "@/components/Gantt/GanttChart";
 import { notFound } from "next/navigation";
 
@@ -40,8 +39,7 @@ type TaskForGantt = {
 };
 
 const GanttPage = async () => {
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
 
