@@ -1,6 +1,9 @@
 import { createClient } from "@/utils/supabase/server";
 import GanttChart from "@/components/Gantt/GanttChart";
 import { notFound } from "next/navigation";
+import ProjectTab from "@/components/Tab/ProjectTab";
+import { Project } from "../page";
+import GanttContainer from "@/components/Gantt/GanttContainer";
 
 // ガントチャートで扱うタスクの型を定義
 export type GanttTask = {
@@ -25,7 +28,10 @@ type TaskForGantt = {
     due_date: string;
     user_id: string;
     projects: {
+        id: number;
         name: string;
+        owner: string;
+        status: boolean;
         project_members: {
             user_id: string;
             users: {
@@ -69,7 +75,10 @@ const GanttPage = async () => {
             due_date,
             user_id,
             projects( 
+                id,
                 name,
+                owner,
+                status,
                 project_members( 
                     user_id,
                     users( name )
@@ -89,9 +98,17 @@ const GanttPage = async () => {
     // 取得したデータに型アサーションを適用
     const tasks = data as unknown as TaskForGantt[];
 
-    // console.log("--- Fetched Tasks Data 1 ---");
-    // console.log(JSON.stringify(tasks, null, 2));
+    // プロジェクトタブ用のデータを抽出
+    const projectsMap = new Map<number, Project>();
+    tasks.forEach(task => {
+        if (task.projects) {
+            const { project_members, ...projectData } = task.projects;
+            projectsMap.set(projectData.id, projectData as Project);
+        }
+    });
+    const projectsForTab: Project[] = Array.from(projectsMap.values());
 
+    // ガントチャート用のデータを抽出
     const ganttTasks: GanttTask[] = tasks.map(task => {
             const startDate = new Date(task.start_date);
 
@@ -112,13 +129,11 @@ const GanttPage = async () => {
             };
         });
 
-    // console.log("--- Fetched Tasks Data 2 ---");
-    // console.log(JSON.stringify(ganttTasks, null, 2));
-
     return (
         <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">
-            <header className="mb-8">
+            {/* <header className="mb-8 flex">
                 <h1 className="text-2xl font-bold">Gantt Chart</h1>
+                <ProjectTab projects={projectsForTab || []} />
             </header>
             
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
@@ -129,7 +144,9 @@ const GanttPage = async () => {
                         <p className="text-gray-500">表示する未完了のタスクがありません。</p>
                     </div>
                 )}
-            </div>
+            </div> */}
+
+            <GanttContainer initialTasks={ganttTasks} projects={projectsForTab} />
         </div>
     );
 };
