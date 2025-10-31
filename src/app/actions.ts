@@ -435,3 +435,35 @@ export async function updateTaskUser(taskId: number, userId: string) {
   revalidatePath('/gantt');
   revalidatePath('/');
 }
+
+/**
+* チャットメッセージを送信するサーバーアクション
+*/
+export async function sendChatMessage(formData: FormData) {
+  const supabase = createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+  
+  const taskId = formData.get('taskId') as string;
+  const message = formData.get('message') as string;
+  if (!taskId || !message) {
+    throw new Error('Task ID and message are required.');
+  }
+
+  const { error } = await supabase.from('chats').insert([
+    {
+      message: message,
+      task_id: parseInt(taskId, 10),
+      user_id: user.id,
+    },
+  ]);
+  if (error) {
+    console.error('Error sending chat message:', error);
+    throw new Error('Failed to send chat message');
+  }
+
+  revalidatePath(`/detail/${taskId}`);
+}

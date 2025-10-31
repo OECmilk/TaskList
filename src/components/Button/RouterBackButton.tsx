@@ -1,4 +1,3 @@
-// ...existing code...
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -14,22 +13,8 @@ const RouterBackButton = ({ returnPath }: RouterBackButtonProps) => {
     const [isClosing, setIsClosing] = useState(false);
 
     const navigateBackOrReplace = () => {
-        // if (typeof window === 'undefined') {
-        //     // router.replace(returnPath);
-        //     router.push(returnPath);
-        //     return;
-        // }
 
         router.push(returnPath);
-
-        // const idx = window.history?.state?.idx;
-        // if (typeof idx === 'number' && idx > 0) {
-        //     // router.back();
-        //     router.push("/");
-        // } else {
-        //     // router.replace(returnPath);
-        //     router.push(returnPath);
-        // }
     };
 
     const handleClose = (e: React.MouseEvent<HTMLButtonElement>) => {

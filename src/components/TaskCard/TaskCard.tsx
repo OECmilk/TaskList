@@ -25,7 +25,7 @@ const TaskCard = ({ task }: { task: Task }) => {
       
       {/* プロジェクトが存在する場合にのみ、タブを絶対配置で表示 */}
       {task.project_id  && (
-        <div className="absolute top-0 left-0 w-1/3 -translate-y-full bg-white px-3 py-1 rounded-t-md shadow-sm text-xs font-bold text-gray-700 text-center truncate z-1 border-x border-t border-orange-100">
+        <div className="absolute top-0 left-0 w-1/2 -translate-y-full bg-white px-3 py-1 rounded-t-md shadow-sm text-xs font-bold text-gray-700 text-center truncate z-1 border-x border-t border-orange-100">
           {task.projects?.name}
         </div>
       )}

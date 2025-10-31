@@ -242,29 +242,30 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                         return (
                             <div key={task.id} className="h-12 flex items-center border-b border-gray-100 relative">
                                 {/* タスクバー本体 */}
-                                <Link href={`/detail/${task.id}?returnPath=/gantt`}>
+                                
                                 <div
                                     title={`${task.title} (${task.start} ~ ${task.end})`}
                                     className="absolute h-8 bg-cyan-600/60 rounded-md flex items-center px-2 font-bold text-sm group transition-all duration-200"
                                     style={{ left: `${left}px`, width: `${width}px`, top: '8px' }}
                                 >
-                                        <p className="whitespace-nowrap">{task.project ? `[${task.project}] ` : ''}{task.title}</p>
+                                    <Link href={`/detail/${task.id}?returnPath=/gantt`}>
+                                        <p className="whitespace-nowrap hover:text-gray-500">{task.project ? `[${task.project}] ` : ''}{task.title}</p>
+                                    </Link>
 
                                     {/* ドラッグハンドル */}
                                     {timelineStart <= taskEnd && (
                                     <div 
-                                        onClick={(e) => e.stopPropagation()}
+                                        onClick={(e) => {e.stopPropagation(), e.preventDefault();}}
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'start')}
                                         className="absolute left-0 top-0 h-full w-4 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/10 rounded-l-md"
                                     />
                                     )}
                                     <div 
-                                        onClick={(e) => e.stopPropagation()}
+                                        onClick={(e) => {e.stopPropagation(), e.preventDefault()}}
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'end')}
                                         className="absolute right-0 top-0 h-full w-4 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/10 rounded-r-md"
                                     />
                                 </div>
-                                </Link>
                             </div>
                         );
                     })}

@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com', // Cloudinaryから画像を取得(ReadEchoes用)
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
