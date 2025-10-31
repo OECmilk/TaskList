@@ -5,7 +5,8 @@ import { createContext, useContext, useState, ReactNode, Dispatch, SetStateActio
 // アプリケーション全体で使うProfileの型定義
 // これを共通の型定義ファイル(例: src/types/index.ts)に移動すると、より管理しやすくなります
 export type Profile = {
-  name: string | null;
+  id: string;
+  name: string;
   icon: string | null;
   email: string;
 };

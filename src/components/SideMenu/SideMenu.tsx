@@ -36,7 +36,7 @@ const SideMenu = () => {
         if (error) {
           console.error('Error fetching profile:', error);
         } else if (profileData) {
-          setProfile({ ...profileData, email: user.email || '' });
+          setProfile({ id: user.id ,...profileData, email: user.email || '' });
         }
       }
     };
