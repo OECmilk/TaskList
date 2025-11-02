@@ -241,15 +241,15 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
 
                         return (
                             <div key={task.id} className="h-12 flex items-center border-b border-gray-100 relative">
-                                {/* タスクバー本体 */}
                                 
+                                {/* タスクバー本体 */}
                                 <div
                                     title={`${task.title} (${task.start} ~ ${task.end})`}
                                     className="absolute h-8 bg-cyan-600/60 rounded-md flex items-center px-2 font-bold text-sm group transition-all duration-200"
                                     style={{ left: `${left}px`, width: `${width}px`, top: '8px' }}
                                 >
                                     <Link href={`/detail/${task.id}?returnPath=/gantt`}>
-                                        <p className="whitespace-nowrap hover:text-gray-500">{task.project ? `[${task.project}] ` : ''}{task.title}</p>
+                                        <p className="whitespace-nowrap hover:text-gray-500">{task.title}</p>
                                     </Link>
 
                                     {/* ドラッグハンドル */}

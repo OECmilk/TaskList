@@ -422,6 +422,11 @@ export async function updateProfile(formData: FormData) {
 export async function updateTaskUser(taskId: number, userId: string) {
   const supabase = createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
   const { error } = await supabase
     .from('tasks')
     .update({ user_id: userId })
@@ -430,6 +435,23 @@ export async function updateTaskUser(taskId: number, userId: string) {
   if (error) {
     console.error('Error updating task user:', error);
     throw new Error('Failed to update task user.');
+  }
+
+  // 自分以外の場合通知を作成
+  if (user.id !== userId) {
+    const { error: notificationError } = await supabase
+      .from('notifications')
+      .insert({
+        from_user_id: user.id,
+        to_user_id: userId,
+        task_id: taskId,
+        action_type: 'TASK_ASSIGNED'
+      });
+    
+    if (notificationError) {
+      // 通知の失敗はコンソールに出力するが、メインの処理は続行
+      console.error('Error creating task assignment notification:', notificationError);
+    }
   }
 
   revalidatePath('/gantt');
@@ -465,5 +487,62 @@ export async function sendChatMessage(formData: FormData) {
     throw new Error('Failed to send chat message');
   }
 
+  // メンション(@)があれば通知を作成
+  const mentionRegex = /@([^@\s]+)/g;
+  const mentionedNames = (message.match(mentionRegex) || []).map(mention => mention.substring(1));
+
+  //　デバッグ
+  console.log('Mention Regex: ', mentionRegex);
+  console.log('Mentioned names:', mentionedNames);
+
+  if (mentionedNames.length > 0) {
+    //  メンションされたユーザー名からユーザーIDを取得
+    const { data: mentionedUsers, error: usersError } = await supabase
+      .from('users')
+      .select('id, name')
+      .in('name', mentionedNames);
+
+    if (usersError) {
+      console.error('Error fetching mentioned users:', usersError);
+    } else if (mentionedUsers && mentionedUsers.length > 0) {
+      //  通知データを作成
+      const notifications = mentionedUsers
+        .filter(mentionedUser => mentionedUser.id !== user.id) // 自分自身へのメンションは通知しない
+        .map(mentionedUser => ({
+          from_user_id: user.id,
+          to_user_id: mentionedUser.id,
+          task_id: parseInt(taskId, 10),
+          action_type: 'CHAT_MENTION'
+        }));
+
+      if (notifications.length > 0) {
+        // notificationsテーブルに挿入
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert(notifications);
+
+        if (notificationError) {
+          console.error('Error creating mention notifications:', notificationError);
+        }
+      }
+    }
+  }
+
   revalidatePath(`/detail/${taskId}`);
+}
+
+
+/* 通知を既読にするサーバーアクション */
+export async function updateIsRead(notificationId: number) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+  .from('notifications')
+  .update({ is_read: true })
+  .eq('id', notificationId);
+
+  if (error) {
+  console.error('Error updating notifications is_read:', error);
+  throw new Error('Failed to update notification is_read');
+  }
 }

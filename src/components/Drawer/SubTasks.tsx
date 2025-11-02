@@ -6,8 +6,6 @@ import { FaAngleDown } from "react-icons/fa";
 
 const SubTasks = ({ sub_tasks }: { sub_tasks: SubTask[] }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    console.log("sub_tasks component received sub_tasks:");
-    console.log(sub_tasks);
 
     return (
         <>
