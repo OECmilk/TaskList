@@ -4,6 +4,7 @@ import { FaEdit } from "react-icons/fa";
 import RouterBackButton from "@/components/Button/RouterBackButton";
 import Chat, { ChatMessage} from "@/components/Chat/Chat";
 import SubTasks from "@/components/Drawer/SubTasks";
+import TaskCompleteButton from "@/components/Button/TaskCompleteButton";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -65,20 +66,29 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
             </a>
           </header>
 
-          {/*  詳細コンテンツ（ステップ1のページとほぼ同じ） */}
-          <div>
-            <p className="text-sm text-gray-500">
-              {task.projects?.name || ""}
-            </p>
-            <h1 className="text-xl font-bold">{task.title}</h1>
+          {/*  詳細コンテンツ */}
+          <div className="flex justify-between">
+            <div>
+              <p className="text-sm text-gray-500">
+                {task.projects?.name || ""}
+              </p>
+              <h1 className="text-xl font-bold">{task.title}</h1>
+            </div>
+            <TaskCompleteButton id={ task.id } status={ task.status } size="4xl"/>
           </div>
 
+          {/* タスクエリア */}
           <div className="mt-4 bg-gray-50 p-6 rounded-lg">
             <h2 className="text-xl font-semibold mb-4">Description</h2>
             <p className="mb-8">{task.description || "No description."}</p>
+          </div>
 
+          {/* サブタスクエリア */}
+          <div className="mt-4 bg-gray-50 p-6 rounded-lg">
             <SubTasks sub_tasks={task.sub_tasks || []} />
           </div>
+
+          {/* チャットエリア */}
           <Chat taskId={task.id} initialMessages={initialMessages} />
         </div>
       </div>
