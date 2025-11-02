@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'https://rrzicqtvhjwhjiwcogwg.supabase.co', // Supabase（Tasks）のStrageから画像を取得
+        hostname: 'rrzicqtvhjwhjiwcogwg.supabase.co', // Supabase（Tasks）のStrageから画像を取得
         port: '',
         pathname: '/**',
       },
