@@ -13,8 +13,8 @@ export const createNewTask = async (formData: FormData) => {
 
     // フォームからデータを取得
     const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const dueDate = formData.get('dueDate') as string;
+    const description = formData.get('description') as string || null;
+    const dueDate = formData.get('dueDate') as string; // 入力が無い場合、自動で今日を設定
     const projectIdString = formData.get('projectId') as string;
     const projectId = projectIdString ? parseInt(projectIdString, 10) : null;
 
@@ -34,8 +34,8 @@ export const createNewTask = async (formData: FormData) => {
     }
 
     // データ挿入後のキャッシュをクリアして、一覧ページに最新のリストを表示
-    revalidatePath('/');
-    redirect('/');
+    revalidatePath("/gantt");
+    redirect("/gantt");
 };
 
 /**

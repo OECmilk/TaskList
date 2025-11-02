@@ -12,10 +12,10 @@ interface ProjectTabProps {
 const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) => {
 
     return (
-        <div className="flex ml-8 text-gray-600 font-medium cursor-pointer rounded-lg shadow-sm text-center">
+        <div className="h-14 flex ml-8 text-gray-600 font-medium text-sm cursor-pointer rounded-lg shadow-sm text-center">
             <div 
                 onClick={() => setNowProject(0)} 
-                className={`px-4 py-1 rounded-l-lg text-gray-600 ${nowProject === 0 ? 'bg-orange-100' : 'hover:bg-gray-200'}`}
+                className={`px-4 py-3 rounded-l-lg text-gray-600 ${nowProject === 0 ? 'bg-orange-100' : 'hover:bg-gray-200'}`}
             >
                 All
             </div>
@@ -24,7 +24,7 @@ const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) =>
                 <div 
                     key={project.id}
                     onClick={() => setNowProject(project.id)}
-                    className={`px-4 py-1 border-l text-gray-600 w-40 truncate last:rounded-r-lg ${nowProject === project.id ? 'bg-orange-100' : 'hover:bg-gray-200'}`}
+                    className={`px-4 py-3 border-l text-gray-600 w-25 line-clamp-2 break-words last:rounded-r-lg ${nowProject === project.id ? 'bg-orange-100' : 'hover:bg-gray-200'}`}
                 >
                     {project.name}
                 </div>

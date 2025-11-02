@@ -66,6 +66,8 @@ const GanttPage = async () => {
 
     const projectIds = projectMembers.map(member => member.project_id);
 
+    // 自分のタスク or 所属するプロジェクトのタスク
+    const orFilter = `user_id.eq.${user.id}${projectIds.length > 0 ? `,project_id.in.(${projectIds.join(',')})` : ''}`;
     const { data,  error } = await supabase
         .from('tasks')
         .select(`
@@ -87,7 +89,8 @@ const GanttPage = async () => {
             users( name )
         `)
         .eq('status', false)
-        .in('project_id', projectIds)
+        // .in('project_id', projectIds)
+        .or(orFilter)
         .order('id', { ascending: true });
 
     if (error) {
