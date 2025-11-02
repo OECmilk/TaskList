@@ -137,8 +137,18 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
     // タスクの担当者変更のイベントハンドラ
     const handleUserChange = (event: React.ChangeEvent<HTMLSelectElement>, taskId: number) => {
         const newUserId = event.target.value;
+        const newUserName = event.target.options[event.target.selectedIndex].text;
 
-        // 既存のDB更新大麻ーがあればキャンセル
+        // 楽観的更新: UIを即座に変更
+        setLocalTasks(prevTasks =>
+            prevTasks.map(task => 
+                task.id === taskId 
+                ? { ...task, user_id: newUserId, user_name: newUserName } 
+                : task
+            )
+        );
+
+        // 既存のDB更新タイマーがあればキャンセル
         if (debounceTimer.current) {
             clearTimeout(debounceTimer.current);
         }
@@ -153,7 +163,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                     setLocalTasks(tasks); // エラー時はUIを元のpropsの状態に戻す
                 }
             });
-        }, 500); // 500ミリ秒
+        }, 1500); // 500ミリ秒
     };
 
 
@@ -161,7 +171,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
         <div ref={ganttRef} className="overflow-x-auto select-none flex">
             {/* タスク担当者用プルダウン */}
             <div className="rounded-lg mr-2 mt-15">
-                {tasks.map((task) =>
+                {localTasks.map((task) =>
                 <select
                     key={task.id}
                     value={task.user_id}
