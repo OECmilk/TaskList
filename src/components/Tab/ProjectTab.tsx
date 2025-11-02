@@ -24,7 +24,7 @@ const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) =>
                 <div 
                     key={project.id}
                     onClick={() => setNowProject(project.id)}
-                    className={`px-4 py-1 border-l text-gray-600 w-30 truncate last:rounded-r-lg ${nowProject === project.id ? 'bg-orange-100' : 'hover:bg-gray-200'}`}
+                    className={`px-4 py-1 border-l text-gray-600 w-40 truncate last:rounded-r-lg ${nowProject === project.id ? 'bg-orange-100' : 'hover:bg-gray-200'}`}
                 >
                     {project.name}
                 </div>

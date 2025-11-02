@@ -15,7 +15,7 @@ interface NavItemType {
 
 const NavList = () => {
     const navList: NavItemType[] = [
-        {id: 1, label: "Tasks", link: "/", icon: <FaRegFolder className="size-5"/>},
+        {id: 1, label: "Your Tasks", link: "/", icon: <FaRegFolder className="size-5"/>},
         {id: 2, label: "Gantt Chart", link: "/gantt", icon: <LuChartGantt className="size-5"/>},
         {id: 3, label: "Projects", link: "/projects", icon: <RiTeamFill className="size-5"/>},
         {id: 4, label: "Contact", link: "/contact", icon: <MdSend className="size-5"/>},
