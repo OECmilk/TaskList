@@ -2,7 +2,7 @@
 
 import { SubTask } from "@/app/(main)/page";
 import { useState } from "react";
-import { FaAngleDown } from "react-icons/fa";
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 
 const SubTasks = ({ sub_tasks }: { sub_tasks: SubTask[] }) => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -14,7 +14,11 @@ const SubTasks = ({ sub_tasks }: { sub_tasks: SubTask[] }) => {
             className="flex rounded-lg hover:text-gray-500"
         >
             <h2 className="text-xl font-semibold mb-4">SubTasks</h2>
-            <FaAngleDown className="size-5 ml-2 mt-1" />
+            
+            {isExpanded ? (
+                <FaAngleUp className="size-5 ml-2 mt-1" />
+            ) : <FaAngleDown className="size-5 ml-2 mt-1" />
+            }
         </div>
 
         {isExpanded && (

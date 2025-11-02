@@ -88,7 +88,7 @@ export async function updateTaskStatus(formData: FormData) {
         throw new Error('Failed to update task status');
     }
 
-    revalidatePath('/');
+    revalidatePath('/gantt');
 }
 
 /**

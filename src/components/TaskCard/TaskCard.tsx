@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import TaskDeleteButton from "./TaskDeleteButton/TaskDeleteButton";
-import TaskCompleteButton from "./TaskCompleteButton/TaskCompleteButton";
+import TaskDeleteButton from "../Button/TaskDeleteButton";
+import TaskCompleteButton from "../Button/TaskCompleteButton";
 import ProgressBar from "./ProgressBar/ProgressBar";
 import { Task } from "@/app/(main)/page";
 import Link from "next/link";
@@ -38,7 +38,7 @@ const TaskCard = ({ task }: { task: Task }) => {
             <header>
                 <div className="flex justify-between" onClick={(e) => e.stopPropagation()}>
                     <ProgressBar total={totalSubTasks} completed={completedSubTasks} status={task.status}/>
-                    <TaskCompleteButton id={ task.id } status={ task.status }/>
+                    <TaskCompleteButton id={ task.id } status={ task.status } size="lg" />
                 </div>
                 <h1 className="text-lg font-semibold truncate">{ task.title }</h1>
                 <div className="mt-1 text-sm line-clamp-3">{ task.description }</div>
