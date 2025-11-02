@@ -171,19 +171,29 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
         <div ref={ganttRef} className="overflow-x-auto select-none flex">
             {/* タスク担当者用プルダウン */}
             <div className="rounded-lg mr-2 mt-15">
-                {localTasks.map((task) =>
-                <select
-                    key={task.id}
-                    value={task.user_id}
-                    onChange={(e) => handleUserChange(e, task.id)}
-                    className='text-sm border h-8 w-28 text-center truncate p-1 rounded-lg justify-center mb-4 flex bg-gray-100'>
-                    {task.project && task.project_members?.map(member => (
-                        <option key={member.user_id} value={member.user_id}>
-                            {member.user_name}
-                        </option>
-                    ))}
-                </select>
-                )}
+                {/* タスクがプロジェクトに所属している場合、担当者プルダウン */}
+                {localTasks.map((task) => (
+                    task.project ? (
+                        <select
+                            key={task.id}
+                            value={task.user_id}
+                            onChange={(e) => handleUserChange(e, task.id)}
+                            className='text-sm border h-8 w-28 text-center truncate p-1 rounded-lg justify-center mb-4 flex bg-gray-100'
+                        >
+                            {task.project_members?.map(member => (
+                                <option key={member.user_id} value={member.user_id}>
+                                    {member.user_name}
+                                </option>
+                            ))}
+                        </select>
+                    ) : 
+                    // タスクがプロジェクトに所属していない場合、自分のブロック
+                    (
+                        <div key={task.id} className='text-sm border h-8 w-28 text-center truncate p-1 rounded-lg justify-center mb-4 flex bg-gray-100'>
+                            {task.user_name}
+                        </div>
+                    )
+                ))}
             </div>
 
             <div style={{ minWidth: `${(totalDays + 1) * DAY_WIDTH}px` }}>
@@ -203,7 +213,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
 
                         // 今日の日付かどうかを判定
                         const isToday = date.toISOString().split('T')[0] === todayString;
-                        const dateBgClass = isToday ? 'font-bold bg-cyan-100' : '';
+                        const dateBgClass = isToday ? 'font-bold bg-blue-100' : '';
 
                         return (
                             <div key={i} className={`text-xs text-center border-r border-b border-gray-300 py-2 space-y-1 ${dateBgClass}`}>
@@ -221,7 +231,7 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                     >
                         {dateHeaders.map((date, i) => {
                             const isToday = date.toISOString().split('T')[0] === todayString;
-                            const dateBgClass = isToday ? 'bg-cyan-100' : '';
+                            const dateBgClass = isToday ? 'bg-blue-100' : '';
                             return (
                                 <div
                                     key={i}

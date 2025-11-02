@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'lh3.googleusercontent.com', // googleからのアイコン画像を取得
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'ycwpuagwratqkojqadpg.supabase.co', // SupabaseのStrageから画像を取得
         port: '',
         pathname: '/**',

@@ -5,6 +5,8 @@ import { Project } from '@/app/(main)/page';
 import { useState, useMemo } from 'react';
 import ProjectTab from '@/components/Tab/ProjectTab';
 import GanttChart from '@/components/Gantt/GanttChart';
+import { MdAddTask } from 'react-icons/md';
+import Link from 'next/link';
 
 interface GanttContainerProps {
     initialTasks: GanttTask[];
@@ -25,14 +27,20 @@ const GanttContainer = ({ initialTasks, projects }: GanttContainerProps ) => {
 
     return (
         <>
-      <header className="mb-8 flex items-center">
-        <h1 className="text-2xl font-bold">Gantt Chart</h1>
+      <header className="mb-8 flex justify-between items-center">
+        <div className="flex">
+          <h1 className="text-2xl font-bold">Gantt Chart</h1>
+          <ProjectTab 
+            projects={projects} 
+            nowProject={nowProject} 
+            setNowProject={setNowProject} 
+          />
+        </div>
 
-        <ProjectTab 
-          projects={projects} 
-          nowProject={nowProject} 
-          setNowProject={setNowProject} 
-        />
+        <Link href="/new" prefetch={true} className="flex items-center gap-1 px-4 py-2 font-semibold text-white rounded-full shadow-sm bg-cyan-700 hover:bg-cyan-600">
+          <MdAddTask className="size-5"/>
+          <div className="hidden sm:inline">Add Task</div>
+        </Link>
       </header>
 
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
