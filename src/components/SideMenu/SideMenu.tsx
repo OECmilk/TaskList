@@ -254,7 +254,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
               <div className="">まいど。</div>
             )} */}
             <Image
-              onClick={sayHello}
+              // onClick={sayHello}
               src={ "oct.svg" }
               width={200}
               height={240}
