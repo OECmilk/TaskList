@@ -34,7 +34,7 @@ interface SideMenuProps {
 }
 
 const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: SideMenuProps) => {
-  // ... (他のstate定義は変更なし)
+
   const [isOpenBurger, setisOpenBurger] = useState(false);
   const { profile, setProfile } = useProfile();
   const [isOpenNotifications, setIsOpenNotifications] = useState(false);
@@ -137,11 +137,6 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
               // 5. 最後に、新しいリストを返す
               return newList;
             });
-
-            // 6. エラーの原因となっていた行を削除
-            // setCountUnread(prevList => prevList.filter(n => !n.is_read).length);
-            
-            // --- ▲▲▲ 修正完了 ▲▲▲ ---
           }
         )
         .subscribe();
@@ -152,16 +147,22 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
     }
   }, [supabase, profile?.id]);
 
-  // ... (handleBellClick, getDisplayName, return文は変更なし) ...
   const handleBellClick = () => {
     setIsOpenNotifications(true);
     // (既読処理は NotificationItem 側が担当する)
   };
 
+  // 名前orEmail取得
   const getDisplayName = () => {
     if (!profile) return null;
     return profile.name || profile.email;
   }
+
+  // タコのあいさつ用
+  // const [helloStatus, setHelloStatus] = useState(false);
+  // const sayHello = () => {
+  //   setHelloStatus(true);
+  // }
 
   return (
     <>
@@ -247,6 +248,19 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
             )}
 
             <NavList />
+
+            {/* タコ */}
+            {/* {helloStatus && (
+              <div className="">まいど。</div>
+            )} */}
+            <Image
+              onClick={sayHello}
+              src={ "oct.svg" }
+              width={200}
+              height={240}
+              alt="oct"
+              className="cursor-pointer"
+            />
         </div>
       </div>
 
