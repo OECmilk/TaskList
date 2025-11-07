@@ -1,7 +1,7 @@
 "use client";
 
 import NavList from "./NavList/NavList";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaArrowLeft, FaBars, FaRegBell } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
@@ -11,7 +11,6 @@ import { useProfile, Profile } from "@/contexts/ProfileContext";
 import NotificationItem from "./NotificationItem";
 
 export type Notification = {
-  // ... (型定義は変更なし)
   id: number;
   created_at: string;
   action_type: 'TASK_ASSIGNED' | 'CHAT_MENTION';
@@ -27,7 +26,6 @@ export type Notification = {
 };
 
 interface SideMenuProps {
-  // ... (型定義は変更なし)
   initialProfile: Profile | null;
   initialUnreadCount: number;
   initialNotifications: Notification[];
@@ -42,6 +40,9 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const pathname = usePathname();
   const supabase = createClient();
+
+  // 元のfaviconのHREFを記憶するためのref
+  const originalFaviconHref = useRef<string>('');
 
   // ... (Contextへの初回データセットuseEffectは変更なし)
   useEffect(() => {
@@ -59,13 +60,11 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
           'postgres_changes',
           { 
             event: 'INSERT', 
-            // ... (INSERT処理は変更なし)
             schema: 'public', 
             table: 'notifications', 
             filter: `to_user_id=eq.${profile.id}`
           },
           (payload) => {
-            // ... (fetchRelatedDataロジックも変更なし)
             console.log('New notification received!', payload);
             const rawNotification = payload.new; 
             const fetchRelatedData = async () => {
@@ -117,24 +116,22 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
           },
           (payload) => {
             console.log('Notification read status updated!', payload);
-            
-            // --- ▼▼▼ ここから修正 ▼▼▼ ---
 
-            // 1. setNotifications のコールバック内で、リスト更新と件数更新を「両方」行う
+            // setNotifications のコールバック内で、リスト更新と件数更新を「両方」行う
             setNotifications(currentList => {
               
-              // 2. まず、新しい通知リストを作成
+              // まず、新しい通知リストを作成
               const newList = currentList.map(n => 
                 n.id === payload.new.id ? { ...n, is_read: payload.new.is_read } : n
               );
               
-              // 3. 次に、その「新しいリスト」を基に、未読件数を再計算
+              //  次に、その「新しいリスト」を基に、未読件数を再計算
               const newUnreadCount = newList.filter(n => !n.is_read).length;
               
-              // 4. 件数用のstateもここで更新
+              //  件数用のstateもここで更新
               setCountUnread(newUnreadCount);
               
-              // 5. 最後に、新しいリストを返す
+              //  最後に、新しいリストを返す
               return newList;
             });
           }
@@ -146,6 +143,64 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
       };
     }
   }, [supabase, profile?.id]);
+
+
+  //  ファビコンに通知の有無を描画用のuseEffect
+  useEffect(() => {
+    //  ファビコンの<link>タグを見つける
+    let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+    }
+
+    // 初回実行時に、元のfaviconのパスを記憶する
+    if (!originalFaviconHref.current) {
+        originalFaviconHref.current = link.href;
+    }
+
+    // 未読件数が0なら、元のfaviconに戻して終了
+    if (countUnread === 0) {
+        link.href = originalFaviconHref.current;
+        return;
+    }
+
+    // メモリ上に32x32のキャンバスを作成
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 元のファビコン（タコのアイコン）をロード
+    const baseIcon = new window.Image();
+    baseIcon.src = "/favicon.ico"; // publicフォルダのfavicon
+    
+    baseIcon.onload = () => {
+        //  キャンバスに元のアイコンを描画
+        ctx.drawImage(baseIcon, 0, 0, 32, 32);
+
+        //  バッジ（赤い円）を描画
+        const badgeRadius = 5;
+        const badgeX = canvas.width - badgeRadius;
+        const badgeY = badgeRadius;
+        ctx.fillStyle = '#FF4136';
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, badgeRadius, 0, 2 * Math.PI);
+        ctx.fill();
+
+        //  バッジの上に通知（赤色）マークを描画
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText("", badgeX, badgeY + 1);
+
+        // キャンバスから新しい画像データ(URL)を生成し、faviconに設定
+        link!.href = canvas.toDataURL('image/png');
+    };
+
+  }, [countUnread]); // countUnreadが変更されるたびに実行
+
 
   const handleBellClick = () => {
     setIsOpenNotifications(true);
