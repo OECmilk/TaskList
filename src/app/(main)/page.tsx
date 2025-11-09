@@ -2,7 +2,6 @@ import TaskCard from "@/components/TaskCard/TaskCard";
 import Link from "next/link";
 import { MdAddTask } from "react-icons/md";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import TaskFilter from "@/components/TaskFilter/TaskFilter";
 import { UUID } from "crypto";
 
