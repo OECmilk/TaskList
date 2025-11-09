@@ -233,7 +233,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
           ${isOpenBurger ? "translate-x-0" : "-translate-x-full"}
           md:relative md:translate-x-0`}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col justify-between h-full">
             <div>
                 {/* 通知ボタン */}
                 <div className="relative">
@@ -242,7 +242,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
                     className="size-11 ml-auto mr-4 mb-2 rounded-full p-2 hover:bg-cyan-800 cursor-pointer z-50" 
                   />
                   {countUnread > 0 && (
-                    <div className="absolute top-0 right-4 w-5 h-5 bg-orange-500 rounded-full border-2 border-cyan-900 text-xs flex items-center justify-center font-bold">
+                    <div className="absolute top-0 right-4 w-5 h-5 bg-orange-500 rounded-full border-2 border-cyan-900 text-xs flex justify-center font-bold">
                       { countUnread }
                     </div>
                   )}
@@ -314,14 +314,14 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
               width={200}
               height={240}
               alt="oct"
-              className="cursor-pointer"
+              className="cursor-pointer w-full h-auto"
             />
         </div>
       </div>
-
+      {/* 背景を暗く */}
       {isOpenBurger && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-10"
+          className="md:hidden fixed inset-0 bg-black/50 z-15"
           onClick={() => setisOpenBurger(false)}
         ></div>
         )}

@@ -21,7 +21,8 @@ export const createClient = () => {
           } catch (error) {
             // Server Component から 'set' が呼ばれた場合。
             // Middleware がセッションをリフレッシュしていれば無視できる。
-          }
+            throw error;
+          } 
         },
         async remove(name: string, options: CookieOptions) {
           try {
@@ -29,6 +30,7 @@ export const createClient = () => {
           } catch (error) {
             // Server Component から 'delete' が呼ばれた場合。
             // Middleware がセッションをリフレッシュしていれば無視できる。
+            throw error;
           }
         },
       },
