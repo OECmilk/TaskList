@@ -275,13 +275,13 @@ const GanttChart = ({ tasks }: { tasks: GanttTask[] }) => {
                                     {/* ドラッグハンドル */}
                                     {timelineStart <= taskEnd && (
                                     <div 
-                                        onClick={(e) => {e.stopPropagation(), e.preventDefault();}}
+                                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'start')}
                                         className="absolute left-0 top-0 h-full w-4 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/10 rounded-l-md"
                                     />
                                     )}
                                     <div 
-                                        onClick={(e) => {e.stopPropagation(), e.preventDefault()}}
+                                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
                                         onMouseDown={(e) => handleMouseDown(e, task.id, 'end')}
                                         className="absolute right-0 top-0 h-full w-4 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/10 rounded-r-md"
                                     />
