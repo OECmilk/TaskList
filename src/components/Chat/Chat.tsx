@@ -20,9 +20,19 @@ export type ChatMessage = {
   } | null;
 };
 
+interface ProjectMember {
+  user_id: string;
+  users: {
+    id: string;
+    name: string;
+    icon: string | null;
+  };
+}
+
 interface ChatProps {
   taskId: number;
   initialMessages: ChatMessage[]; // サーバーから渡される初期メッセージ（過去のメッセージ）
+  projectMembers?: ProjectMember[]; // プロジェクトメンバー一覧（メンション用）
 }
 
 const mentionRegex = /@([^@\s]+)/g;
@@ -57,11 +67,14 @@ const highlightMentions = (text: string) => {
   ));
 };
 
-const Chat = ({ taskId, initialMessages }: ChatProps) => {
+const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
   const supabase = createClient();
   const { profile } = useProfile(); // 自分のプロフィール情報をContextから取得
 
   const [messages, setMessages] = useState(initialMessages);
+  const [mentionQuery, setMentionQuery] = useState<string>(''); // "@" 後の入力文字列
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false); // ドロップダウン表示フラグ
+  const [mentionCursorPos, setMentionCursorPos] = useState<number>(0); // "@" の位置
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // フォームとテキストエリアへの参照
@@ -180,6 +193,72 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
     // Enterキーだけが押された場合は、<textarea>のデフォルトの動作（改行）が実行される
   };
 
+  // テキストエリアの入力変更を監視（メンション検出用）
+  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = event.currentTarget.value;
+    const cursorPos = event.currentTarget.selectionStart;
+
+    // カーソル位置の直前までのテキストを取得
+    const textBeforeCursor = text.substring(0, cursorPos);
+    
+    // "@" または "＠" の最後の出現位置を探す
+    const lastMentionIndex = Math.max(
+      textBeforeCursor.lastIndexOf('@'),
+      textBeforeCursor.lastIndexOf('＠')
+    );
+
+    // "@" または "＠" が存在し、かつその後に空白がない場合
+    if (lastMentionIndex !== -1) {
+      const afterMention = textBeforeCursor.substring(lastMentionIndex + 1);
+      // スペース、改行、その他の区切り文字があれば、メンション入力終了と判定
+      if (!/[\s\n]/.test(afterMention) || afterMention === '') {
+        setMentionQuery(afterMention);
+        setMentionCursorPos(lastMentionIndex);
+        setShowMentionDropdown(true);
+        return;
+      }
+    }
+
+    // "@" が見つからないか、条件を満たさない場合はドロップダウンを閉じる
+    setShowMentionDropdown(false);
+    setMentionQuery('');
+  };
+
+  // メンション候補をフィルタリング（自分を除外）
+  const filteredMembers = projectMembers.filter(member =>
+    member.users.id !== profile?.id && // 自分を除外
+    member.users.name.toLowerCase().includes(mentionQuery.toLowerCase())
+  );
+
+  // メンバーをクリック選択した場合の処理
+  const handleSelectMember = (memberName: string) => {
+    if (!textareaRef.current) return;
+
+    const textarea = textareaRef.current;
+    const currentText = textarea.value;
+    const cursorPos = textarea.selectionStart;
+
+    // "@" の位置から現在のカーソル位置までを新しいメンション（例: "@username"）に置き換える
+    const beforeMention = currentText.substring(0, mentionCursorPos);
+    const afterMention = currentText.substring(cursorPos);
+    
+    const newText = `${beforeMention}@${memberName}${afterMention}`;
+    
+    // textareaの値を更新
+    textarea.value = newText;
+    
+    // カーソル位置をメンション後に移動
+    const newCursorPos = mentionCursorPos + memberName.length + 1;
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+    // ドロップダウンを閉じる
+    setShowMentionDropdown(false);
+    setMentionQuery('');
+
+    // フォーカスを保つ
+    textarea.focus();
+  };
+
 
   return (
     <div className="mt-4 bg-gray-50 p-6 rounded-lg">
@@ -255,15 +334,42 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
       {/* メッセージ送信フォーム */}
       <form ref={formRef} onSubmit={handleFormSubmit}>
         <input type="hidden" name="taskId" value={taskId} />
-        <div className="flex gap-2">
-          <textarea
-            name="message"
-            ref={textareaRef}
-            onKeyDown={handleKeyDown}
-            required
-            placeholder="Type your message..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-          />
+        <div className="flex gap-2 relative">
+          <div className="flex-1 relative">
+            <textarea
+              name="message"
+              ref={textareaRef}
+              onKeyDown={handleKeyDown}
+              onChange={handleTextChange}
+              required
+              placeholder="Type your message..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+            />
+            
+            {/* メンション候補ドロップダウン */}
+            {showMentionDropdown && filteredMembers.length > 0 && (
+              <div className="absolute bottom-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mb-1 max-h-40 w-1/3 overflow-y-auto z-50">
+                {filteredMembers.map((member) => (
+                  <button
+                    key={member.users.id}
+                    type="button"
+                    onClick={() => handleSelectMember(member.users.name)}
+                    className="w-full text-left px-2 py-1 hover:bg-cyan-100 flex items-center gap-2 border-b last:border-b-0"
+                  >
+                    <Image
+                      src={member.users.icon || "/default_icon.svg"}
+                      alt={member.users.name}
+                      width={24}
+                      height={24}
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                    <span className="text-xs text-gray-800">{member.users.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
           <button
             type="submit"
             className="px-3 py-2 bg-cyan-700 text-white font-semibold rounded-md shadow-sm hover:bg-cyan-600 transition-colors"
