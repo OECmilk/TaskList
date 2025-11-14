@@ -5,6 +5,8 @@ import RouterBackButton from "@/components/Button/RouterBackButton";
 import Chat, { ChatMessage} from "@/components/Chat/Chat";
 import SubTasks from "@/components/Drawer/SubTasks";
 import TaskCompleteButton from "@/components/Button/TaskCompleteButton";
+import { Key } from "react";
+import Image from "next/image";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -26,7 +28,12 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
       `
         *,
         sub_tasks ( * ),
-        projects ( name ),
+        projects ( 
+          name,
+          project_members ( 
+            users ( id, name, icon ) 
+          )
+        ),
         chats (
           id,
           created_at,
@@ -69,9 +76,22 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
           {/*  詳細コンテンツ */}
           <div className="flex justify-between">
             <div>
-              <p className="text-sm text-gray-500">
-                {task.projects?.name || ""}
-              </p>
+              <div className="flex">
+                <p className="text-sm text-gray-500 mr-4">
+                  {task.projects?.name || ""}
+                </p>
+                {task.projects && task.projects.project_members.map((member: { user_id: Key | null | undefined; users: { icon: string; name: string; }; }) => (
+                  <div key={member.user_id}>
+                    <Image
+                      src={member.users.icon || "/default_icon.svg"}
+                      alt={member.users.name || "avatar"}
+                      width={32}
+                      height={32}
+                      className="w-6 h-6 rounded-full object-cover ml-1"
+                    />
+                  </div>
+                ))}
+              </div>
               <h1 className="text-xl font-bold">{task.title}</h1>
             </div>
             <TaskCompleteButton id={ task.id } status={ task.status } size="4xl"/>
@@ -89,7 +109,11 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
           </div>
 
           {/* チャットエリア */}
-          <Chat taskId={task.id} initialMessages={initialMessages} />
+          <Chat 
+            taskId={task.id} 
+            initialMessages={initialMessages}
+            projectMembers={task.projects?.project_members || []}
+          />
         </div>
       </div>
     </>
