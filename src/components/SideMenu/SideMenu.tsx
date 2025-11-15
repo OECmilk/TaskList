@@ -2,6 +2,7 @@
 
 import NavList from "./NavList/NavList";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from 'react-dom';
 import { FaArrowLeft, FaBars, FaRegBell } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
@@ -40,6 +41,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const pathname = usePathname();
   const supabase = createClient();
+  const [mounted, setMounted] = useState(false);
 
   // 元のfaviconのHREFを記憶するためのref
   const originalFaviconHref = useRef<string>('');
@@ -144,6 +146,11 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
     }
   }, [supabase, profile?.id]);
 
+  // client mount フラグ（ポータルはマウント後のみ出力）
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
 
   //  ファビコンに通知の有無を描画用のuseEffect
   useEffect(() => {
@@ -229,12 +236,12 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
         {isOpenBurger ? <></> : <FaBars size={20} />}
       </button>
       
-      <div className={`w-62 pt-8 bg-cyan-900 text-white fixed h-full z-20 transform transition-transform duration-300 ease-in-out 
-          ${isOpenBurger ? "translate-x-0" : "-translate-x-full"}
-          md:relative md:translate-x-0`}
-      >
-        <div className="flex flex-col justify-between h-full">
-            <div>
+    <div className={`w-62 bg-cyan-900 text-white fixed h-full z-20 transform transition-transform duration-300 ease-in-out overflow-hidden
+      ${isOpenBurger ? "translate-x-0" : "-translate-x-full"}
+      md:relative md:translate-x-0`}
+    >
+    <div className="flex flex-col h-full min-h-0">
+      <div className="pt-6">
                 {/* 通知ボタン */}
                 <div className="relative">
                   <FaRegBell 
@@ -248,61 +255,68 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
                   )}
                 </div>
 
-                {/* 通知ボード本体 */}
-                <div className={`w-62 md:w-80 bg-white fixed h-full z-30 top-0 text-black shadow-xl transform transition-transform duration-300 ease-in-out
-                  ${isOpenNotifications ? "translate-x-0" : "-translate-x-full"}`}>
-                  
-                  <div className="flex border-b p-4 items-center">
-                    <h2 className="px-2 text-xl font-bold">Notifications</h2>
-                    <FaArrowLeft 
-                      onClick={() => {setIsOpenNotifications(false)}}
-                      className="size-10 ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
-                    />
-                  </div>
+                {/* 通知ボード本体（ポータルで body にレンダリングして、親の transform/overflow による切り取りを回避） */}
+                {
+                  mounted && createPortal(
+                    <div className={`w-62 md:w-80 bg-white fixed h-full z-50 top-0 text-black shadow-xl transition-transform duration-300 ease-in-out
+                      ${isOpenNotifications ? 'translate-x-0' : '-translate-x-full'}`}>
 
-                  {/* 通知リスト */}
-                  <div className="w-full overflow-y-auto h-[calc(100%-65px)]">
-                    <ul>
-                      {notifications && notifications.length > 0 ? (
-                        notifications.map((notification) => (
-                          <li key={notification.id}>
-                            <NotificationItem 
-                              notification={notification}
-                              setNotifications={setNotifications}
-                              setCountUnread={setCountUnread}
-                            />
-                          </li>
-                        ))
-                      ) : (
-                        <p className="text-gray-500 text-center p-6">No notifications yet.</p>
-                      )}
-                    </ul>
-                  </div>
-                
+                      <div className="flex border-b p-4 items-center">
+                        <h2 className="px-2 text-xl font-bold">Notifications</h2>
+                        <FaArrowLeft 
+                          onClick={() => {setIsOpenNotifications(false)}}
+                          className="size-10 ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
+                        />
+                      </div>
+
+                      {/* 通知リスト */}
+                      <div className="w-full overflow-y-auto h-[calc(100%-65px)]">
+                        <ul>
+                          {notifications && notifications.length > 0 ? (
+                            notifications.map((notification) => (
+                              <li key={notification.id}>
+                                <NotificationItem 
+                                  notification={notification}
+                                  setNotifications={setNotifications}
+                                  setCountUnread={setCountUnread}
+                                />
+                              </li>
+                            ))
+                          ) : (
+                            <p className="text-gray-500 text-center p-6">No notifications yet.</p>
+                          )}
+                        </ul>
+                      </div>
+
+                    </div>,
+                    document.body
+                  )
+                }
+
+              {/* userと、Contextから取得したprofileを使ってUIを構築 */}
+              {profile && (
+                <div className="p-4 border-t border-cyan-800">
+                  <Link href="/profile" className={`flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-cyan-800 ${pathname === '/profile' ? 'bg-cyan-800' : ''}`}>
+                    <Image
+                      src={ profile.icon || "/default_icon.svg" }
+                      width={40}
+                      height={40}
+                      alt="User Icon"
+                      className="w-10 h-10 rounded-full bg-cyan-700 object-cover"
+                    />
+                    <div className="flex-1 truncate">
+                      <p className="text-sm font-semibold truncate" title={getDisplayName() || ''}>
+                          {getDisplayName()}
+                      </p>
+                    </div>
+                  </Link>
                 </div>
+              )}
             </div>
 
-            {/* userと、Contextから取得したprofileを使ってUIを構築 */}
-            {profile && (
-              <div className="p-4 border-t border-cyan-800">
-                <Link href="/profile" className={`flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-cyan-800 ${pathname === '/profile' ? 'bg-cyan-800' : ''}`}>
-                  <Image
-                    src={ profile.icon || "/default_icon.svg" }
-                    width={40}
-                    height={40}
-                    alt="User Icon"
-                    className="w-10 h-10 rounded-full bg-cyan-700 object-cover"
-                  />
-                  <div className="flex-1 truncate">
-                    <p className="text-sm font-semibold truncate" title={getDisplayName() || ''}>
-                        {getDisplayName()}
-                    </p>
-                  </div>
-                </Link>
-              </div>
-            )}
-
-            <NavList />
+            <div className="flex-1 overflow-auto min-h-0">
+              <NavList />
+            </div>
 
             {/* タコ */}
             {/* {helloStatus && (
@@ -311,10 +325,10 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
             <Image
               // onClick={sayHello}
               src={ "oct.svg" }
-              width={200}
-              height={240}
+              width={160}
+              height={200}
               alt="oct"
-              className="cursor-pointer w-full h-auto"
+              className="cursor-pointer block w-40 h-40 flex-shrink-0 object-cover"
             />
         </div>
       </div>

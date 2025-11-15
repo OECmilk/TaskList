@@ -207,6 +207,8 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
       textBeforeCursor.lastIndexOf('＠')
     );
 
+    
+
     // "@" または "＠" が存在し、かつその後に空白がない場合
     if (lastMentionIndex !== -1) {
       const afterMention = textBeforeCursor.substring(lastMentionIndex + 1);

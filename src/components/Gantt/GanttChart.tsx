@@ -6,7 +6,7 @@ import { updateTaskDates, updateTaskUser } from '@/app/actions'; // Server Actio
 import Link from 'next/link';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
-const DAY_WIDTH = 50; // 1日の幅 (px)
+const DAY_WIDTH = 40; // 1日の幅 (px)
 
 type DraggingState = {
   taskId: number;
