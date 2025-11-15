@@ -77,24 +77,30 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
           <div className="flex justify-between">
             <div>
               <div className="flex">
-                <p className="text-sm text-gray-500 mr-4">
+                <p className="text-gray-500 mr-4">
                   {task.projects?.name || ""}
                 </p>
-                {task.projects && task.projects.project_members.map((member: { user_id: Key | null | undefined; users: { icon: string; name: string; }; }) => (
-                  <div key={member.user_id}>
+                {task.projects && task.projects.project_members.map((member: { user_id: Key | null | undefined; users: { icon: string; name: string; }; }, idx: number) => (
+                  // 右側のアイコンが上に来るように重ねて表示
+                  <div
+                    key={member.user_id}
+                    className={idx === 0 ? 'ml-2 relative' : '-ml-2 relative'}
+                    style={{ zIndex: 10 + idx }}
+                    title={member.users.name}
+                  >
                     <Image
                       src={member.users.icon || "/default_icon.svg"}
                       alt={member.users.name || "avatar"}
                       width={32}
                       height={32}
-                      className="w-6 h-6 rounded-full object-cover ml-1"
+                      className="w-8 h-8 rounded-full object-cover border-2 border-white"
                     />
                   </div>
                 ))}
               </div>
               <h1 className="text-xl font-bold">{task.title}</h1>
             </div>
-            <TaskCompleteButton id={ task.id } status={ task.status } size="4xl"/>
+            <TaskCompleteButton id={ task.id } status={ task.status } size="3xl"/>
           </div>
 
           {/* タスクエリア */}

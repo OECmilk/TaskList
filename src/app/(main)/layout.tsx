@@ -40,6 +40,7 @@ const MainLayout = async ({
             users:notifications_from_user_id_fkey ( name, icon )
           `)
           .eq('to_user_id', user.id)
+          .limit(15)
           .order('created_at', { ascending: false })
     ]);
 
