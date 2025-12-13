@@ -28,7 +28,7 @@ export default function RootLayout({
   const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
-    <html lang="en">
+    <html lang="ja">
       {/* GA_IDが設定され、本番環境の場合のみ埋め込む */}
       <Suspense>
         {isProd && GA_ID && <GoogleAnalytics />}

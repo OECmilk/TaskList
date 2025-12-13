@@ -17,14 +17,14 @@ const CreateProjectButton = () => {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 bg-cyan-700 text-white font-semibold rounded-full shadow-md hover:bg-cyan-600 transition-colors"
+        className="flex items-center gap-2 px-6 py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all"
       >
         <MdAdd size={20} />
         <span className="hidden sm:inline">New Project</span>
       </button>
 
       {isModalOpen && (
-        <div 
+        <div
           onClick={() => setIsModalOpen(false)}
           className="fixed inset-0 bg-black/60 flex justify-center items-center z-50"
         >
@@ -56,7 +56,7 @@ const CreateProjectButton = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-md text-white bg-cyan-700 hover:bg-cyan-600 font-semibold transition-colors"
+                  className="px-6 py-2 rounded-lg text-white font-bold bg-gradient-to-r from-cyan-600 to-cyan-500 shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
                 >
                   Create Project
                 </button>

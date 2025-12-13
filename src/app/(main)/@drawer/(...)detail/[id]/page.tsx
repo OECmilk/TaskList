@@ -1,12 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
-import { FaEdit } from "react-icons/fa";
-import RouterBackButton from "@/components/Button/RouterBackButton";
-import Chat, { ChatMessage} from "@/components/Chat/Chat";
-import SubTasks from "@/components/Drawer/SubTasks";
-import TaskCompleteButton from "@/components/Button/TaskCompleteButton";
-import { Key } from "react";
-import Image from "next/image";
+import { ChatMessage } from "@/components/Chat/Chat";
+import DrawerContent from "./DrawerContent";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -31,6 +26,7 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
         projects ( 
           name,
           project_members ( 
+            user_id,
             users ( id, name, icon ) 
           )
         ),
@@ -54,75 +50,7 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
   const initialMessages = (task.chats as ChatMessage[]) || [];
 
   return (
-    <>
-      {/*  スライドインするパネル本体 */}
-      <div 
-        className="fixed top-0 right-0 w-full max-w-3xl h-full bg-white shadow-xl z-40 overflow-y-auto animate-slideInFromRight"
-        >
-        <div className="p-8 sm:p-10 text-gray-800">
-          
-          {/*  ヘッダー（閉じるボタンと編集ボタン） */}
-          <header className="flex justify-between items-center mb-4 mt-2">
-            <RouterBackButton returnPath={returnPath}/>
-            <a 
-              href={`/edit/${task.id}`} 
-              className="flex items-center gap-1 px-4 py-2 font-semibold text-white bg-cyan-700 rounded-full shadow-sm hover:bg-cyan-600"
-            >
-              <FaEdit className="size-5"/>
-              <div className="hidden sm:inline">Edit Task</div>
-            </a>
-          </header>
-
-          {/*  詳細コンテンツ */}
-          <div className="flex justify-between">
-            <div>
-              <div className="flex">
-                <p className="text-gray-500 mr-4">
-                  {task.projects?.name || ""}
-                </p>
-                {task.projects && task.projects.project_members.map((member: { user_id: Key | null | undefined; users: { icon: string; name: string; }; }, idx: number) => (
-                  // 右側のアイコンが上に来るように重ねて表示
-                  <div
-                    key={member.user_id}
-                    className={idx === 0 ? 'ml-2 relative' : '-ml-2 relative'}
-                    style={{ zIndex: 10 + idx }}
-                    title={member.users.name}
-                  >
-                    <Image
-                      src={member.users.icon || "/default_icon.svg"}
-                      alt={member.users.name || "avatar"}
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-full object-cover border-2 border-white"
-                    />
-                  </div>
-                ))}
-              </div>
-              <h1 className="text-xl font-bold">{task.title}</h1>
-            </div>
-            <TaskCompleteButton id={ task.id } status={ task.status } size="3xl"/>
-          </div>
-
-          {/* タスクエリア */}
-          <div className="mt-4 bg-gray-50 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">Description</h2>
-            <p className="mb-8">{task.description || "No description."}</p>
-          </div>
-
-          {/* サブタスクエリア */}
-          <div className="mt-4 bg-gray-50 p-6 rounded-lg">
-            <SubTasks sub_tasks={task.sub_tasks || []} />
-          </div>
-
-          {/* チャットエリア */}
-          <Chat 
-            taskId={task.id} 
-            initialMessages={initialMessages}
-            projectMembers={task.projects?.project_members || []}
-          />
-        </div>
-      </div>
-    </>
+    <DrawerContent task={task} initialMessages={initialMessages} returnPath={returnPath} />
   );
 };
 

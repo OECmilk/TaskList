@@ -1,22 +1,23 @@
 'use client';
 
 import { GanttTask } from '@/app/(main)/gantt/page';
-import { Project } from '@/app/(main)/page';
+import { Project } from '@/types';
 import { useState, useMemo } from 'react';
 import ProjectTab from '@/components/Tab/ProjectTab';
 import GanttChart from '@/components/Gantt/GanttChart';
 import { MdAddTask } from 'react-icons/md';
 import Link from 'next/link';
+import MobileGanttChart from './MobileGanttChart'; // Assuming this path is correct relative to GanttContainer
 
 interface GanttContainerProps {
-    initialTasks: GanttTask[];
-    projects: Project[] | [];
+  initialTasks: GanttTask[];
+  projects: Project[] | [];
 }
 
-const GanttContainer = ({ initialTasks, projects }: GanttContainerProps ) => {
-    const [nowProject, setNowProject] = useState<number>(0);
+const GanttContainer = ({ initialTasks, projects }: GanttContainerProps) => {
+  const [nowProject, setNowProject] = useState<number>(0);
 
-    const filteredTasks = useMemo(() => {
+  const filteredTasks = useMemo(() => {
     if (nowProject === 0) {
       return initialTasks;
     }
@@ -25,27 +26,36 @@ const GanttContainer = ({ initialTasks, projects }: GanttContainerProps ) => {
     return initialTasks.filter(task => task.project === selectedProjectName);
   }, [nowProject, initialTasks, projects]);
 
-    return (
-        <>
-      <header className="mb-8 flex justify-between items-center">
-        <div className="flex">
-          <h1 className="text-2xl font-bold">Gantt Chart</h1>
-          <ProjectTab 
-            projects={projects} 
-            nowProject={nowProject} 
-            setNowProject={setNowProject} 
+  // SSRとクライアントでのDate不整合を防ぐため、サーバー側で基準日を生成して渡す
+  const baseDate = new Date();
+
+  return (
+    <>
+      <header className="mb-8 flex justify-between items-center gap-4">
+        <div className="flex items-center min-w-0 flex-1 overflow-hidden">
+          <ProjectTab
+            projects={projects}
+            nowProject={nowProject}
+            setNowProject={setNowProject}
           />
         </div>
 
-        <Link href="/new" prefetch={true} className="flex items-center gap-1 px-4 py-2 font-semibold text-white rounded-full shadow-sm bg-cyan-700 hover:bg-cyan-600">
-          <MdAddTask className="size-5"/>
+        <Link href="/new" prefetch={true} className="flex items-center gap-2 px-6 py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all">
+          <MdAddTask className="size-5" />
           <div className="hidden sm:inline">Add Task</div>
         </Link>
       </header>
 
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
         {filteredTasks.length > 0 ? (
-          <GanttChart tasks={filteredTasks} />
+          <>
+            <div className="hidden md:block">
+              <GanttChart tasks={filteredTasks} baseDate={baseDate} />
+            </div>
+            <div className="block md:hidden">
+              <MobileGanttChart tasks={filteredTasks} baseDate={baseDate} />
+            </div>
+          </>
         ) : (
           <div className="text-center py-10">
             <p className="text-gray-500">表示する未完了のタスクがありません。</p>

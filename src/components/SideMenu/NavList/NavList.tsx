@@ -15,19 +15,19 @@ interface NavItemType {
 
 const NavList = () => {
     const navList: NavItemType[] = [
-        {id: 1, label: "Your Tasks", link: "/", icon: <FaRegFolder className="size-5"/>},
-        {id: 2, label: "Gantt Chart", link: "/gantt", icon: <LuChartGantt className="size-5"/>},
-        {id: 3, label: "Projects", link: "/projects", icon: <RiTeamFill className="size-5"/>},
-        {id: 4, label: "Contact", link: "/contact", icon: <MdSend className="size-5"/>},
-        {id: 5, label: "Settings", link: "/settings", icon: <IoMdSettings className="size-5"/>},
+
+        { id: 2, label: "Gantt Chart", link: "/gantt", icon: <LuChartGantt className="size-5" /> },
+        { id: 3, label: "Projects", link: "/projects", icon: <RiTeamFill className="size-5" /> },
+        { id: 4, label: "Contact", link: "/contact", icon: <MdSend className="size-5" /> },
+        { id: 5, label: "Settings", link: "/settings", icon: <IoMdSettings className="size-5" /> },
     ];
-  return (
-    <div className="mt-8">
-        {navList.map((item) => (
-            <NavItem key={item.id} label={item.label} link={item.link} icon={item.icon} />
-        ))}
-    </div>
-  )
+    return (
+        <div className="mt-8">
+            {navList.map((item) => (
+                <NavItem key={item.id} label={item.label} link={item.link} icon={item.icon} />
+            ))}
+        </div>
+    )
 }
 
 export default NavList;

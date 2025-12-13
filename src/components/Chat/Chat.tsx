@@ -2,19 +2,18 @@
 
 import { createClient } from "@/utils/supabase/client";
 import React, { useEffect, useState, useRef, KeyboardEvent } from "react";
-import { sendChatMessage } from "@/app/actions"; // Server Action (ステップ2で作成)
+import { sendChatMessage } from "@/app/actions";
 import { useProfile } from "@/contexts/ProfileContext";
 import Image from "next/image";
 import { MdSend } from "react-icons/md";
 
-// chatsテーブルの型（初期データ用）
 export type ChatMessage = {
   id: number;
   created_at: string;
   message: string;
   task_id: number;
   user_id: string;
-  users: { // usersテーブルからの結合データ
+  users: {
     name: string | null;
     icon: string | null;
   } | null;
@@ -31,8 +30,8 @@ interface ProjectMember {
 
 interface ChatProps {
   taskId: number;
-  initialMessages: ChatMessage[]; // サーバーから渡される初期メッセージ（過去のメッセージ）
-  projectMembers?: ProjectMember[]; // プロジェクトメンバー一覧（メンション用）
+  initialMessages: ChatMessage[];
+  projectMembers?: ProjectMember[];
 }
 
 const mentionRegex = /@([^@\s]+)/g;
@@ -41,27 +40,22 @@ const highlightMentions = (text: string) => {
   let lastIndex = 0;
   let match;
 
-  // 正規表現に一致するすべてのメンションをループ処理
   while ((match = mentionRegex.exec(text)) !== null) {
-    // マッチする前のテキスト部分
     if (match.index > lastIndex) {
       parts.push(text.substring(lastIndex, match.index));
     }
-    // マッチしたメンション部分 (紫色でハイライト)
     parts.push(
-      <span key={match.index} className="text-purple-800 font-semibold text-sm">
+      <span key={match.index} className="text-cyan-600 font-bold bg-cyan-50 px-1 rounded mx-0.5 text-sm">
         {match[0]}
       </span>
     );
     lastIndex = match.index + match[0].length;
   }
 
-  // 最後のマッチの後の残りテキスト
   if (lastIndex < text.length) {
     parts.push(text.substring(lastIndex));
   }
 
-  // Reactが配列を正しくレンダリングできるように、各部分にkeyを持たせる
   return parts.map((part, index) => (
     <React.Fragment key={index}>{part}</React.Fragment>
   ));
@@ -69,19 +63,17 @@ const highlightMentions = (text: string) => {
 
 const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
   const supabase = createClient();
-  const { profile } = useProfile(); // 自分のプロフィール情報をContextから取得
+  const { profile } = useProfile();
 
+  // Logic State
   const [messages, setMessages] = useState(initialMessages);
-  const [mentionQuery, setMentionQuery] = useState<string>(''); // "@" 後の入力文字列
-  const [showMentionDropdown, setShowMentionDropdown] = useState(false); // ドロップダウン表示フラグ
-  const [mentionCursorPos, setMentionCursorPos] = useState<number>(0); // "@" の位置
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionIndex, setMentionIndex] = useState<number | null>(null);
 
-  // フォームとテキストエリアへの参照
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // メッセージリストの末尾へ自動スクロール
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -92,26 +84,21 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
     scrollToBottom();
   }, [messages]);
 
-  // Supabaseのリアルタイム購読を設定
+  // Realtime Subscription
   useEffect(() => {
-    // chatsテーブルのINSERTイベントを監視
     const channel = supabase
       .channel(`chat_room_for_task_${taskId}`)
       .on<ChatMessage>(
         'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'chats', 
-          filter: `task_id=eq.${taskId}` 
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chats',
+          filter: `task_id=eq.${taskId}`
         },
         async (payload) => {
-          // 新しいメッセージが届いたら、リアルタイムでUIに反映
-          // ただし、自分で送信したメッセージは二重に追加しないようにする
-          if (payload.new.user_id === profile?.id) {
-            return;
-          }
-            // 新しいメッセージの送信者のプロフィールを取得
+          if (payload.new.user_id === profile?.id) return;
+
           const { data: userData, error } = await supabase
             .from('users')
             .select('name, icon')
@@ -119,17 +106,14 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
             .single();
 
           if (error) {
-            console.error('Error fetching profile for realtime message:', error);
-            // ユーザー情報がなくても、メッセージ自体は表示する (フォールバック)
             setMessages((currentMessages) => [
               ...currentMessages,
-              { ...payload.new, users: null } 
+              { ...payload.new, users: null }
             ]);
           } else {
-            // メッセージとプロフィールを結合してstateを更新
             const completeMessage: ChatMessage = {
               ...payload.new,
-              users: userData // 取得したユーザー情報をネスト
+              users: userData
             };
             setMessages((currentMessages) => [...currentMessages, completeMessage]);
           }
@@ -137,23 +121,19 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
       )
       .subscribe();
 
-    // クリーンアップ
     return () => {
       supabase.removeChannel(channel);
     };
   }, [supabase, taskId, profile?.id]);
 
-  // メッセージ送信フォームの処理
+  // Submit Logic
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const formData = new FormData(event.currentTarget);
     const messageText = formData.get('message') as string;
 
-    if (!messageText.trim()) return; // 空白のみのメッセージは送信しない
-    
-    // UIを即座に更新（楽観的更新）
-    // (profileがnullでないことを前提とする)
+    if (!messageText.trim()) return;
+
     if (profile) {
       setMessages((currentMessages) => [
         ...currentMessages,
@@ -161,8 +141,8 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
           id: Math.random(),
           created_at: new Date().toISOString(),
           message: messageText,
-          task_id: taskId, // task_idも追加
-          user_id: profile.id, // profile.id を使用
+          task_id: taskId,
+          user_id: profile.id,
           users: {
             name: profile.name,
             icon: profile.icon
@@ -170,219 +150,183 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
         }
       ]);
     }
-    
-    // フォームをリセット
-    event.currentTarget.reset();
 
-    // Server Actionを呼び出してデータベースに保存
+    event.currentTarget.reset();
+    setMentionQuery(null);
+
     try {
       await sendChatMessage(formData);
     } catch (error) {
       console.error("Error sending message:", error);
-      // TODO: エラー時のUIロールバック
     }
   };
 
-  // Ctrl+Enter / Cmd+Enter で送信するキーボードハンドラ
+  // Key Down Handler
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Ctrl+Enter または Cmd+Enter が押された場合
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-      event.preventDefault(); // 改行を防ぐ
-      formRef.current?.requestSubmit(); // フォームを送信
+      event.preventDefault();
+      formRef.current?.requestSubmit();
     }
-    // Enterキーだけが押された場合は、<textarea>のデフォルトの動作（改行）が実行される
   };
 
-  // テキストエリアの入力変更を監視（メンション検出用）
-  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = event.currentTarget.value;
-    const cursorPos = event.currentTarget.selectionStart;
+  // Mention Detection
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value;
+    const selectionEnd = e.target.selectionEnd;
+    const lastAt = text.lastIndexOf('@', selectionEnd - 1);
 
-    // カーソル位置の直前までのテキストを取得
-    const textBeforeCursor = text.substring(0, cursorPos);
-    
-    // "@" または "＠" の最後の出現位置を探す
-    const lastMentionIndex = Math.max(
-      textBeforeCursor.lastIndexOf('@'),
-      textBeforeCursor.lastIndexOf('＠')
-    );
+    if (lastAt !== -1) {
+      const charBeforeAt = lastAt > 0 ? text[lastAt - 1] : ' ';
+      const query = text.slice(lastAt + 1, selectionEnd);
 
-    
-
-    // "@" または "＠" が存在し、かつその後に空白がない場合
-    if (lastMentionIndex !== -1) {
-      const afterMention = textBeforeCursor.substring(lastMentionIndex + 1);
-      // スペース、改行、その他の区切り文字があれば、メンション入力終了と判定
-      if (!/[\s\n]/.test(afterMention) || afterMention === '') {
-        setMentionQuery(afterMention);
-        setMentionCursorPos(lastMentionIndex);
-        setShowMentionDropdown(true);
+      if ((charBeforeAt === ' ' || charBeforeAt === '\n') && !query.includes('\n')) {
+        setMentionQuery(query);
+        setMentionIndex(lastAt);
         return;
       }
     }
 
-    // "@" が見つからないか、条件を満たさない場合はドロップダウンを閉じる
-    setShowMentionDropdown(false);
-    setMentionQuery('');
+    setMentionQuery(null);
+    setMentionIndex(null);
   };
 
-  // メンション候補をフィルタリング（自分を除外）
-  const filteredMembers = projectMembers.filter(member =>
-    member.users.id !== profile?.id && // 自分を除外
-    member.users.name.toLowerCase().includes(mentionQuery.toLowerCase())
-  );
+  const handleMentionSelect = (user: { id: string, name: string }) => {
+    if (textareaRef.current && mentionIndex !== null) {
+      const text = textareaRef.current.value;
+      const before = text.substring(0, mentionIndex);
+      const after = text.substring(textareaRef.current.selectionEnd);
+      const newText = `${before}@${user.name} ${after}`;
 
-  // メンバーをクリック選択した場合の処理
-  const handleSelectMember = (memberName: string) => {
-    if (!textareaRef.current) return;
-
-    const textarea = textareaRef.current;
-    const currentText = textarea.value;
-    const cursorPos = textarea.selectionStart;
-
-    // "@" の位置から現在のカーソル位置までを新しいメンション（例: "@username"）に置き換える
-    const beforeMention = currentText.substring(0, mentionCursorPos);
-    const afterMention = currentText.substring(cursorPos);
-    
-    const newText = `${beforeMention}@${memberName}${afterMention}`;
-    
-    // textareaの値を更新
-    textarea.value = newText;
-    
-    // カーソル位置をメンション後に移動
-    const newCursorPos = mentionCursorPos + memberName.length + 1;
-    textarea.setSelectionRange(newCursorPos, newCursorPos);
-
-    // ドロップダウンを閉じる
-    setShowMentionDropdown(false);
-    setMentionQuery('');
-
-    // フォーカスを保つ
-    textarea.focus();
+      textareaRef.current.value = newText;
+      setMentionQuery(null);
+      setMentionIndex(null);
+      textareaRef.current.focus();
+    }
   };
 
+  const filteredMembers = mentionQuery !== null
+    ? (projectMembers || []).filter(m => m.users.name.toLowerCase().includes(mentionQuery.toLowerCase()))
+    : [];
 
   return (
-    <div className="mt-4 bg-gray-50 p-6 rounded-lg">
-      <h2 className="text-xl font-semibold mb-4">Chat</h2>
-      
-      {/* メッセージ表示エリア */}
-      <div ref={chatContainerRef} className="h-100 overflow-y-auto space-y-4 mb-4 p-4 bg-white border rounded-md">
-        {messages.map((msg) => {
-            const isMe = msg.user_id === profile?.id;
-            
-        return (
-          <div key={msg.id} className="flex items-start gap-3">
-            {/* 他人のメッセージには左側にアイコン表示 */}
-            {!isMe && (
-            <Image
-              src={msg.users?.icon || "/default_icon.svg"}
-              alt={msg.users?.name || "avatar"}
-              width={32}
-              height={32}
-              className="w-8 h-8 rounded-full object-cover"
-            />)}
-            
-            <div className="flex-1 max-w-[90%]">
-              <p 
-              className={`text-sm font-semibold ${isMe ? "text-right" : "text-left"}`}
-              >
-                {msg.users?.name || 'User'}
-              </p>
-
-              <div className="relative">
-                {/* 他人のメッセージの場合、左側に尻尾を追加 */}
-                {!isMe && (
-                  <div className="absolute left-[-8px] top-2 w-0 h-0 
-                    border-t-[1px] border-t-transparent
-                    border-r-[10px] border-r-gray-200
-                    border-b-[8px] border-b-transparent"
-                  />
-                )}
-                
-                {/* メッセージバブル本体 */}
-                <p className={`p-3 rounded-lg break-words whitespace-pre-wrap text-gray-800 ${isMe ? 'bg-blue-100 ml-10' : 'bg-gray-200 mr-10'}`}>
-                  {highlightMentions(msg.message)}
-                </p>
-
-                {/* 自分のメッセージの場合、右側に尻尾を追加 */}
-                {isMe && (
-                  <div className="absolute right-[-8px] top-2 w-0 h-0 
-                    border-t-[1px] border-t-transparent
-                    border-l-[10px] border-l-blue-100
-                    border-b-[8px] border-b-transparent"
-                  />
-                )}
-              </div>
-
-              <p className={`text-xs text-gray-400 mt-1 ${isMe ? "text-right" : "text-left"}`}>
-                {new Date(msg.created_at).toLocaleString()}
-              </p>
-            </div>
-            {/* 自分のメッセージには右側にアイコン表示 */}
-            {isMe && (
-            <Image
-              src={msg.users?.icon || "/default_icon.svg"}
-              alt={msg.users?.name || "avatar"}
-              width={32}
-              height={32}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            )}
-          </div>
-        )})}
+    <div className="flex flex-col h-[600px]">
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <h2 className="text-lg font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Chat</h2>
+        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full font-medium">{messages.length}</span>
       </div>
 
-      {/* メッセージ送信フォーム */}
-      <form ref={formRef} onSubmit={handleFormSubmit}>
-        <input type="hidden" name="taskId" value={taskId} />
-        <div className="flex gap-2 relative">
-          <div className="flex-1 relative">
+      {/* Messages Area */}
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto space-y-6 px-3 py-5 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent bg-slate-100/70 rounded-2xl border border-slate-200 shadow-inner"
+      >
+        {messages.map((msg) => {
+          const isMe = msg.user_id === profile?.id;
+
+          return (
+            <div key={msg.id} className={`flex items-end gap-3 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+              {/* Avatar */}
+              <div className="flex-shrink-0 relative">
+                <Image
+                  src={msg.users?.icon || "/default_icon.svg"}
+                  alt={msg.users?.name || "avatar"}
+                  width={36}
+                  height={36}
+                  className="w-9 h-9 rounded-full object-cover ring-2 ring-white shadow-sm"
+                />
+              </div>
+
+              <div className={`flex flex-col max-w-[85%] ${isMe ? "items-end" : "items-start"}`}>
+                {/* Name (Only for others) */}
+                {!isMe && (
+                  <span className="text-xs text-gray-500 ml-1 mb-1 font-medium">
+                    {msg.users?.name || 'User'}
+                  </span>
+                )}
+
+                {/* Message Bubble */}
+                <div
+                  className={`
+                    relative px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm
+                    ${isMe
+                      ? 'bg-gradient-to-br from-cyan-500 to-blue-500 text-white rounded-br-none'
+                      : 'bg-white border border-gray-100 text-gray-700 rounded-bl-none'
+                    }
+                `}
+                >
+                  <p className="break-words whitespace-pre-wrap">
+                    {highlightMentions(msg.message)}
+                  </p>
+                </div>
+
+                {/* Timestamp */}
+                <span className="text-[10px] text-gray-400 mt-1.5 px-1">
+                  {new Date(msg.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+        {messages.length === 0 && (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-50">
+            <p className="text-sm font-medium">No messages yet</p>
+            <p className="text-xs">Start the conversation!</p>
+          </div>
+        )}
+      </div>
+
+      {/* Input Area */}
+      <div className="pt-4 mt-auto">
+        <form ref={formRef} onSubmit={handleFormSubmit} className="relative group">
+          <input type="hidden" name="taskId" value={taskId} />
+
+          {/* Mention List Dropdown */}
+          {mentionQuery !== null && filteredMembers.length > 0 && (
+            <div className="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2">
+              <div className="py-2">
+                <p className="px-3 py-1 text-xs font-bold text-gray-400 uppercase tracking-wider">Members</p>
+                {filteredMembers.map(member => (
+                  <button
+                    key={member.user_id}
+                    type="button"
+                    onClick={() => handleMentionSelect(member.users)}
+                    className="w-full text-left px-4 py-2 hover:bg-cyan-50 flex items-center gap-3 transition-colors"
+                  >
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-200 relative flex-shrink-0">
+                      <Image src={member.users.icon || '/default_icon.svg'} alt={member.users.name} fill className="object-cover" />
+                    </div>
+                    <span className="text-sm text-gray-700 font-medium">{member.users.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="relative">
             <textarea
               name="message"
               ref={textareaRef}
               onKeyDown={handleKeyDown}
-              onChange={handleTextChange}
+              onChange={handleInputChange} // Attached handler
               required
-              placeholder="Type your message..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+              rows={1}
+              placeholder="Type a message..."
+              className="w-full pl-5 pr-14 py-4 rounded-3xl border-2 border-gray-200 bg-white shadow-sm focus:border-cyan-400 focus:ring-0 transition-all resize-none text-gray-700 placeholder:text-gray-400 leading-normal"
+              style={{ minHeight: '56px', maxHeight: '120px' }}
             />
-            
-            {/* メンション候補ドロップダウン */}
-            {showMentionDropdown && filteredMembers.length > 0 && (
-              <div className="absolute bottom-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mb-1 max-h-40 w-1/3 overflow-y-auto z-50">
-                {filteredMembers.map((member) => (
-                  <button
-                    key={member.users.id}
-                    type="button"
-                    onClick={() => handleSelectMember(member.users.name)}
-                    className="w-full text-left px-2 py-1 hover:bg-cyan-100 flex items-center gap-2 border-b last:border-b-0"
-                  >
-                    <Image
-                      src={member.users.icon || "/default_icon.svg"}
-                      alt={member.users.name}
-                      width={24}
-                      height={24}
-                      className="w-6 h-6 rounded-full object-cover"
-                    />
-                    <span className="text-xs text-gray-800">{member.users.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-full text-white shadow-lg hover:shadow-cyan-500/30 transition-all active:scale-95"
+            >
+              <MdSend className="w-5 h-5 ml-0.5" />
+            </button>
           </div>
-          
-          <button
-            type="submit"
-            className="px-3 py-2 bg-cyan-700 text-white font-semibold rounded-md shadow-sm hover:bg-cyan-600 transition-colors"
-          >
-            <MdSend className="mx-auto size-5" />
-            <div className="mt-2 text-[10px] text-cyan-100 font-normal block">(Ctrl+Enter)</div>
-          </button>
-        </div>
-      </form>
+          <p className="text-[10px] text-gray-400 text-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            Press <span className="font-semibold text-gray-500">Ctrl + Enter</span> to send
+          </p>
+        </form>
+      </div>
     </div>
   );
 };
-
 export default Chat;
