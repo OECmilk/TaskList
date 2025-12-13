@@ -73,7 +73,7 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                             {/* Project Member Icons */}
                             {task.projects && task.projects.project_members && (
                                 <div className="flex pl-1">
-                                    {task.projects.project_members.map((member: any, idx: number) => (
+                                    {task.projects.project_members.map((member: { user_id: string; users: { id: string; name: string; icon: string | null } }, idx: number) => (
                                         <div
                                             key={member.user_id}
                                             className={idx === 0 ? 'relative' : '-ml-2 relative'}

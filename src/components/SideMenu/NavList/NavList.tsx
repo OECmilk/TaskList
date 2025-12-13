@@ -1,5 +1,4 @@
 import React from "react";
-import { FaRegFolder } from "react-icons/fa";
 import NavItem from "./NavItem/NavItem";
 import { RiTeamFill } from "react-icons/ri";
 import { MdSend } from "react-icons/md";

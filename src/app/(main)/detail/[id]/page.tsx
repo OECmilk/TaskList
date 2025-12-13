@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FaEdit } from "react-icons/fa";
-import { SubTask } from "../../page";
+import { SubTask } from "@/types";
 
 
 type PageProps = {
@@ -41,8 +41,8 @@ const TaskDetailPage = async ({ params }: PageProps) => {
           </p>
           <h1 className="text-3xl font-bold">{task.title}</h1>
         </div>
-        <Link 
-          href={`/edit/${task.id}`} 
+        <Link
+          href={`/edit/${task.id}`}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-cyan-700 rounded-md hover:bg-cyan-600"
         >
           <FaEdit />

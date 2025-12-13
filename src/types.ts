@@ -18,6 +18,7 @@ export type Project = {
     project_members?: {
         user_id: string;
         users: {
+            id: string;
             name: string;
             icon: string | null;
         }

@@ -1,6 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
-import ProjectTab from "@/components/Tab/ProjectTab";
 import { Project } from "@/types";
 import GanttContainer from "@/components/Gantt/GanttContainer";
 
@@ -36,6 +35,7 @@ type TaskForGantt = {
         project_members: {
             user_id: string;
             users: {
+                id: string;
                 name: string;
                 icon: string | null;
             }
@@ -86,7 +86,7 @@ const GanttPage = async () => {
                 status,
                 project_members( 
                     user_id,
-                    users( name, icon )
+                    users( id, name, icon )
                     )
                 ),
             users( name, icon )
@@ -116,7 +116,14 @@ const GanttPage = async () => {
                 name: task.projects.name,
                 owner: task.projects.owner,
                 status: task.projects.status,
-                project_members: task.projects.project_members
+                project_members: task.projects.project_members.map(m => ({
+                    user_id: m.user_id,
+                    users: {
+                        id: m.users.id,
+                        name: m.users.name,
+                        icon: m.users.icon
+                    }
+                }))
             };
             projectsMap.set(projectData.id, projectData);
         }
