@@ -1,8 +1,8 @@
 'use client';
 
-import { SubTask } from "@/app/(main)/page";
+import { SubTask } from "@/types";
 import { useState, useRef } from "react";
-import { FaAngleDown, FaCheckCircle, FaRegCircle, FaTrashAlt, FaPlus, FaChevronUp, FaChevronDown } from "react-icons/fa";
+import { FaCheckCircle, FaRegCircle, FaTrashAlt, FaPlus, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { addSubTask, updateSubTaskStatus, deleteSubTask } from "@/app/actions";
 
 const SubTasks = ({ sub_tasks, taskId }: { sub_tasks: SubTask[], taskId: number }) => {

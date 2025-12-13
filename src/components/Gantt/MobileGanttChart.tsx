@@ -1,7 +1,7 @@
 'use client';
 
 import { GanttTask } from '@/app/(main)/gantt/page';
-import { useMemo, useState, useEffect, useRef, useCallback, startTransition } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { updateTaskDates } from '@/app/actions';
 import Link from 'next/link';
 import Image from 'next/image';

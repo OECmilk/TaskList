@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { Project } from "@/app/(main)/page"; 
+import { Project } from "@/types";
 import CreateProjectButton from "@/components/Project/CreateProjectButton";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,11 +12,11 @@ type ProjectWithOwner = Project & {
 };
 
 export default async function ProjectsPage() {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    const { data: { user }} = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
+  if (!user) {
     return <p className="p-8">Please log in to view your projects.</p>;
   }
 
@@ -27,10 +27,10 @@ export default async function ProjectsPage() {
     .eq('user_id', user.id);
 
   if (memberError) {
-      console.error('Error fetching project memberships:', memberError);
-      return <p className="p-8">Error loading projects.</p>;
+    console.error('Error fetching project memberships:', memberError);
+    return <p className="p-8">Error loading projects.</p>;
   }
-  
+
   // 2. 取得したIDのリストに一致するプロジェクト情報と、そのオーナー情報を取得
   const projectIds = memberProjectIds.map(p => p.project_id);
   const { data, error: projectsError } = await supabase
@@ -47,8 +47,8 @@ export default async function ProjectsPage() {
   const projects = data as ProjectWithOwner[] | null;
 
   if (projectsError) {
-      console.error('Error fetching projects:', projectsError);
-      return <p className="p-8">Error loading projects.</p>;
+    console.error('Error fetching projects:', projectsError);
+    return <p className="p-8">Error loading projects.</p>;
   }
 
   return (
@@ -66,11 +66,11 @@ export default async function ProjectsPage() {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-orange-100 rounded-lg">
                     <Image
-                        src={project.users?.icon ?? "/default-avatar.png"}
-                        alt={project.users?.name ?? "Owner Avatar"}
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-lg"
+                      src={project.users?.icon ?? "/default-avatar.png"}
+                      alt={project.users?.name ?? "Owner Avatar"}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-lg"
                     />
                   </div>
                   <h2 className="text-xl font-semibold truncate">{project.name}</h2>

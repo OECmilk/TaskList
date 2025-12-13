@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
-import { Project } from "@/app/(main)/page";
-import { addProjectMember } from "@/app/actions"; 
+import { Project } from "@/types";
+import { addProjectMember } from "@/app/actions";
 import Image from "next/image";
 
 // このページで取得する、メンバー情報がネストされたプロジェクトの型を定義
@@ -83,27 +83,27 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         </div>
         {/* 新しいメンバーを招待するフォーム */}
         <div className="mt-8 pt-6 border-t">
-            <h3 className="text-lg font-semibold mb-4">Invite New Member</h3>
-            <form action={addProjectMember} className="flex flex-col sm:flex-row gap-4">
-                <input type="hidden" name="projectId" value={project.id} />
-                <div className="flex-grow">
-                    <label htmlFor="email" className="sr-only">Email address</label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        placeholder="user@example.com"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                    />
-                </div>
-                <button
-                    type="submit"
-                    className="px-6 py-2 bg-cyan-700 text-white font-semibold rounded-md shadow-sm hover:bg-cyan-600 transition-colors"
-                >
-                    Invite
-                </button>
-            </form>
+          <h3 className="text-lg font-semibold mb-4">Invite New Member</h3>
+          <form action={addProjectMember} className="flex flex-col sm:flex-row gap-4">
+            <input type="hidden" name="projectId" value={project.id} />
+            <div className="flex-grow">
+              <label htmlFor="email" className="sr-only">Email address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="user@example.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-cyan-700 text-white font-semibold rounded-md shadow-sm hover:bg-cyan-600 transition-colors"
+            >
+              Invite
+            </button>
+          </form>
         </div>
       </div>
     </div>

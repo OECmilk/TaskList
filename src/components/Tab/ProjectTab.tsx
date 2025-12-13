@@ -1,6 +1,7 @@
 'use client';
 
 import { Project } from '@/types';
+import Image from 'next/image';
 import { Dispatch, SetStateAction } from 'react';
 
 interface ProjectTabProps {
@@ -62,10 +63,11 @@ const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) =>
                                         key={member.user_id}
                                         className="relative w-8 h-8 rounded-full ring-2 ring-white overflow-hidden bg-gray-200 shadow-sm hover:z-10 hover:scale-110 transition-all cursor-help group"
                                     >
-                                        <img
+                                        <Image
                                             src={member.users.icon || '/default_icon.svg'}
                                             alt={member.users.name}
-                                            className="w-full h-full object-cover"
+                                            fill
+                                            className="object-cover"
                                         />
                                         {/* Tooltip */}
                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20">

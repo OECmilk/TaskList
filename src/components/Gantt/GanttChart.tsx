@@ -188,7 +188,7 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
         const diffInMs = maxDate.getTime() - minDate.getTime();
         const days = Math.round(diffInMs / DAY_IN_MS);
         return { timelineStart: minDate, totalDays: days };
-    }, [localTasks]);
+    }, [localTasks, baseDate]);
 
     // 日付ヘッダーの生成
     // 日付ヘッダーの生成 (With Month Grouping)

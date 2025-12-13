@@ -1,7 +1,7 @@
 "use client";
 
-import { Task, Project } from "@/app/(main)/page";
-import { editTask, addSubTask } from "@/app/actions";
+import { Task, Project } from "@/types";
+import { editTask } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import SubTaskCompleteButton from "./SubTaskCompleteButton/SubTaskCompleteButton";
 import SubTaskDeleteButton from "./SubTaskDeleteButton/SubTaskDeleteButton";
