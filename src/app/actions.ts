@@ -9,106 +9,110 @@ import { cookies } from "next/headers";
  * タスクを追加するサーバーアクション
  */
 export const createNewTask = async (formData: FormData) => {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    // フォームからデータを取得
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string || null;
-    const dueDate = formData.get('dueDate') as string; // 入力が無い場合、自動で今日を設定
-    const projectIdString = formData.get('projectId') as string;
-    const projectId = projectIdString ? parseInt(projectIdString, 10) : null;
+  // フォームからデータを取得
+  const title = formData.get('title') as string;
+  const description = formData.get('description') as string || null;
+  const dueDate = formData.get('dueDate') as string; // 入力が無い場合、自動で今日を設定
+  const projectIdString = formData.get('projectId') as string;
+  const projectId = projectIdString ? parseInt(projectIdString, 10) : null;
 
-    // Supabaseの'TaskList'テーブルに新しいタスクを挿入
-    const { error } = await supabase.from('tasks').insert([
-        {
-            title: title,
-            description: description,
-            due_date: dueDate,
-            project_id: projectId,
-        },
-    ]);
+  // Supabaseの'TaskList'テーブルに新しいタスクを挿入
+  const { error } = await supabase.from('tasks').insert([
+    {
+      title: title,
+      description: description,
+      due_date: dueDate,
+      project_id: projectId,
+    },
+  ]);
 
-    if (error) {
-        console.error('Error creating task:', error);
-        throw new Error('Failed to create task');
-    }
+  if (error) {
+    console.error('Error creating task:', error);
+    throw new Error('Failed to create task');
+  }
 
-    // データ挿入後のキャッシュをクリアして、一覧ページに最新のリストを表示
-    revalidatePath("/gantt");
-    redirect("/gantt");
+  // データ挿入後のキャッシュをクリアして、一覧ページに最新のリストを表示
+  revalidatePath("/gantt");
+  redirect("/gantt");
 };
 
 /**
  * 新しいサブタスクを追加するサーバーアクション
  */
 export async function addSubTask(formData: FormData) {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    // フォームからデータを取得
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const taskId = formData.get('task_id') as string;
+  // フォームからデータを取得
+  const title = formData.get('title') as string;
+  const description = formData.get('description') as string;
+  const taskId = formData.get('task_id') as string;
 
-    // sub_tasksテーブルに新しいレコードを挿入
-    const { error } = await supabase.from('sub_tasks').insert([
-        {
-            title: title,
-            description: description,
-            task_id: taskId,
-            status: false // サブタスクの初期状態は未完了
-        },
-    ]);
+  // sub_tasksテーブルに新しいレコードを挿入
+  const { error } = await supabase.from('sub_tasks').insert([
+    {
+      title: title,
+      description: description,
+      task_id: taskId,
+      status: false // サブタスクの初期状態は未完了
+    },
+  ]);
 
-    if (error) {
-        console.error('Error creating subtask:', error);
-        throw new Error('Failed to create subtask');
-    }
+  if (error) {
+    console.error('Error creating subtask:', error);
+    throw new Error('Failed to create subtask');
+  }
 
-    // データ更新後、キャッシュをクリアして編集ページを再描画する
-    revalidatePath(`/edit/${taskId}`);
+  // データ更新後、キャッシュをクリアして編集ページを再描画する
+  revalidatePath(`/edit/${taskId}`);
+  revalidatePath(`/detail/${taskId}`);
+  revalidatePath('/gantt');
 }
 
 /**
  * タスクの完了状態を更新するサーバーアクション
  */
 export async function updateTaskStatus(formData: FormData) {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    //フォームデータからidとstatusを取得
-    const id = formData.get('id') as string;
-    const currentStatus = formData.get('status') === 'true'; // 文字列をbooleanに変換
+  //フォームデータからidとstatusを取得
+  const id = formData.get('id') as string;
+  const currentStatus = formData.get('status') === 'true'; // 文字列をbooleanに変換
 
-    const { error } = await supabase
-        .from('tasks')
-        .update({ status: !currentStatus }) // 現在の状態を反転
-        .eq('id', id);
+  const { error } = await supabase
+    .from('tasks')
+    .update({ status: !currentStatus }) // 現在の状態を反転
+    .eq('id', id);
 
-    if (error) {
-        console.error('Error updating task status:', error);
-        throw new Error('Failed to update task status');
-    }
+  if (error) {
+    console.error('Error updating task status:', error);
+    throw new Error('Failed to update task status');
+  }
 
-    revalidatePath('/gantt');
+  revalidatePath('/gantt');
 }
 
 /**
  * サブタスクの完了状態を更新するサーバーアクション
  */
 export async function updateSubTaskStatus(id: number, taskId: number, currentStatus: boolean) {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    const { error } = await supabase
-        .from('sub_tasks')
-        .update({ status: !currentStatus }) // 現在の状態を反転
-        .eq('id', id)
-        .eq('task_id', taskId);
+  const { error } = await supabase
+    .from('sub_tasks')
+    .update({ status: !currentStatus }) // 現在の状態を反転
+    .eq('id', id)
+    .eq('task_id', taskId);
 
-    if (error) {
-        console.error('Error updating task status:', error);
-        throw new Error('Failed to update sub_task status');
-    }
+  if (error) {
+    console.error('Error updating task status:', error);
+    throw new Error('Failed to update sub_task status');
+  }
 
-    revalidatePath(`/edit/${taskId}`);
+  revalidatePath(`/edit/${taskId}`);
+  revalidatePath(`/detail/${taskId}`);
+  revalidatePath('/gantt');
 }
 
 /**
@@ -120,34 +124,34 @@ export async function updateSubTaskStatus(id: number, taskId: number, currentSta
  * @param project_id
  */
 export async function editTask(formData: FormData) {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    // フォームデータから各フィールドを取得
-    const id = formData.get('id') as string;
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const due_date = formData.get('dueDate') as string;
-    const projectIdString = formData.get('projectId') as string;
+  // フォームデータから各フィールドを取得
+  const id = formData.get('id') as string;
+  const title = formData.get('title') as string;
+  const description = formData.get('description') as string;
+  const due_date = formData.get('dueDate') as string;
+  const projectIdString = formData.get('projectId') as string;
 
-    const project_id = projectIdString ? parseInt(projectIdString, 10) : null;
+  const project_id = projectIdString ? parseInt(projectIdString, 10) : null;
 
-    const { error } = await supabase
-        .from('tasks')
-        .update({
-            title: title,
-            description: description,
-            due_date: due_date,
-            project_id: project_id, 
-        })
-        .eq('id', id);
+  const { error } = await supabase
+    .from('tasks')
+    .update({
+      title: title,
+      description: description,
+      due_date: due_date,
+      project_id: project_id,
+    })
+    .eq('id', id);
 
-    if (error) {
-        console.error('Error editing task:', error);
-        throw new Error('Failed to edit task');
-    }
+  if (error) {
+    console.error('Error editing task:', error);
+    throw new Error('Failed to edit task');
+  }
 
-    revalidatePath('/');
-    redirect('/');
+  revalidatePath('/');
+  redirect('/');
 }
 
 /**
@@ -155,20 +159,20 @@ export async function editTask(formData: FormData) {
  * @param id 削除するサブタスクのID
  */
 export async function deleteTask(formData: FormData) {
-    const supabase = createClient();
-    
-    const id = formData.get('id') as string;
+  const supabase = createClient();
 
-    const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', id);
-    if (error) {
-        console.error('Error deleting task:', error);
-        throw new Error('Failed to delete task');
-    }
-    revalidatePath('/');
-    redirect('/');
+  const id = formData.get('id') as string;
+
+  const { error } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', id);
+  if (error) {
+    console.error('Error deleting task:', error);
+    throw new Error('Failed to delete task');
+  }
+  revalidatePath('/');
+  redirect('/');
 }
 
 /**
@@ -177,18 +181,20 @@ export async function deleteTask(formData: FormData) {
  * @param taskId 削除するタスクのID
  */
 export async function deleteSubTask(id: number, taskId: number) {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    const { error } = await supabase
-        .from('sub_tasks')
-        .delete()
-        .eq('id', id);
-    if (error) {
-        console.error('Error deleting task:', error);
-        throw new Error('Failed to delete task');
-    }
-    
-    revalidatePath(`/edit/${taskId}`);
+  const { error } = await supabase
+    .from('sub_tasks')
+    .delete()
+    .eq('id', id);
+  if (error) {
+    console.error('Error deleting task:', error);
+    throw new Error('Failed to delete task');
+  }
+
+  revalidatePath(`/edit/${taskId}`);
+  revalidatePath(`/detail/${taskId}`);
+  revalidatePath('/gantt');
 }
 
 
@@ -204,9 +210,9 @@ export async function updateTaskDates(
 
   const { error } = await supabase
     .from('tasks')
-    .update({ 
-      start_date: newStartDate, 
-      due_date: newEndDate 
+    .update({
+      start_date: newStartDate,
+      due_date: newEndDate
     })
     .eq('id', taskId);
 
@@ -374,7 +380,7 @@ export async function updateProfile(formData: FormData) {
     }
 
     // アップロードしたファイルの公開URLを取得
-    const { data: { publicUrl }} = supabase.storage
+    const { data: { publicUrl } } = supabase.storage
       .from('icons')
       .getPublicUrl(filePath);
 
@@ -382,7 +388,7 @@ export async function updateProfile(formData: FormData) {
   }
 
   // public.usersの更新するカラムを決定
-  const updates: {name: string, icon?: string} = {
+  const updates: { name: string, icon?: string } = {
     name: userName,
   };
   if (newIconUrl) {
@@ -391,9 +397,9 @@ export async function updateProfile(formData: FormData) {
 
   // 更新
   const { error: profileError } = await supabase
-  .from('users')
-  .update(updates)
-  .eq('id', user.id);
+    .from('users')
+    .update(updates)
+    .eq('id', user.id);
   if (profileError) {
     console.error('Profile update error:', profileError.message);
     const message = encodeURIComponent('Failed to update profile name.');
@@ -401,7 +407,7 @@ export async function updateProfile(formData: FormData) {
   }
 
   if (email !== user.email) {
-    const { error: authError} = await supabase.auth.updateUser({
+    const { error: authError } = await supabase.auth.updateUser({
       email: email,
     });
     if (authError) {
@@ -447,7 +453,7 @@ export async function updateTaskUser(taskId: number, userId: string) {
         task_id: taskId,
         action_type: 'TASK_ASSIGNED'
       });
-    
+
     if (notificationError) {
       // 通知の失敗はコンソールに出力するが、メインの処理は続行
       console.error('Error creating task assignment notification:', notificationError);
@@ -468,7 +474,7 @@ export async function sendChatMessage(formData: FormData) {
   if (!user) {
     throw new Error('User is not authenticated');
   }
-  
+
   const taskId = formData.get('taskId') as string;
   const message = formData.get('message') as string;
   if (!taskId || !message) {
@@ -537,12 +543,12 @@ export async function updateIsRead(notificationId: number) {
   const supabase = createClient();
 
   const { error } = await supabase
-  .from('notifications')
-  .update({ is_read: true })
-  .eq('id', notificationId);
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('id', notificationId);
 
   if (error) {
-  console.error('Error updating notifications is_read:', error);
-  throw new Error('Failed to update notification is_read');
+    console.error('Error updating notifications is_read:', error);
+    throw new Error('Failed to update notification is_read');
   }
 }

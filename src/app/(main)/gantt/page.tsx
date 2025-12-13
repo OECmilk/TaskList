@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import GanttChart from "@/components/Gantt/GanttChart";
 import { notFound } from "next/navigation";
 import ProjectTab from "@/components/Tab/ProjectTab";
-import { Project } from "../page";
+import { Project } from "@/types";
 import GanttContainer from "@/components/Gantt/GanttContainer";
 
 // ガントチャートで扱うタスクの型を定義
@@ -13,10 +13,12 @@ export type GanttTask = {
     end: string;
     user_id: string;
     user_name: string;
+    user_icon: string | null;
     project: string | null;
     project_members: {
         user_id: string;
         user_name: string;
+        user_icon: string | null;
     }[] | null;
 };
 
@@ -36,11 +38,13 @@ type TaskForGantt = {
             user_id: string;
             users: {
                 name: string;
+                icon: string | null;
             }
         }[];
     } | null;
     users: {
         name: string;
+        icon: string | null;
     };
 };
 
@@ -55,20 +59,20 @@ const GanttPage = async () => {
 
     // ログインユーザーがメンバーとして参加しているプロジェクトIDのリストを取得
     const { data: projectMembers, error: memberError } = await supabase
-      .from('project_members')
-      .select('project_id')
-      .eq('user_id', user.id);
+        .from('project_members')
+        .select('project_id')
+        .eq('user_id', user.id);
 
     if (memberError) {
-      console.error('Error fetching project members:', memberError);
-      return <p className="p-8">Error loading projects.</p>;
+        console.error('Error fetching project members:', memberError);
+        return <p className="p-8">Error loading projects.</p>;
     }
 
     const projectIds = projectMembers.map(member => member.project_id);
 
     // 自分のタスク or 所属するプロジェクトのタスク
     const orFilter = `user_id.eq.${user.id}${projectIds.length > 0 ? `,project_id.in.(${projectIds.join(',')})` : ''}`;
-    const { data,  error } = await supabase
+    const { data, error } = await supabase
         .from('tasks')
         .select(`
             id,
@@ -83,10 +87,10 @@ const GanttPage = async () => {
                 status,
                 project_members( 
                     user_id,
-                    users( name )
+                    users( name, icon )
                     )
                 ),
-            users( name )
+            users( name, icon )
         `)
         .eq('status', false)
         // .in('project_id', projectIds)
@@ -105,32 +109,43 @@ const GanttPage = async () => {
     const projectsMap = new Map<number, Project>();
     tasks.forEach(task => {
         if (task.projects) {
-            const { project_members, ...projectData } = task.projects;
-            projectsMap.set(projectData.id, projectData as Project);
+            // ここで project_members を除外せず、そのまま Project 型として扱う
+            // Supabaseの型とLocalのProject型定義の整合性をとるため、キャストを使用
+            // または、型定義に合わせてマッピングする
+            const projectData = {
+                id: task.projects.id,
+                name: task.projects.name,
+                owner: task.projects.owner,
+                status: task.projects.status,
+                project_members: task.projects.project_members
+            };
+            projectsMap.set(projectData.id, projectData);
         }
     });
     const projectsForTab: Project[] = Array.from(projectsMap.values());
 
     // ガントチャート用のデータを抽出
     const ganttTasks: GanttTask[] = tasks.map(task => {
-            const startDate = new Date(task.start_date);
+        const startDate = new Date(task.start_date);
 
-            const members = task.projects?.project_members.map(mamber => ({
-                user_id: mamber.user_id,
-                user_name: mamber.users.name,
-            })) || [];
-    
-            return {
-                id: task.id, // idを数値型に
-                title: task.title,
-                start: startDate.toISOString().split('T')[0],
-                end: task.due_date,
-                user_id: task.user_id,
-                user_name: task.users.name,
-                project: task.projects?.name || null,
-                project_members: members,
-            };
-        });
+        const members = task.projects?.project_members.map(mamber => ({
+            user_id: mamber.user_id,
+            user_name: mamber.users.name,
+            user_icon: mamber.users.icon,
+        })) || [];
+
+        return {
+            id: task.id, // idを数値型に
+            title: task.title,
+            start: startDate.toISOString().split('T')[0],
+            end: task.due_date,
+            user_id: task.user_id,
+            user_name: task.users.name,
+            user_icon: task.users.icon,
+            project: task.projects?.name || null,
+            project_members: members,
+        };
+    });
 
     return (
         <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">
