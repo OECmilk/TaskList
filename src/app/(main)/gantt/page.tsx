@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-import GanttChart from "@/components/Gantt/GanttChart";
 import { notFound } from "next/navigation";
 import ProjectTab from "@/components/Tab/ProjectTab";
 import { Project } from "@/types";

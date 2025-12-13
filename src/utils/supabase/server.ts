@@ -18,17 +18,39 @@ export const createClient = () => {
           // 2. set/remove処理をtry...catchでラップします
           try {
             (await cookieStore).set({ name, value, ...options })
-          } catch (error) {
-            // Server Component から 'set' が呼ばれた場合。
-            // Middleware がセッションをリフレッシュしていれば無視できる。
+          } catch (error: unknown) {
+            // Next.js: "Cookies can only be modified in a Server Action or Route Handler." が投げられることがある。
+            // この場合は Server Component から呼ばれているため、ミドルウェア等でセッションが更新されていれば無視して安全。
+            let msg: string
+            if (error instanceof Error) {
+              msg = error.message
+            } else {
+              msg = String(error)
+            }
+            if (msg.includes('Cookies can only be modified')) {
+              // 警告を残して静かに無視する
+              console.warn('[supabase/server] cookies.set ignored:', msg)
+              return
+            }
+            // 上記以外のエラーは再スロー
+            throw error
           }
         },
         async remove(name: string, options: CookieOptions) {
           try {
             (await cookieStore).delete({ name, ...options })
-          } catch (error) {
-            // Server Component から 'delete' が呼ばれた場合。
-            // Middleware がセッションをリフレッシュしていれば無視できる。
+          } catch (error: unknown) {
+            let msg: string
+            if (error instanceof Error) {
+              msg = error.message
+            } else {
+              msg = String(error)
+            }
+            if (msg.includes('Cookies can only be modified')) {
+              console.warn('[supabase/server] cookies.delete ignored:', msg)
+              return
+            }
+            throw error
           }
         },
       },

@@ -19,9 +19,19 @@ export type ChatMessage = {
   } | null;
 };
 
+interface ProjectMember {
+  user_id: string;
+  users: {
+    id: string;
+    name: string;
+    icon: string | null;
+  };
+}
+
 interface ChatProps {
   taskId: number;
   initialMessages: ChatMessage[];
+  projectMembers?: ProjectMember[];
 }
 
 const mentionRegex = /@([^@\s]+)/g;
@@ -51,17 +61,15 @@ const highlightMentions = (text: string) => {
   ));
 };
 
-const Chat = ({ taskId, initialMessages }: ChatProps) => {
+const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
   const supabase = createClient();
   const { profile } = useProfile();
 
-  // Mention Logic State
-  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
-  const [projectMembers, setProjectMembers] = useState<{ id: string, name: string, icon: string | null }[]>([]);
-  const [mentionIndex, setMentionIndex] = useState<number | null>(null); // Position of @ in text
-
-  // Restored: Messages State and Refs
+  // Logic State
   const [messages, setMessages] = useState(initialMessages);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionIndex, setMentionIndex] = useState<number | null>(null);
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -76,7 +84,7 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
     scrollToBottom();
   }, [messages]);
 
-  // Restored: Realtime Subscription
+  // Realtime Subscription
   useEffect(() => {
     const channel = supabase
       .channel(`chat_room_for_task_${taskId}`)
@@ -118,24 +126,7 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
     };
   }, [supabase, taskId, profile?.id]);
 
-  // Mention Logic: Fetch Project Members
-  useEffect(() => {
-    const fetchMembers = async () => {
-      const { data: taskData, error: taskError } = await supabase
-        .from('tasks')
-        .select('projects(project_members(users(id, name, icon)))')
-        .eq('id', taskId)
-        .single();
-
-      if (taskError || !taskData?.projects?.project_members) return;
-
-      const members = taskData.projects.project_members.map((pm: any) => pm.users);
-      setProjectMembers(members);
-    };
-    fetchMembers();
-  }, [taskId, supabase]);
-
-  // Restored: Submit Logic
+  // Submit Logic
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -161,6 +152,7 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
     }
 
     event.currentTarget.reset();
+    setMentionQuery(null);
 
     try {
       await sendChatMessage(formData);
@@ -169,7 +161,7 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
     }
   };
 
-  // Restored: Key Down Handler
+  // Key Down Handler
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
@@ -177,26 +169,16 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
     }
   };
 
-
+  // Mention Detection
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
     const selectionEnd = e.target.selectionEnd;
-
-    // Detect @ before cursor
-    // Check backwards from cursor to find the last @
     const lastAt = text.lastIndexOf('@', selectionEnd - 1);
 
     if (lastAt !== -1) {
-      // Check if there are invalid characters (like spaces) between @ and cursor
-      // For simplicity, we allow typing name with spaces until a certain length or newline?
-      // Usually mentions are single word or handled carefully.
-      // Let's assume standard behavior: @name... 
-      // If there is a space *before* the @, or it's the start of line.
       const charBeforeAt = lastAt > 0 ? text[lastAt - 1] : ' ';
       const query = text.slice(lastAt + 1, selectionEnd);
 
-      // Validation: @ should be preceded by space or start of line, 
-      // and query shouldn't contain newlines.
       if ((charBeforeAt === ' ' || charBeforeAt === '\n') && !query.includes('\n')) {
         setMentionQuery(query);
         setMentionIndex(lastAt);
@@ -213,22 +195,17 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
       const text = textareaRef.current.value;
       const before = text.substring(0, mentionIndex);
       const after = text.substring(textareaRef.current.selectionEnd);
-      const newText = `${before}@${user.name} ${after}`; // Add space after
+      const newText = `${before}@${user.name} ${after}`;
 
       textareaRef.current.value = newText;
-
-      // Update cursor position and close menu
       setMentionQuery(null);
       setMentionIndex(null);
       textareaRef.current.focus();
-      // Need to trigger any onChange handlers if they existed, but here we just set the ref value directly? 
-      // React state-controlled inputs need state update. But this is uncontrolled (ref based form submission).
-      // So modifying ref.current.value is fine.
     }
   };
 
   const filteredMembers = mentionQuery !== null
-    ? projectMembers.filter(m => m.name.toLowerCase().includes(mentionQuery.toLowerCase()))
+    ? (projectMembers || []).filter(m => m.users.name.toLowerCase().includes(mentionQuery.toLowerCase()))
     : [];
 
   return (
@@ -310,15 +287,15 @@ const Chat = ({ taskId, initialMessages }: ChatProps) => {
                 <p className="px-3 py-1 text-xs font-bold text-gray-400 uppercase tracking-wider">Members</p>
                 {filteredMembers.map(member => (
                   <button
-                    key={member.id}
+                    key={member.user_id}
                     type="button"
-                    onClick={() => handleMentionSelect(member)}
+                    onClick={() => handleMentionSelect(member.users)}
                     className="w-full text-left px-4 py-2 hover:bg-cyan-50 flex items-center gap-3 transition-colors"
                   >
                     <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-200 relative flex-shrink-0">
-                      <Image src={member.icon || '/default_icon.svg'} alt={member.name} fill className="object-cover" />
+                      <Image src={member.users.icon || '/default_icon.svg'} alt={member.users.name} fill className="object-cover" />
                     </div>
-                    <span className="text-sm text-gray-700 font-medium">{member.name}</span>
+                    <span className="text-sm text-gray-700 font-medium">{member.users.name}</span>
                   </button>
                 ))}
               </div>

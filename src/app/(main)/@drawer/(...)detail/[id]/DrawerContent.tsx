@@ -7,7 +7,8 @@ import RouterBackButton from "@/components/Button/RouterBackButton";
 import Chat, { ChatMessage } from "@/components/Chat/Chat";
 import SubTasks from "@/components/Drawer/SubTasks";
 import TaskCompleteButton from "@/components/Button/TaskCompleteButton";
-import { Task } from "@/app/(main)/page";
+import { Task } from "@/types";
+import Image from "next/image";
 
 type DrawerContentProps = {
     task: Task;
@@ -65,9 +66,32 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                 {/* Title Area */}
                 <div className="flex justify-between items-start gap-4 mb-4 sm:mb-6">
                     <div className="space-y-1">
-                        <span className="inline-block px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-gray-100 text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wide">
-                            {task.projects?.name || "No Project"}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="inline-block px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-gray-100 text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+                                {task.projects?.name || "No Project"}
+                            </span>
+                            {/* Project Member Icons */}
+                            {task.projects && task.projects.project_members && (
+                                <div className="flex pl-1">
+                                    {task.projects.project_members.map((member: any, idx: number) => (
+                                        <div
+                                            key={member.user_id}
+                                            className={idx === 0 ? 'relative' : '-ml-2 relative'}
+                                            style={{ zIndex: 10 + idx }}
+                                            title={member.users.name}
+                                        >
+                                            <Image
+                                                src={member.users.icon || "/default_icon.svg"}
+                                                alt={member.users.name || "avatar"}
+                                                width={24}
+                                                height={24}
+                                                className="w-6 h-6 rounded-full object-cover border border-white bg-gray-200"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                         <h1 className="text-lg sm:text-xl font-bold text-gray-800 leading-snug">{task.title}</h1>
                     </div>
                     <div className="flex-shrink-0 pt-1">
@@ -93,7 +117,11 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                     </div>
                     {/* Right Column (Chat) - 50% */}
                     <div className="md:col-span-1">
-                        <Chat taskId={task.id} initialMessages={initialMessages} />
+                        <Chat
+                            taskId={task.id}
+                            initialMessages={initialMessages}
+                            projectMembers={task.projects?.project_members || []}
+                        />
                     </div>
                 </div>
             </div>

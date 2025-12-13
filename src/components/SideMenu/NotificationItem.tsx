@@ -38,7 +38,7 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
     const taskLink = `/detail/${notification.tasks?.id || ''}?returnPath=/`;
 
     // 3. クリックハンドラを作成
-    const handleClick = async (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleClick = async () => {
         // リンク遷移（<Link>）はそのまま実行させる
         
         // 4. まだ未読の場合のみ、更新処理を実行

@@ -1,7 +1,8 @@
 "use client";
 
 import NavList from "./NavList/NavList";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from 'react-dom';
 import { FaArrowLeft, FaBars, FaRegBell } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
@@ -11,7 +12,6 @@ import { useProfile, Profile } from "@/contexts/ProfileContext";
 import NotificationItem from "./NotificationItem";
 
 export type Notification = {
-  // ... (型定義は変更なし)
   id: number;
   created_at: string;
   action_type: 'TASK_ASSIGNED' | 'CHAT_MENTION';
@@ -27,7 +27,6 @@ export type Notification = {
 };
 
 interface SideMenuProps {
-  // ... (型定義は変更なし)
   initialProfile: Profile | null;
   initialUnreadCount: number;
   initialNotifications: Notification[];
@@ -42,6 +41,10 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const pathname = usePathname();
   const supabase = createClient();
+  const [mounted, setMounted] = useState(false);
+
+  // 元のfaviconのHREFを記憶するためのref
+  const originalFaviconHref = useRef<string>('');
 
   // ... (Contextへの初回データセットuseEffectは変更なし)
   useEffect(() => {
@@ -59,13 +62,11 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
           'postgres_changes',
           {
             event: 'INSERT',
-            // ... (INSERT処理は変更なし)
             schema: 'public',
             table: 'notifications',
             filter: `to_user_id=eq.${profile.id}`
           },
           (payload) => {
-            // ... (fetchRelatedDataロジックも変更なし)
             console.log('New notification received!', payload);
             const rawNotification = payload.new;
             const fetchRelatedData = async () => {
@@ -118,9 +119,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
           (payload) => {
             console.log('Notification read status updated!', payload);
 
-            // --- ▼▼▼ ここから修正 ▼▼▼ ---
-
-            // 1. setNotifications のコールバック内で、リスト更新と件数更新を「両方」行う
+            // setNotifications のコールバック内で、リスト更新と件数更新を「両方」行う
             setNotifications(currentList => {
 
               // 2. まず、新しい通知リストを作成
@@ -146,6 +145,69 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
       };
     }
   }, [supabase, profile?.id]);
+
+  // client mount フラグ（ポータルはマウント後のみ出力）
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+
+  //  ファビコンに通知の有無を描画用のuseEffect
+  useEffect(() => {
+    //  ファビコンの<link>タグを見つける
+    let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+
+    // 初回実行時に、元のfaviconのパスを記憶する
+    if (!originalFaviconHref.current) {
+      originalFaviconHref.current = link.href;
+    }
+
+    // 未読件数が0なら、元のfaviconに戻して終了
+    if (countUnread === 0) {
+      link.href = originalFaviconHref.current;
+      return;
+    }
+
+    // メモリ上に32x32のキャンバスを作成
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 元のファビコン（タコのアイコン）をロード
+    const baseIcon = new window.Image();
+    baseIcon.src = "/favicon.ico"; // publicフォルダのfavicon
+
+    baseIcon.onload = () => {
+      //  キャンバスに元のアイコンを描画
+      ctx.drawImage(baseIcon, 0, 0, 32, 32);
+
+      //  バッジ（赤い円）を描画
+      const badgeRadius = 5;
+      const badgeX = canvas.width - badgeRadius;
+      const badgeY = badgeRadius;
+      ctx.fillStyle = '#FF4136';
+      ctx.beginPath();
+      ctx.arc(badgeX, badgeY, badgeRadius, 0, 2 * Math.PI);
+      ctx.fill();
+
+      //  バッジの上に通知（赤色）マークを描画
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText("", badgeX, badgeY + 1);
+
+      // キャンバスから新しい画像データ(URL)を生成し、faviconに設定
+      link!.href = canvas.toDataURL('image/png');
+    };
+
+  }, [countUnread]); // countUnreadが変更されるたびに実行
+
 
   const handleBellClick = () => {
     setIsOpenNotifications(true);
@@ -174,11 +236,11 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
         {isOpenBurger ? <></> : <FaBars size={20} />}
       </button>
 
-      <div className={`w-62 pt-8 bg-cyan-900 text-white fixed h-full z-50 transform transition-transform duration-300 ease-in-out 
+      <div className={`w-62 pt-8 bg-cyan-900 text-white fixed h-full z-50 transform transition-transform duration-300 ease-in-out pb-20 
           ${isOpenBurger ? "translate-x-0" : "-translate-x-full"}
-          md:relative md:translate-x-0`}
+          md:relative md:translate-x-0 overflow-y-auto`}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full min-h-0">
           <div>
             {/* 通知ボタン */}
             <div className="relative">
@@ -193,38 +255,43 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
               )}
             </div>
 
-            {/* 通知ボード本体 */}
-            <div className={`w-62 md:w-80 bg-white fixed h-full z-50 top-0 text-black shadow-xl transform transition-transform duration-300 ease-in-out
-                  ${isOpenNotifications ? "translate-x-0" : "-translate-x-full"}`}>
+            {/* 通知ボード本体（ポータルで body にレンダリングして、親の transform/overflow による切り取りを回避） */}
+            {
+              mounted && createPortal(
+                <div className={`w-62 md:w-80 bg-white fixed h-full z-50 top-0 text-black shadow-xl transition-transform duration-300 ease-in-out
+                  ${isOpenNotifications ? 'translate-x-0' : '-translate-x-full'}`}>
 
-              <div className="flex border-b p-4 items-center">
-                <h2 className="px-2 text-xl font-bold">Notifications</h2>
-                <FaArrowLeft
-                  onClick={() => { setIsOpenNotifications(false) }}
-                  className="size-10 ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
-                />
-              </div>
+                  <div className="flex border-b p-4 items-center">
+                    <h2 className="px-2 text-xl font-bold">Notifications</h2>
+                    <FaArrowLeft
+                      onClick={() => { setIsOpenNotifications(false) }}
+                      className="size-10 ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
+                    />
+                  </div>
 
-              {/* 通知リスト */}
-              <div className="w-full overflow-y-auto h-[calc(100%-65px)]">
-                <ul>
-                  {notifications && notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <li key={notification.id}>
-                        <NotificationItem
-                          notification={notification}
-                          setNotifications={setNotifications}
-                          setCountUnread={setCountUnread}
-                        />
-                      </li>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-center p-6">No notifications yet.</p>
-                  )}
-                </ul>
-              </div>
+                  {/* 通知リスト */}
+                  <div className="w-full overflow-y-auto h-[calc(100%-65px)]">
+                    <ul>
+                      {notifications && notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                          <li key={notification.id}>
+                            <NotificationItem
+                              notification={notification}
+                              setNotifications={setNotifications}
+                              setCountUnread={setCountUnread}
+                            />
+                          </li>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-center p-6">No notifications yet.</p>
+                      )}
+                    </ul>
+                  </div>
 
-            </div>
+                </div>,
+                document.body
+              )
+            }
           </div>
 
           {/* userと、Contextから取得したprofileを使ってUIを構築 */}
@@ -232,7 +299,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
             <div className="p-4 border-t border-cyan-800">
               <Link href="/profile" className={`flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-cyan-800 ${pathname === '/profile' ? 'bg-cyan-800' : ''}`}>
                 <Image
-                  src={profile.icon || "/default_icon.svg"}
+                  src={profile.icon || "/default_icon"}
                   width={40}
                   height={40}
                   alt="User Icon"
@@ -247,23 +314,27 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
             </div>
           )}
 
-          <NavList />
+          <div className="flex-1 overflow-auto min-h-0">
+            <NavList />
+          </div>
 
           {/* タコ */}
           {/* {helloStatus && (
               <div className="">まいど。</div>
             )} */}
-          <Image
-            // onClick={sayHello}
-            src={"oct.svg"}
-            width={200}
-            height={240}
-            alt="oct"
-            className="cursor-pointer"
-          />
+          <div className="flex justify-center pb-4">
+            <Image
+              // onClick={sayHello}
+              src={"oct.svg"}
+              width={160}
+              height={200}
+              alt="oct"
+              className="cursor-pointer block w-40 h-40 flex-shrink-0 object-cover"
+            />
+          </div>
         </div>
       </div>
-
+      {/* 背景を暗く */}
       {isOpenBurger && (
         <div
           className="md:hidden fixed inset-0 bg-black/50 z-40"

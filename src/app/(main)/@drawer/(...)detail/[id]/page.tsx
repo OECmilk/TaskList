@@ -23,7 +23,13 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
       `
         *,
         sub_tasks ( * ),
-        projects ( name ),
+        projects ( 
+          name,
+          project_members ( 
+            user_id,
+            users ( id, name, icon ) 
+          )
+        ),
         chats (
           id,
           created_at,

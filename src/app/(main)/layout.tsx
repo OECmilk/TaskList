@@ -3,6 +3,7 @@ import { ProfileProvider } from "@/contexts/ProfileContext";
 import { createClient } from "@/utils/supabase/server";
 import { Profile } from "@/contexts/ProfileContext";
 import { type Notification } from "@/components/SideMenu/SideMenu";
+import { Suspense } from 'react';
 
 const MainLayout = async ({
     children,
@@ -39,6 +40,7 @@ const MainLayout = async ({
             users:notifications_from_user_id_fkey ( name, icon )
           `)
           .eq('to_user_id', user.id)
+          .limit(15)
           .order('created_at', { ascending: false })
     ]);
 
@@ -72,7 +74,9 @@ const MainLayout = async ({
             initialNotifications={initialNotifications}
           />
           <main className="bg-slate-50 flex-1 overflow-auto relative">
-            { children }
+            <Suspense>
+              { children }
+            </Suspense>
             { drawer }
           </main>
       </div>
