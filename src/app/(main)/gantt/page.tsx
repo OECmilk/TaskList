@@ -154,7 +154,7 @@ const GanttPage = async () => {
     });
 
     return (
-        <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">
+        <div className="p-4 sm:p-6 h-full overflow-y-auto text-gray-800">
             {/* <header className="mb-8 flex">
                 <h1 className="text-2xl font-bold">Gantt Chart</h1>
                 <ProjectTab projects={projectsForTab || []} />

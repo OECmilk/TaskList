@@ -6,7 +6,7 @@ import { updateTaskDates } from '@/app/actions';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const MIN_ROW_HEIGHT = 40; // 1日の最小高さ (px) - 2週間(14日) * 40 = 560px (スマホ1画面に収まる)
+const MIN_ROW_HEIGHT = 30; // 1日の最小高さ (px) - 2週間(14日) * 30 = 420px (スマホ1画面に収まる)
 
 type MobileDraggingState = {
     taskId: number;
@@ -20,6 +20,7 @@ type MobileDraggingState = {
 const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date }) => {
     const [localTasks, setLocalTasks] = useState(tasks);
     const [dragging, setDragging] = useState<MobileDraggingState>(null);
+    const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
     // propsのtasksが変更されたらローカルstateを同期
@@ -99,18 +100,29 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
         const tracks: Date[] = []; // 各トラックの「最後のタスクの終了日」を保持
         const taskWithTracks = sorted.map(task => {
             const taskStart = new Date(task.start);
+            taskStart.setHours(0, 0, 0, 0);
             const taskEnd = new Date(task.end);
+            taskEnd.setHours(0, 0, 0, 0);
 
-            // 入れるトラックを探す
-            let trackIndex = tracks.findIndex(trackEnd => trackEnd < taskStart);
+            // 入れるトラックを探す (前のタスク終了日が新しいタスク開始日より前のトラックを探す)
+            let trackIndex = -1;
+            for (let i = 0; i < tracks.length; i++) {
+                const trackEnd = new Date(tracks[i]);
+                trackEnd.setHours(0, 0, 0, 0);
+                // 前のタスクの終了日 < 新しいタスクの開始日なら同じトラックを使用可能
+                if (trackEnd.getTime() < taskStart.getTime()) {
+                    trackIndex = i;
+                    break;
+                }
+            }
 
             if (trackIndex === -1) {
                 // 新しいトラックを作成
                 trackIndex = tracks.length;
-                tracks.push(taskEnd);
+                tracks.push(new Date(taskEnd));
             } else {
                 // 既存のトラックを更新
-                tracks[trackIndex] = taskEnd;
+                tracks[trackIndex] = new Date(taskEnd);
             }
 
             return { ...task, trackIndex };
@@ -122,20 +134,52 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
     // ドラッグ処理
     const handleMouseDown = (e: React.MouseEvent | React.TouchEvent, taskId: number, handle: 'start' | 'end' | 'move') => {
         e.stopPropagation();
-        // Prevent scroll on touch
-        // if (e.type === 'touchstart') e.preventDefault(); 
+        
+        // マウスの場合は即座にドラッグ開始
+        if (e.type === 'mousedown' || e.type === 'mousemove') {
+            const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+            const originalTask = localTasks.find(t => t.id === taskId);
+            if (originalTask) {
+                setDragging({
+                    taskId,
+                    handle,
+                    initialY: clientY,
+                    originalTask,
+                    initialStart: new Date(originalTask.start),
+                    initialEnd: new Date(originalTask.end)
+                });
+            }
+            return;
+        }
 
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        const originalTask = localTasks.find(t => t.id === taskId);
-        if (originalTask) {
-            setDragging({
-                taskId,
-                handle,
-                initialY: clientY,
-                originalTask,
-                initialStart: new Date(originalTask.start),
-                initialEnd: new Date(originalTask.end)
-            });
+        // タッチの場合は長押しで開始（500ms以上）
+        if ('touches' in e) {
+            const clientY = e.touches[0].clientY;
+            const originalTask = localTasks.find(t => t.id === taskId);
+            
+            if (originalTask) {
+                const timer = setTimeout(() => {
+                    setDragging({
+                        taskId,
+                        handle,
+                        initialY: clientY,
+                        originalTask,
+                        initialStart: new Date(originalTask.start),
+                        initialEnd: new Date(originalTask.end)
+                    });
+                    setLongPressTimer(null);
+                }, 500);
+                
+                setLongPressTimer(timer);
+            }
+        }
+    };
+
+    // タッチキャンセル（長押し開始前にタッチを離した場合）
+    const handleTouchEnd = () => {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            setLongPressTimer(null);
         }
     };
 
@@ -204,8 +248,11 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
             window.removeEventListener('mouseup', handleMouseUp);
             window.removeEventListener('touchmove', handleMouseMove);
             window.removeEventListener('touchend', handleMouseUp);
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+            }
         };
-    }, [dragging, handleMouseMove, handleMouseUp]);
+    }, [dragging, handleMouseMove, handleMouseUp, longPressTimer]);
 
 
     const TRACK_WIDTH = 40; // 1トラックの幅 (px) - 画面幅が400pxなら10トラック表示
@@ -219,10 +266,10 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
     return (
         <div className="relative w-full overflow-hidden flex select-none bg-white h-full">
             {/* Left: Date Axis - Fixed 2-Tier */}
-            <div className="flex-shrink-0 border-r border-gray-200 bg-gray-50 z-20 shadow-sm h-full overflow-hidden relative flex flex-row" style={{ width: '80px' }}> {/* Width 80px for 2 cols */}
+            <div className="flex-shrink-0 border-r border-gray-200 bg-gray-50 z-20 shadow-sm h-full overflow-hidden relative flex flex-row" style={{ width: '68px' }}> {/* Width 68px for 2 cols */}
 
                 {/* Month Column */}
-                <div className="w-[30px] flex-shrink-0 border-r border-gray-200 bg-white">
+                <div className="w-[24px] flex-shrink-0 border-r border-gray-200 bg-white">
                     {monthRows.map((month, i) => (
                         <div
                             key={i}
@@ -240,7 +287,7 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                 </div>
 
                 {/* Day Column */}
-                <div className="flex-1 w-[50px]">
+                <div className="flex-1 w-[44px]">
                     {daterows.map((date, i) => {
                         const isToday = date.toDateString() === new Date(baseDate).toDateString();
                         const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
@@ -250,11 +297,11 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                             <div
                                 key={i}
                                 style={{ height: `${MIN_ROW_HEIGHT}px` }}
-                                className={`flex flex-col items-center justify-center border-b border-gray-100 ${isToday ? 'bg-blue-100 font-bold' : ''}`}
+                                className={`flex items-center justify-center border-b border-gray-100 text-xs ${isToday ? 'bg-blue-100 font-bold' : ''}`}
                                 translate="no"
                             >
                                 <span className="text-gray-700 font-medium">{date.getDate()}</span>
-                                <span className={`${dayColor} text-[10px]`}>{dayLabels[date.getDay()]}</span>
+                                <span className={`${dayColor} ml-0.5`}>{dayLabels[date.getDay()]}</span>
                             </div>
                         );
                     })}
@@ -317,18 +364,24 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                                     left: `${left}px`,
                                     width: `${TRACK_WIDTH - 2}px`, // 2px gap between tracks
                                     position: 'absolute',
-                                    marginTop: '2px'
+                                    marginTop: '2px',
+                                    touchAction: dragging?.taskId === task.id ? 'none' : 'auto'
                                 }}
                                 className="rounded-md bg-cyan-100 border-l-4 border-cyan-500 shadow-sm flex flex-col justify-center px-1 text-xs overflow-hidden group hover:z-20 hover:shadow-md transition-shadow"
                                 onMouseDown={(e) => handleMouseDown(e, task.id, 'move')}
                                 onTouchStart={(e) => handleMouseDown(e, task.id, 'move')}
+                                onTouchEnd={handleTouchEnd}
                             >
-                                {/* Drag Handles */}
+                                {/* Start Drag Handle */}
                                 <div
-                                    className="absolute top-0 left-0 w-full h-3 cursor-ns-resize opacity-0 group-hover:opacity-50 hover:bg-black/10 z-10"
+                                    className={`absolute top-0 left-0 w-full h-2 cursor-ns-resize bg-gradient-to-b from-cyan-400 to-transparent flex items-center justify-center ${dragging?.taskId === task.id || dragging?.handle === 'start' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} hover:opacity-100 transition-opacity z-10`}
                                     onMouseDown={(e) => handleMouseDown(e, task.id, 'start')}
                                     onTouchStart={(e) => handleMouseDown(e, task.id, 'start')}
-                                />
+                                    onTouchEnd={handleTouchEnd}
+                                    title="開始日を変更"
+                                >
+                                    <div className="w-6 h-0.5 bg-cyan-600 rounded"></div>
+                                </div>
 
                                 <Link
                                     href={`/detail/${task.id}?returnPath=/gantt`}
@@ -351,10 +404,14 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                                 </Link>
 
                                 <div
-                                    className="absolute bottom-0 left-0 w-full h-3 cursor-ns-resize opacity-0 group-hover:opacity-50 hover:bg-black/10 z-10"
+                                    className={`absolute bottom-0 left-0 w-full h-2 cursor-ns-resize bg-gradient-to-t from-cyan-400 to-transparent flex items-center justify-center ${dragging?.taskId === task.id || dragging?.handle === 'end' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} hover:opacity-100 transition-opacity z-10`}
                                     onMouseDown={(e) => handleMouseDown(e, task.id, 'end')}
                                     onTouchStart={(e) => handleMouseDown(e, task.id, 'end')}
-                                />
+                                    onTouchEnd={handleTouchEnd}
+                                    title="終了日を変更"
+                                >
+                                    <div className="w-6 h-0.5 bg-cyan-600 rounded"></div>
+                                </div>
                             </div>
                         );
                     })}

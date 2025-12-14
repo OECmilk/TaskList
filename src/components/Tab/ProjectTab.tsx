@@ -13,7 +13,7 @@ interface ProjectTabProps {
 const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) => {
 
     return (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+        <div className="flex flex-col w-full gap-2">
             <div className="drawer-ignore-click flex items-center gap-2 p-1 bg-gray-100 rounded-xl ml-0 sm:ml-8 overflow-x-auto w-full sm:max-w-none no-scrollbar scrollbar-hide"
                 style={{ WebkitOverflowScrolling: 'touch' }}>
                 <button
@@ -34,13 +34,12 @@ const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) =>
                         key={project.id}
                         onClick={() => setNowProject(project.id)}
                         className={`
-                        px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap max-w-[150px] truncate
+                        px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap
                         ${nowProject === project.id
                                 ? 'bg-white text-cyan-700 shadow-sm ring-1 ring-black/5'
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                             }
                     `}
-                        title={project.name}
                     >
                         {project.name}
                     </button>
@@ -49,7 +48,7 @@ const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) =>
 
             {/* Member Icons Area */}
             {nowProject !== 0 && (
-                <div className="flex items-center -space-x-2 ml-2 animate-in fade-in slide-in-from-left-4">
+                <div className="flex items-center -space-x-2 ml-0 sm:ml-8 animate-in fade-in slide-in-from-left-4">
                     {(() => {
                         const currentProject = projects.find(p => p.id === nowProject);
                         if (!currentProject?.project_members || currentProject.project_members.length === 0) return null;
