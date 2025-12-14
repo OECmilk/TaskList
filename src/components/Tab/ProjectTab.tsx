@@ -13,8 +13,9 @@ interface ProjectTabProps {
 const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) => {
 
     return (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="drawer-ignore-click flex items-center gap-2 p-1 bg-gray-100 rounded-xl ml-0 sm:ml-8 overflow-x-auto max-w-full no-scrollbar">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+            <div className="drawer-ignore-click flex items-center gap-2 p-1 bg-gray-100 rounded-xl ml-0 sm:ml-8 overflow-x-auto w-full sm:max-w-none no-scrollbar scrollbar-hide"
+                style={{ WebkitOverflowScrolling: 'touch' }}>
                 <button
                     onClick={() => setNowProject(0)}
                     className={`
