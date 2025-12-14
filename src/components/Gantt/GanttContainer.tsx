@@ -31,8 +31,8 @@ const GanttContainer = ({ initialTasks, projects }: GanttContainerProps) => {
 
   return (
     <>
-      <header className="mb-8 flex justify-between items-center gap-4">
-        <div className="flex items-center min-w-0 flex-1 overflow-hidden">
+      <header className="mb-8 flex justify-between items-start gap-4">
+        <div className="flex items-start min-w-0 flex-1 overflow-hidden">
           <ProjectTab
             projects={projects}
             nowProject={nowProject}
@@ -40,13 +40,13 @@ const GanttContainer = ({ initialTasks, projects }: GanttContainerProps) => {
           />
         </div>
 
-        <Link href="/new" prefetch={true} className="flex items-center gap-2 px-6 py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all">
+        <Link href="/new" prefetch={true} className="flex items-center gap-2 px-6 py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all flex-shrink-0">
           <MdAddTask className="size-5" />
           <div className="hidden sm:inline">Add Task</div>
         </Link>
       </header>
 
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+      <div className="bg-white p-2 sm:p-3 rounded-lg shadow-md">
         {filteredTasks.length > 0 ? (
           <>
             <div className="hidden md:block">
