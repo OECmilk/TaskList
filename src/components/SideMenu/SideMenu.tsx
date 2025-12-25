@@ -319,10 +319,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
           </div>
 
           {/* タコ */}
-          {/* {helloStatus && (
-              <div className="">まいど。</div>
-            )} */}
-          <div className="flex justify-center pb-4">
+          {/* <div className="flex justify-center pb-4">
             <Image
               // onClick={sayHello}
               src={"oct.svg"}
@@ -331,7 +328,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
               alt="oct"
               className="cursor-pointer block w-40 h-40 flex-shrink-0 object-cover"
             />
-          </div>
+          </div> */}
         </div>
       </div>
       {/* 背景を暗く */}
