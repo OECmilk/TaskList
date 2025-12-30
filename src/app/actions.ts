@@ -161,6 +161,8 @@ export async function deleteTask(formData: FormData) {
   const supabase = createClient();
 
   const id = formData.get('id') as string;
+  // 削除後に戻るパスを指定できるようにする（デフォルトはルート）
+  const returnPath = formData.get('returnPath') as string || '/';
 
   const { error } = await supabase
     .from('tasks')
@@ -170,8 +172,8 @@ export async function deleteTask(formData: FormData) {
     console.error('Error deleting task:', error);
     throw new Error('Failed to delete task');
   }
-  revalidatePath('/');
-  redirect('/');
+  revalidatePath(returnPath);
+  redirect(returnPath);
 }
 
 /**
@@ -550,4 +552,51 @@ export async function updateIsRead(notificationId: number) {
     console.error('Error updating notifications is_read:', error);
     throw new Error('Failed to update notification is_read');
   }
+}
+
+/**
+ * プロジェクトを削除するサーバーアクション
+ */
+export async function deleteProject(projectId: number) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error('User is not authenticated');
+
+  // オーナーチェック（RLSでも防げるが、念のため）
+  const { data: project } = await supabase.from('projects').select('owner').eq('id', projectId).single();
+  if (!project || project.owner !== user.id) {
+    throw new Error('Not authorized to delete this project');
+  }
+
+  const { error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', projectId);
+
+  if (error) {
+    console.error('Error deleting project:', error);
+    throw new Error('Failed to delete project');
+  }
+
+  revalidatePath('/projects');
+}
+
+/**
+ * プロジェクト名を更新するサーバーアクション
+ */
+export async function updateProjectName(projectId: number, newName: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('projects')
+    .update({ name: newName })
+    .eq('id', projectId);
+
+  if (error) {
+    console.error('Error updating project name:', error);
+    throw new Error('Failed to update project name');
+  }
+
+  revalidatePath('/projects');
 }
