@@ -173,7 +173,7 @@ export async function deleteTask(formData: FormData) {
     throw new Error('Failed to delete task');
   }
   revalidatePath(returnPath);
-  redirect(returnPath);
+  // redirect(returnPath); // Client side handles redirection to avoid 404 in intercepted routes
 }
 
 /**

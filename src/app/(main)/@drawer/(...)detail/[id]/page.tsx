@@ -1,7 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
-import { notFound } from "next/navigation";
+// import { notFound } from "next/navigation"; // notFound is no longer needed
 import { ChatMessage } from "@/components/Chat/Chat";
 import DrawerContent from "./DrawerContent";
+import DeletedTaskRedirect from "@/components/Redirect/DeletedTaskRedirect";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -43,7 +44,9 @@ const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
     .single();
 
   if (error || !task) {
-    notFound();
+    // タスクが見つからない（削除済み）場合は、404ではなく元のページへリダイレクトさせる
+    // これにより、Server Action後のRevalidationでエラーになるのを防ぐ
+    return <DeletedTaskRedirect returnPath={returnPath} />;
   }
 
   // 取得したチャット履歴を initialMessages に渡す

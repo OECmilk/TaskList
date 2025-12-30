@@ -57,10 +57,11 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                     <RouterBackButton returnPath={returnPath} />
                     <div className="flex items-center gap-2">
                         <form action={async (formData) => {
-                            // クライアントサイドでの確認
-                            if (!confirm('Are you sure you want to delete this task?')) return;
-                            const { deleteTask } = await import('@/app/actions');
+                            if (!confirm('このタスクを削除してもよろしいですか？')) return;
+
                             await deleteTask(formData);
+                            router.replace(returnPath);
+                            router.refresh();
                         }}>
                             <input type="hidden" name="id" value={task.id} />
                             <input type="hidden" name="returnPath" value={returnPath} />
@@ -77,7 +78,7 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                             className="flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all text-xs sm:text-sm"
                         >
                             <FaEdit className="size-3 sm:size-4" />
-                            <span className="hidden sm:inline">タスクを編集</span>
+                            <span className="hidden sm:inline">Edit Task</span>
                         </a>
                     </div>
                 </header>
