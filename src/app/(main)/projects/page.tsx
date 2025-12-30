@@ -3,6 +3,7 @@ import { Project } from "@/types";
 import CreateProjectButton from "@/components/Project/CreateProjectButton";
 import Link from "next/link";
 import Image from "next/image";
+import ProjectCard from "@/components/Project/ProjectCard";
 
 type ProjectWithOwner = Project & {
   users: { // "owner"としてリネームしたusersテーブルのデータ
@@ -62,21 +63,11 @@ export default async function ProjectsPage() {
         {projects && projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {projects.map((project) => (
-              <Link href={`/projects/${project.id}`} key={project.id} className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <Image
-                      src={project.users?.icon ?? "/default-avatar.png"}
-                      alt={project.users?.name ?? "Owner Avatar"}
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-lg"
-                    />
-                  </div>
-                  <h2 className="text-xl font-semibold truncate">{project.name}</h2>
-                </div>
-                {/* 今後、プロジェクトのオーナーやステータスなどの情報をここに追加できます */}
-              </Link>
+              <ProjectCard
+                key={project.id}
+                project={project}
+                currentUserId={user.id}
+              />
             ))}
           </div>
         ) : (

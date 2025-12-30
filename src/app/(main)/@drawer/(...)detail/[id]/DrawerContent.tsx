@@ -2,12 +2,13 @@
 
 import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import RouterBackButton from "@/components/Button/RouterBackButton";
 import Chat, { ChatMessage } from "@/components/Chat/Chat";
 import SubTasks from "@/components/Drawer/SubTasks";
 import TaskCompleteButton from "@/components/Button/TaskCompleteButton";
 import { Task } from "@/types";
+import { deleteTask } from "@/app/actions";
 import Image from "next/image";
 
 type DrawerContentProps = {
@@ -54,13 +55,31 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                 {/* Header */}
                 <header className="flex justify-between items-center mb-4 sm:mb-8 sticky top-0 bg-white/80 backdrop-blur-md -mx-4 -mt-4 sm:-mx-8 sm:-mt-8 md:-mx-12 md:-mt-12 px-4 py-3 sm:px-8 sm:py-4 z-10 border-b border-gray-100">
                     <RouterBackButton returnPath={returnPath} />
-                    <a
-                        href={`/edit/${task.id}`}
-                        className="flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all text-xs sm:text-sm"
-                    >
-                        <FaEdit className="size-3 sm:size-4" />
-                        <span className="hidden sm:inline">Edit Task</span>
-                    </a>
+                    <div className="flex items-center gap-2">
+                        <form action={async (formData) => {
+                            // クライアントサイドでの確認
+                            if (!confirm('Are you sure you want to delete this task?')) return;
+                            const { deleteTask } = await import('@/app/actions');
+                            await deleteTask(formData);
+                        }}>
+                            <input type="hidden" name="id" value={task.id} />
+                            <input type="hidden" name="returnPath" value={returnPath} />
+                            <button
+                                type="submit"
+                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                title="タスクを削除"
+                            >
+                                <FaTrash className="size-4" />
+                            </button>
+                        </form>
+                        <a
+                            href={`/edit/${task.id}`}
+                            className="flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all text-xs sm:text-sm"
+                        >
+                            <FaEdit className="size-3 sm:size-4" />
+                            <span className="hidden sm:inline">タスクを編集</span>
+                        </a>
+                    </div>
                 </header>
 
                 {/* Title Area */}
