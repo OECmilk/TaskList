@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
     return response
 
   } catch (e) {
-    console.error('Middleware Error:', e); 
+    console.error('Middleware Error:', e);
 
     return NextResponse.next({
       request: {
@@ -45,6 +45,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - auth routes (callback)
      */
-    '/((?!_next/static|_next/image|favicon.ico|auth).*)',
+    '/((?!_next/static|_next/image|favicon.ico|auth|api/webhooks).*)',
   ],
 }
