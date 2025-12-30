@@ -20,7 +20,16 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
 
     if (notification.action_type === 'CHAT_MENTION') {
         actionIcon = <FaCommentDots className="text-green-600" />;
-        actionText = "mentioned you in";
+        // チャットメッセージがあればそれを表示、なければ "mentioned you"
+        if (notification.chat_message) {
+            // 長すぎる場合は省略
+            const content = notification.chat_message.length > 40
+                ? notification.chat_message.substring(0, 40) + '...'
+                : notification.chat_message;
+            actionText = `: ${content}`;
+        } else {
+            actionText = "mentioned you";
+        }
     }
 
     const formattedDate = new Date(notification.created_at).toLocaleString('ja-JP', {
@@ -70,8 +79,8 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
                 onClick={handleClick} // 7. 新しいハンドラを onClick に設定
                 key={notification.id}
                 className={`p-4 border-b cursor-pointer transition-colors ${notification.is_read
-                        ? "bg-white hover:bg-gray-50"
-                        : "bg-orange-50 hover:bg-orange-100"
+                    ? "bg-white hover:bg-gray-50"
+                    : "bg-orange-50 hover:bg-orange-100"
                     }`}
             >
                 <div className="flex items-start gap-3">

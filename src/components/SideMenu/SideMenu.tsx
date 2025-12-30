@@ -25,6 +25,7 @@ export type Notification = {
     name: string;
     icon: string | null;
   };
+  chat_message?: string;
 };
 
 interface SideMenuProps {
@@ -43,7 +44,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
   const pathname = usePathname();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
-  const { isSubscribed, subscribeToPush } = usePushSubscription();
+  const { isSubscribed, subscribeToPush, unsubscribeFromPush } = usePushSubscription();
 
   // 元のfaviconのHREFを記憶するためのref
   const originalFaviconHref = useRef<string>('');
@@ -92,6 +93,22 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
                 console.error('Error fetching related user for notification:', userResult.error);
                 return;
               }
+
+              let chatMessage = undefined;
+              if (rawNotification.action_type === 'CHAT_MENTION') {
+                const { data: chatData } = await supabase
+                  .from('chats')
+                  .select('message')
+                  .eq('task_id', rawNotification.task_id)
+                  .eq('user_id', rawNotification.from_user_id)
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .single();
+                if (chatData) {
+                  chatMessage = chatData.message;
+                }
+              }
+
               const userName = userResult.data.name || 'Unknown User';
               const completeNotification: Notification = {
                 id: rawNotification.id,
@@ -102,7 +119,8 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
                 users: {
                   name: userName,
                   icon: userResult.data.icon
-                }
+                },
+                chat_message: chatMessage
               };
               setNotifications((currentNotifications) => [completeNotification, ...currentNotifications]);
               setCountUnread((prevCount) => prevCount + 1);
@@ -265,15 +283,24 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
 
                   <div className="flex border-b p-4 items-center justify-between">
                     <div>
-                      <h2 className="px-2 text-xl font-bold">Notifications</h2>
+                      <h2 className="px-2 text-xl font-bold">通知</h2>
                       <div className="px-2">
-                        {!isSubscribed ? (
-                          <button onClick={subscribeToPush} className="text-xs bg-cyan-700 text-white px-2 py-1 rounded hover:bg-cyan-600 transition-colors">
-                            Enable Push
-                          </button>
-                        ) : (
-                          <span className="text-xs text-green-600 font-bold">Push Enabled ✓</span>
-                        )}
+                        <label className="inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={isSubscribed}
+                            onChange={() => {
+                              if (isSubscribed) {
+                                unsubscribeFromPush();
+                              } else {
+                                subscribeToPush();
+                              }
+                            }}
+                          />
+                          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                          <span className="ms-2 text-xs font-medium text-gray-500">プッシュ通知</span>
+                        </label>
                       </div>
                     </div>
                     <FaArrowLeft

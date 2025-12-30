@@ -48,7 +48,7 @@ export async function POST(request: Request) {
             .select(`
                 *,
                 tasks(title),
-                users!notifications_from_user_id_fkey(name)
+                users!notifications_from_user_id_fkey(name, icon)
              `)
             .eq('id', notificationId)
             .single();
@@ -58,20 +58,45 @@ export async function POST(request: Request) {
         }
 
         const senderName = notificationData.users?.name || 'Someone';
+        const senderIcon = notificationData.users?.icon || '/default_icon.svg';
         const taskTitle = notificationData.tasks?.title || 'a task';
-        let actionText = "updated a task";
-        if (record.action_type === 'TASK_ASSIGNED') actionText = "assigned you to";
-        if (record.action_type === 'CHAT_MENTION') actionText = "mentioned you in";
 
-        const title = "Task App Notification";
-        const message = `${senderName} ${actionText} ${taskTitle}`;
+        let title = "Task App Notification";
+        let message = "";
+
+        if (record.action_type === 'TASK_ASSIGNED') {
+            title = "Task Assigned";
+            message = `${senderName} assigned you to "${taskTitle}"`;
+        } else if (record.action_type === 'CHAT_MENTION') {
+            // Fetch the chat message content
+            // Assuming the notification is triggered by the latest chat from this user in this task
+            const { data: chatData } = await supabaseAdmin
+                .from('chats')
+                .select('message')
+                .eq('task_id', record.task_id)
+                .eq('user_id', record.from_user_id)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            const chatContent = chatData?.message || "mentioned you";
+            // Truncate if too long (e.g. 50 chars)
+            const truncatedContent = chatContent.length > 50 ? chatContent.substring(0, 50) + '...' : chatContent;
+
+            title = taskTitle;
+            message = `${senderName}: ${truncatedContent}`;
+        } else {
+            message = `${senderName} updated "${taskTitle}"`;
+        }
+
+
         const url = `/detail/${record.task_id}`;
 
         const payload = JSON.stringify({
             title: title,
             body: message,
             url: url,
-            icon: '/icon-192x192.png' // Ensure this exists or use a default
+            icon: senderIcon
         });
 
         // Send to all subscriptions for this user
