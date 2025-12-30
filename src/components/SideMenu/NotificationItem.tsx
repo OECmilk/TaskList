@@ -5,17 +5,16 @@ import { type Notification } from './SideMenu';
 import Image from 'next/image';
 import { updateIsRead } from '@/app/actions';
 import { FaUser, FaCommentDots } from 'react-icons/fa';
-import React from 'react'; // 1. Dispatch, SetStateAction のために React をインポート
+import React from 'react';
 
-// 2. propsの型を更新
 interface NotificationItemProps {
-  notification: Notification;
-  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
-  setCountUnread: React.Dispatch<React.SetStateAction<number>>;
+    notification: Notification;
+    setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
+    setCountUnread: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const NotificationItem = ({ notification, setNotifications, setCountUnread }: NotificationItemProps) => {
-    
+
     let actionIcon = <FaUser className="text-blue-600" />;
     let actionText = "assigned you to";
 
@@ -31,7 +30,7 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
         hour: '2-digit',
         minute: '2-digit'
     });
-    
+
     const senderName = notification.users?.name || 'Someone';
     const senderIcon = notification.users?.icon || '/default_icon.svg';
     const taskTitle = notification.tasks?.title || 'a task';
@@ -40,13 +39,13 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
     // 3. クリックハンドラを作成
     const handleClick = async () => {
         // リンク遷移（<Link>）はそのまま実行させる
-        
+
         // 4. まだ未読の場合のみ、更新処理を実行
         if (!notification.is_read) {
-            
+
             // 5. 楽観的更新：クライアントのstateを即座に変更
-            setNotifications(currentList => 
-                currentList.map(n => 
+            setNotifications(currentList =>
+                currentList.map(n =>
                     n.id === notification.id ? { ...n, is_read: true } : n
                 )
             );
@@ -63,21 +62,20 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
     };
 
     return (
-        <Link 
+        <Link
             href={taskLink}
             prefetch={true}
         >
-            <div 
+            <div
                 onClick={handleClick} // 7. 新しいハンドラを onClick に設定
-                key={notification.id} 
-                className={`p-4 border-b cursor-pointer transition-colors ${
-                    notification.is_read 
-                    ? "bg-white hover:bg-gray-50" 
-                    : "bg-orange-50 hover:bg-orange-100"
-                }`}
+                key={notification.id}
+                className={`p-4 border-b cursor-pointer transition-colors ${notification.is_read
+                        ? "bg-white hover:bg-gray-50"
+                        : "bg-orange-50 hover:bg-orange-100"
+                    }`}
             >
                 <div className="flex items-start gap-3">
-                    
+
                     <Image
                         src={senderIcon}
                         width={32}
@@ -98,7 +96,7 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
                     </div>
 
                     <div className={`p-2 rounded-full ${notification.action_type === 'CHAT_MENTION' ? 'bg-green-100' : 'bg-blue-100'}`}>
-                       {actionIcon}
+                        {actionIcon}
                     </div>
                 </div>
             </div>
