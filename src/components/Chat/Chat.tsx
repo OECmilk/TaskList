@@ -62,7 +62,8 @@ const highlightMentions = (text: string) => {
 };
 
 const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
-  const supabase = createClient();
+  // Supabaseクライアントをメモ化して再レンダリングごとの再生成を防ぐ
+  const supabase = React.useMemo(() => createClient(), []);
   const { profile } = useProfile();
 
   // Logic State
@@ -86,6 +87,7 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
 
   // Realtime Subscription
   useEffect(() => {
+    console.log(`Setting up subscription for task ${taskId}`);
     const channel = supabase
       .channel(`chat_room_for_task_${taskId}`)
       .on<ChatMessage>(
@@ -97,6 +99,7 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
           filter: `task_id=eq.${taskId}`
         },
         async (payload) => {
+          console.log('New chat message received!', payload);
           if (payload.new.user_id === profile?.id) return;
 
           const { data: userData, error } = await supabase
@@ -119,9 +122,12 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Subscription status for task ${taskId}:`, status);
+      });
 
     return () => {
+      console.log(`Cleaning up subscription for task ${taskId}`);
       supabase.removeChannel(channel);
     };
   }, [supabase, taskId, profile?.id]);
