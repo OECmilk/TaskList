@@ -11,7 +11,7 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
     const [isOpen, setIsOpen] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState<{ top?: number, bottom?: number, left: number, width: number } | null>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    // ... existing toggleDropdown logic ...
+    
     const toggleDropdown = () => {
         if (!isOpen && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
@@ -46,7 +46,7 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
             setIsOpen(false);
         }
     };
-    // ... existing useEffect ...
+
     useEffect(() => {
         if (!isOpen) return;
         const handleScrollOrResize = () => setIsOpen(false);
@@ -58,7 +58,7 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
         }
     }, [isOpen]);
 
-    // ... existing early return code ...
+    
     if (!task.project || !task.project_members) {
         return (
             <div className="h-8 mb-4 flex items-center gap-2 px-2 bg-gray-50 rounded-lg border border-gray-200 text-gray-500 w-auto md:min-w-[140px]">
@@ -75,7 +75,7 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
         );
     }
 
-    // ... existing render ...
+
     return (
         <div className="relative mb-4">
             <button

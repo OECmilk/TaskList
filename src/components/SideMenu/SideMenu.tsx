@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useProfile, Profile } from "@/contexts/ProfileContext";
 import NotificationItem from "./NotificationItem";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 
 export type Notification = {
   id: number;
@@ -42,6 +43,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
   const pathname = usePathname();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
+  const { isSubscribed, subscribeToPush } = usePushSubscription();
 
   // 元のfaviconのHREFを記憶するためのref
   const originalFaviconHref = useRef<string>('');
@@ -261,11 +263,22 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
                 <div className={`w-62 md:w-80 bg-white fixed h-full z-50 top-0 text-black shadow-xl transition-transform duration-300 ease-in-out
                   ${isOpenNotifications ? 'translate-x-0' : '-translate-x-full'}`}>
 
-                  <div className="flex border-b p-4 items-center">
-                    <h2 className="px-2 text-xl font-bold">Notifications</h2>
+                  <div className="flex border-b p-4 items-center justify-between">
+                    <div>
+                      <h2 className="px-2 text-xl font-bold">Notifications</h2>
+                      <div className="px-2">
+                        {!isSubscribed ? (
+                          <button onClick={subscribeToPush} className="text-xs bg-cyan-700 text-white px-2 py-1 rounded hover:bg-cyan-600 transition-colors">
+                            Enable Push
+                          </button>
+                        ) : (
+                          <span className="text-xs text-green-600 font-bold">Push Enabled ✓</span>
+                        )}
+                      </div>
+                    </div>
                     <FaArrowLeft
                       onClick={() => { setIsOpenNotifications(false) }}
-                      className="size-10 ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
+                      className="size-10 p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
                     />
                   </div>
 
