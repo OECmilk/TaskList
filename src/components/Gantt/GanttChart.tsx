@@ -11,7 +11,7 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
     const [isOpen, setIsOpen] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState<{ top?: number, bottom?: number, left: number, width: number } | null>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    
+
     const toggleDropdown = () => {
         if (!isOpen && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
@@ -58,7 +58,7 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
         }
     }, [isOpen]);
 
-    
+
     if (!task.project || !task.project_members) {
         return (
             <div className="h-8 mb-4 flex items-center gap-2 px-2 bg-gray-50 rounded-lg border border-gray-200 text-gray-500 w-auto md:min-w-[140px]">
@@ -332,7 +332,14 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
         };
     }, [dragging, handleMouseMove, handleMouseUp]);
 
-    const todayString = new Date(baseDate).toISOString().split('T')[0];
+    const toLocalDateString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const todayString = toLocalDateString(new Date(baseDate));
 
     // タスクの担当者変更のイベントハンドラ
     const handleUserChange = (newUserId: string, newUserName: string, newUserIcon: string | null, taskId: number) => {
@@ -405,7 +412,7 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
                             if (dayOfWeek === 0) dayColorClass = 'text-red-500 font-semibold';
                             else if (dayOfWeek === 6) dayColorClass = 'text-blue-500 font-semibold';
 
-                            const isToday = date.toISOString().split('T')[0] === todayString;
+                            const isToday = toLocalDateString(date) === todayString;
                             const dateBgClass = isToday ? 'bg-blue-100' : '';
 
                             return (
@@ -428,7 +435,7 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
                         style={{ gridTemplateColumns: `repeat(${totalDays + 1}, ${DAY_WIDTH}px)` }}
                     >
                         {dateHeaders.map((date, i) => {
-                            const isToday = date.toISOString().split('T')[0] === todayString;
+                            const isToday = toLocalDateString(date) === todayString;
                             const dateBgClass = isToday ? 'bg-blue-100' : '';
                             return (
                                 <div
