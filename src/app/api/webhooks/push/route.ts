@@ -35,6 +35,8 @@ export async function POST(request: Request) {
 
         if (error || !subscriptions || subscriptions.length === 0) {
             console.log(`No subscriptions found for user ${toUserId}`);
+            console.log('Query Error:', error);
+            console.log('Subscriptions:', subscriptions);
             return NextResponse.json({ message: 'No subscriptions' });
         }
 
