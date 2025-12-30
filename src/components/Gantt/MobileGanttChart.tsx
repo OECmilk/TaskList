@@ -134,7 +134,7 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
     // ドラッグ処理
     const handleMouseDown = (e: React.MouseEvent | React.TouchEvent, taskId: number, handle: 'start' | 'end' | 'move') => {
         e.stopPropagation();
-        
+
         // マウスの場合は即座にドラッグ開始
         if (e.type === 'mousedown' || e.type === 'mousemove') {
             const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
@@ -156,7 +156,7 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
         if ('touches' in e) {
             const clientY = e.touches[0].clientY;
             const originalTask = localTasks.find(t => t.id === taskId);
-            
+
             if (originalTask) {
                 const timer = setTimeout(() => {
                     setDragging({
@@ -169,7 +169,7 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                     });
                     setLongPressTimer(null);
                 }, 500);
-                
+
                 setLongPressTimer(timer);
             }
         }
@@ -263,6 +263,16 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
     // Grid lines should span the full scrollable width
     const gridWidth = Math.max(maxTracks * TRACK_WIDTH, 100);
 
+    // Helper for Local Date String (YYYY-MM-DD)
+    const toLocalDateString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const todayString = toLocalDateString(new Date(baseDate));
+
     return (
         <div className="relative w-full overflow-hidden flex select-none bg-white h-full">
             {/* Left: Date Axis - Fixed 2-Tier */}
@@ -289,7 +299,7 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                 {/* Day Column */}
                 <div className="flex-1 w-[44px]">
                     {daterows.map((date, i) => {
-                        const isToday = date.toDateString() === new Date(baseDate).toDateString();
+                        const isToday = toLocalDateString(date) === todayString;
                         const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
                         const dayColor = date.getDay() === 0 ? 'text-red-500' : date.getDay() === 6 ? 'text-blue-500' : 'text-gray-500';
 
@@ -313,7 +323,7 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                 <div className="relative" style={{ height: `${(totalDays + 1) * MIN_ROW_HEIGHT}px`, width: `${Math.max(gridWidth, 300)}px` }}>
                     {/* Background Grid Lines */}
                     {daterows.map((date, i) => {
-                        const isToday = date.toDateString() === new Date().toDateString();
+                        const isToday = toLocalDateString(date) === todayString;
                         return (
                             <div
                                 key={`grid-${i}`}
