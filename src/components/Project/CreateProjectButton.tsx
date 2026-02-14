@@ -7,7 +7,6 @@ import { createProject } from '@/app/actions';
 const CreateProjectButton = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // フォーム送信後にモーダルを閉じるためのラッパーアクション
   const createProjectAction = async (formData: FormData) => {
     await createProject(formData);
     setIsModalOpen(false);
@@ -17,7 +16,7 @@ const CreateProjectButton = () => {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 px-6 py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all"
+        className="btn-primary flex items-center gap-2 rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all"
       >
         <MdAdd size={20} />
         <span className="hidden sm:inline">New Project</span>
@@ -26,16 +25,17 @@ const CreateProjectButton = () => {
       {isModalOpen && (
         <div
           onClick={() => setIsModalOpen(false)}
-          className="fixed inset-0 bg-black/60 flex justify-center items-center z-50"
+          className="fixed inset-0 flex justify-center items-center z-50"
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-4"
+            className="card p-8 w-full max-w-md mx-4"
           >
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Create a New Project</h2>
+            <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--color-text-primary)' }}>Create a New Project</h2>
             <form action={createProjectAction}>
-              <div className="mb-4">
-                <label htmlFor="projectName" className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="space-y-1.5">
+                <label htmlFor="projectName" className="block text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                   Project Name
                 </label>
                 <input
@@ -43,20 +43,20 @@ const CreateProjectButton = () => {
                   id="projectName"
                   name="projectName"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                  className="input-field"
                 />
               </div>
-              <div className="flex justify-end gap-4 mt-8">
+              <div className="flex justify-end gap-3 mt-8">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-2 rounded-md text-gray-800 bg-gray-200 hover:bg-gray-300 font-semibold transition-colors"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-lg text-white font-bold bg-gradient-to-r from-cyan-600 to-cyan-500 shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
+                  className="btn-primary"
                 >
                   Create Project
                 </button>

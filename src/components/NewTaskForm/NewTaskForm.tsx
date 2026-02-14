@@ -23,15 +23,15 @@ const NewTaskForm = ({ projects, defaultProjectId, returnTo }: NewTaskFormProps)
 
   return (
     <div className="mt-8 mx-auto w-full max-w-md">
-      <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
-        <form action={createNewTask} className="space-y-6">
+      <div className="card p-8">
+        <form action={createNewTask} className="space-y-5">
 
           {/* Hidden input for return path if provided */}
           {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
 
           {/* Title Input */}
-          <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-bold text-gray-700 ml-1">
+          <div className="space-y-1.5">
+            <label htmlFor="title" className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
               タイトル <span className="text-red-400">*</span>
             </label>
             <input
@@ -40,13 +40,13 @@ const NewTaskForm = ({ projects, defaultProjectId, returnTo }: NewTaskFormProps)
               name="title"
               required
               placeholder="タスクの名前を入力"
-              className="block w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 transition-all duration-200 outline-none font-medium placeholder:text-gray-400"
+              className="input-field"
             />
           </div>
 
           {/* Description Input */}
-          <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-bold text-gray-700 ml-1">
+          <div className="space-y-1.5">
+            <label htmlFor="description" className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
               説明
             </label>
             <textarea
@@ -54,14 +54,14 @@ const NewTaskForm = ({ projects, defaultProjectId, returnTo }: NewTaskFormProps)
               name="description"
               rows={3}
               placeholder="タスクの詳細など"
-              className="block w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 transition-all duration-200 outline-none font-medium placeholder:text-gray-400 resize-none"
+              className="input-field resize-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             {/* Due Date Input */}
-            <div className="space-y-2">
-              <label htmlFor="dueDate" className="text-sm font-bold text-gray-700 ml-1">
+            <div className="space-y-1.5">
+              <label htmlFor="dueDate" className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                 期限 <span className="text-red-400">*</span>
               </label>
               <input
@@ -71,13 +71,13 @@ const NewTaskForm = ({ projects, defaultProjectId, returnTo }: NewTaskFormProps)
                 required
                 min={today}
                 max="2100-12-31"
-                className="block w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 transition-all duration-200 outline-none font-medium text-gray-600"
+                className="input-field"
               />
             </div>
 
             {/* Project Select */}
-            <div className="space-y-2">
-              <label htmlFor="projectId" className="text-sm font-bold text-gray-700 ml-1">
+            <div className="space-y-1.5">
+              <label htmlFor="projectId" className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                 プロジェクト
               </label>
               <div className="relative">
@@ -85,7 +85,7 @@ const NewTaskForm = ({ projects, defaultProjectId, returnTo }: NewTaskFormProps)
                   id="projectId"
                   name="projectId"
                   defaultValue={defaultProjectId || ""}
-                  className="appearance-none block w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 transition-all duration-200 outline-none font-medium text-gray-700 cursor-pointer"
+                  className="input-field appearance-none cursor-pointer"
                 >
                   <option value="">プロジェクトなし</option>
                   {projects.map((project) => (
@@ -94,7 +94,7 @@ const NewTaskForm = ({ projects, defaultProjectId, returnTo }: NewTaskFormProps)
                     </option>
                   ))}
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ color: 'var(--color-text-muted)' }}>
                   <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
                 </div>
               </div>
@@ -105,14 +105,14 @@ const NewTaskForm = ({ projects, defaultProjectId, returnTo }: NewTaskFormProps)
           <div className="pt-4 flex flex-col gap-3">
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl text-white bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-lg shadow-cyan-500/30 transition-all duration-200 font-bold tracking-wide active:scale-[0.98]"
+              className="btn-primary w-full py-3"
             >
               Create Task
             </button>
             <button
               type="button"
               onClick={handleCancel}
-              className="w-full py-3.5 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all duration-200 font-bold active:scale-[0.98]"
+              className="btn-secondary w-full py-3"
             >
               Cancel
             </button>

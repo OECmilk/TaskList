@@ -56,14 +56,14 @@ const GanttContainer = ({ initialTasks, projects, userId, initialProjectId }: Ga
         <Link
           href={`/new?projectId=${nowProject !== 0 ? nowProject : ''}&returnTo=/gantt?project=${nowProject}`}
           prefetch={true}
-          className="flex items-center gap-2 px-6 py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all flex-shrink-0"
+          className="btn-primary flex items-center gap-2 rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all flex-shrink-0"
         >
           <MdAddTask className="size-5" />
           <div className="hidden sm:inline">Add Task</div>
         </Link>
       </header>
 
-      <div className="bg-white p-2 sm:p-3 rounded-lg shadow-md">
+      <div className="card p-2 sm:p-3">
         {filteredTasks.length > 0 ? (
           <>
             <div className="hidden md:block">
@@ -75,7 +75,7 @@ const GanttContainer = ({ initialTasks, projects, userId, initialProjectId }: Ga
           </>
         ) : (
           <div className="text-center py-10">
-            <p className="text-gray-500">タスクを追加してみましょう。</p>
+            <p style={{ color: 'var(--color-text-muted)' }}>タスクを追加してみましょう。</p>
           </div>
         )}
       </div>

@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Profile } from "@/contexts/ProfileContext";
 import { type Notification } from "@/components/SideMenu/SideMenu";
 import { Suspense } from 'react';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 export const dynamic = 'force-dynamic';
 
 const MainLayout = async ({
@@ -94,20 +95,22 @@ const MainLayout = async ({
   }
 
   return (
-    <ProfileProvider initialProfile={initialProfile}>
-      <div className="flex h-screen">
-        <SideMenu
-          initialUnreadCount={initialUnreadCount}
-          initialNotifications={initialNotifications}
-        />
-        <main className="bg-slate-50 flex-1 overflow-auto relative">
-          <Suspense>
-            {children}
-          </Suspense>
-          {drawer}
-        </main>
-      </div>
-    </ProfileProvider>
+    <ThemeProvider>
+      <ProfileProvider initialProfile={initialProfile}>
+        <div className="flex h-screen">
+          <SideMenu
+            initialUnreadCount={initialUnreadCount}
+            initialNotifications={initialNotifications}
+          />
+          <main className="flex-1 overflow-auto relative" style={{ background: 'var(--color-bg)' }}>
+            <Suspense>
+              {children}
+            </Suspense>
+            {drawer}
+          </main>
+        </div>
+      </ProfileProvider>
+    </ThemeProvider>
   );
 };
 

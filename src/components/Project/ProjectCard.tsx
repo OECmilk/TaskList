@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import Image from "next/image";
@@ -27,7 +27,7 @@ const ProjectCard = ({ project, currentUserId }: ProjectCardProps) => {
     const isOwner = project.owner === currentUserId;
 
     const handleDelete = async (e: React.MouseEvent) => {
-        e.preventDefault(); // Link遷移を防ぐ
+        e.preventDefault();
         e.stopPropagation();
 
         if (!confirm(`プロジェクト "${project.name}" を削除してもよろしいですか？`)) return;
@@ -71,15 +71,15 @@ const ProjectCard = ({ project, currentUserId }: ProjectCardProps) => {
     };
 
     if (isDeleting) {
-        return null; // Optimistic removal (or let revalidate handle it)
+        return null;
     }
 
     return (
-        <div className="relative group block p-6 bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all h-full">
+        <div className="card relative group block p-5 h-full">
             <Link href={`/projects/${project.id}`} className="absolute inset-0 z-0" />
 
             <div className="relative z-10 flex items-center gap-4 pointer-events-none">
-                <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
+                <div className="p-2 rounded-xl flex-shrink-0" style={{ background: 'var(--color-accent-alpha)' }}>
                     <Image
                         src={project.users?.icon ?? "/default-avatar.png"}
                         alt={project.users?.name ?? "Owner Avatar"}
@@ -97,24 +97,25 @@ const ProjectCard = ({ project, currentUserId }: ProjectCardProps) => {
                                 value={editedName}
                                 onChange={(e) => setEditedName(e.target.value)}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full px-2 py-1 text-lg font-semibold border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                className="input-field text-lg font-semibold"
                                 autoFocus
                             />
                             <button
                                 onClick={handleSave}
-                                className="p-1 text-green-600 hover:bg-green-100 rounded"
+                                className="p-1.5 rounded-lg transition-colors"
+                                style={{ color: 'rgb(var(--theme-3))' }}
                             >
                                 <FaCheck />
                             </button>
                             <button
                                 onClick={handleCancel}
-                                className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                className="p-1.5 rounded-lg transition-colors text-red-400 hover:text-red-500"
                             >
                                 <FaTimes />
                             </button>
                         </div>
                     ) : (
-                        <h2 className="text-xl font-semibold truncate" title={project.name}>
+                        <h2 className="text-lg font-bold truncate" style={{ color: 'var(--color-text-primary)' }} title={project.name}>
                             {project.name}
                         </h2>
                     )}
@@ -123,17 +124,18 @@ const ProjectCard = ({ project, currentUserId }: ProjectCardProps) => {
 
             {/* Action Buttons (Only for Owner) */}
             {isOwner && !isEditing && (
-                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                     <button
                         onClick={handleEditClick}
-                        className="p-2 text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-full transition-colors"
+                        className="p-2 rounded-lg transition-colors"
+                        style={{ color: 'var(--color-text-muted)' }}
                         title="Rename Project"
                     >
                         <FaEdit />
                     </button>
                     <button
                         onClick={handleDelete}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        className="p-2 rounded-lg text-red-400 hover:text-red-500 transition-colors"
                         title="Delete Project"
                     >
                         <FaTrash />

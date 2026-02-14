@@ -1,40 +1,40 @@
 import { Suspense } from 'react';
 import { submitContactForm } from '@/app/actions';
-import Messages from '@/app/auth/login/messages'; // パスを正しい場所に変更
+import Messages from '@/app/auth/login/messages';
 
 export default function ContactPage() {
   return (
-    <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">
+    <div className="p-8 sm:p-10 h-full overflow-y-auto" style={{ color: 'var(--color-text-primary)' }}>
       <header className="mb-8">
         <h1 className="text-2xl font-bold">Contact Us</h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
           バグの報告や、実装してほしい機能のご要望など、お気軽にお寄せください。
         </p>
       </header>
 
-      <div className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
+      <div className="card max-w-xl mx-auto p-8">
         <form action={submitContactForm}>
-          <div>
-            <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-              Message
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              rows={6}
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-              placeholder="Your message..."
-            ></textarea>
-
-            <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-cyan-500/20 text-sm font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 hover:shadow-cyan-500/40 hover:scale-[1.02] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
-              >
-                Send Message
-              </button>
+          <div className="space-y-5">
+            <div className="space-y-1.5">
+              <label htmlFor="message" className="block text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                Message
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows={6}
+                required
+                className="input-field resize-none"
+                placeholder="Your message..."
+              ></textarea>
             </div>
+
+            <button
+              type="submit"
+              className="btn-primary w-full py-3 hover:opacity-80 cursor-pointer"
+            >
+              Send Message
+            </button>
           </div>
         </form>
 

@@ -17,17 +17,17 @@ const TaskFilter = () => {
   const handleCheckboxChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
     setShowIncomplete(isChecked);
-    
+
     // URLのクエリパラメータを更新
     const params = new URLSearchParams(searchParams.toString());
-    
+
     // trueの場合はパラメータを省略し、falseの場合のみ明示的に'false'を設定
     if (isChecked) {
       params.delete('show_incomplete');
     } else {
       params.set('show_incomplete', 'false');
     }
-    
+
     // URLを更新し、サーバーコンポーネント側で再フェッチさせる
     router.push(`${pathname}?${params.toString()}`);
   }, [pathname, router, searchParams]);
@@ -45,9 +45,9 @@ const TaskFilter = () => {
         type="checkbox"
         checked={showIncomplete}
         onChange={handleCheckboxChange}
-        className="w-5 h-5 rounded [accent-color:theme(colors.cyan.900)]"
+        className="w-5 h-5 rounded" style={{ accentColor: 'var(--color-accent)' }}
       />
-      <label htmlFor="incomplete-filter" className="text-lg font-semibold text-gray-800 cursor-pointer select-none">
+      <label htmlFor="incomplete-filter" className="text-lg font-semibold cursor-pointer select-none" style={{ color: 'var(--color-text-primary)' }}>
         InComplete
       </label>
     </div>

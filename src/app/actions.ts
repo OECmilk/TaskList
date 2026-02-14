@@ -99,6 +99,25 @@ export async function updateTaskStatus(formData: FormData) {
 }
 
 /**
+ * タスクの完了状態を直接指定の値に更新するサーバーアクション
+ */
+export async function setTaskStatus(taskId: number, status: boolean) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('tasks')
+    .update({ status: status })
+    .eq('id', taskId);
+
+  if (error) {
+    console.error('Error updating task status:', error);
+    throw new Error('Failed to update task status');
+  }
+
+  revalidatePath('/gantt');
+}
+
+/**
  * サブタスクの完了状態を更新するサーバーアクション
  */
 export async function updateSubTaskStatus(id: number, taskId: number, currentStatus: boolean) {

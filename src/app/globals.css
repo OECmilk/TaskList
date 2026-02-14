@@ -3,24 +3,302 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   Theme System - CSS Custom Properties
+   ============================================ */
+:root {
+  /* Default: Monochrome */
+  --theme-1: 242, 242, 242;
+  --theme-2: 234, 228, 213;
+  --theme-3: 182, 176, 159;
+  --theme-4: 0, 0, 0;
+
+  /* Derived semantic colors */
+  --color-surface: rgb(var(--theme-1));
+  --color-surface-elevated: rgb(var(--theme-2));
+  --color-accent: rgb(var(--theme-3));
+  --color-ink: rgb(var(--theme-4));
+
+  /* Transparent variants */
+  --color-surface-alpha: rgba(var(--theme-1), 0.5);
+  --color-accent-alpha: rgba(var(--theme-3), 0.15);
+  --color-ink-alpha: rgba(var(--theme-4), 0.08);
+
+  /* Neutral palette */
+  --color-bg: #fafafa;
+  --color-card: #ffffff;
+  --color-border: rgba(var(--theme-4), 0.08);
+  --color-text-primary: rgba(var(--theme-4), 0.9);
+  --color-text-secondary: rgba(var(--theme-4), 0.55);
+  --color-text-muted: rgba(var(--theme-4), 0.35);
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+}
+
+/* ============================================
+   Global Reset & Base Styles
+   ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink);
+}
+
+/* ============================================
+   Sidebar Theme (Fixed White/Gray)
+   ============================================ */
+.sidebar {
+  background: #ffffff;
+  color: #374151;
+  /* Gray-700 */
+  border-right: 1px solid #e5e7eb;
+  /* Gray-200 */
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin: 2px 8px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+  color: #6b7280;
+  /* Gray-500 */
+}
+
+.sidebar-item:hover {
+  background: #f9fafb;
+  /* Gray-50 */
+  color: #111827;
+  /* Gray-900 */
+}
+
+.sidebar-item.active {
+  background: #f3f4f6;
+  /* Gray-100 */
+  color: #111827;
+  /* Gray-900 */
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 30px rgba(var(--theme-4), 0.08);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.btn-primary {
+  background: rgb(var(--theme-4));
+  color: rgb(var(--theme-1));
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--theme-4), 0.25);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: rgb(var(--theme-4));
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+}
+
+.btn-secondary:hover {
+  background: var(--color-accent-alpha);
+  border-color: var(--color-accent);
+}
+
+/* ============================================
+   Form Inputs
+   ============================================ */
+.input-field {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  outline: none;
+  color: var(--color-text-primary);
+}
+
+.input-field:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-alpha);
+  background: var(--color-card);
+}
+
+.input-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* ============================================
+   Animations
+   ============================================ */
 @theme {
-  /* JavaScriptの { } ではなく、CSSの --animate-NAME: VALUE; 形式で記述します */
   --animate-fadeIn: fadeIn 0.3s ease-out forwards;
   --animate-slideInFromRight: slideInFromRight 0.3s ease-out forwards;
   --animate-slideOutToRight: slideOutToRight 0.3s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideInFromRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 @keyframes slideOutToRight {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================
+   Notification Badge
+   ============================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 6px;
+  background: rgb(239, 68, 68);
+  color: white;
+}
+
+/* ============================================
+   Theme-adaptive toggle switch
+   ============================================ */
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--color-border);
+  border-radius: 12px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.toggle-switch.active {
+  background: rgb(var(--theme-3));
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-switch.active::after {
+  transform: translateX(20px);
+}
+
+/* ============================================
+   No scrollbar utility
+   ============================================ */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

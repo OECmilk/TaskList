@@ -5,6 +5,7 @@ import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { updateTaskDates } from '@/app/actions';
 import Link from 'next/link';
 import Image from 'next/image';
+import { FaClock } from 'react-icons/fa';
 
 const MIN_ROW_HEIGHT = 30; // 1日の最小高さ (px) - 2週間(14日) * 30 = 420px (スマホ1画面に収まる)
 
@@ -257,8 +258,6 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
 
     const TRACK_WIDTH = 40; // 1トラックの幅 (px) - 画面幅が400pxなら10トラック表示
 
-    // ... inside component ...
-
     // Right side container needs to handle horizontal scroll
     // Grid lines should span the full scrollable width
     const gridWidth = Math.max(maxTracks * TRACK_WIDTH, 100);
@@ -310,7 +309,7 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                                 className={`flex items-center justify-center border-b border-gray-100 text-xs ${isToday ? 'bg-blue-100 font-bold' : ''}`}
                                 translate="no"
                             >
-                                <span className="text-gray-700 font-medium">{date.getDate()}</span>
+                                <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{date.getDate()}</span>
                                 <span className={`${dayColor} ml-0.5`}>{dayLabels[date.getDay()]}</span>
                             </div>
                         );
@@ -358,12 +357,14 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                             startOffsetDays = 0;
                         }
 
-
                         const top = startOffsetDays * MIN_ROW_HEIGHT;
                         const height = durationDays * MIN_ROW_HEIGHT;
 
                         // Fixed Width Positioning
                         const left = task.trackIndex * TRACK_WIDTH;
+
+                        // Overdue Check
+                        const isOverdue = new Date(task.end) < new Date(todayString) && !task.status;
 
                         return (
                             <div
@@ -375,35 +376,42 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                                     width: `${TRACK_WIDTH - 2}px`, // 2px gap between tracks
                                     position: 'absolute',
                                     marginTop: '2px',
-                                    touchAction: dragging?.taskId === task.id ? 'none' : 'auto'
+                                    touchAction: dragging?.taskId === task.id ? 'none' : 'auto',
+                                    background: task.status ? 'rgba(163, 220, 154, 0.8)' : 'rgba(185, 180, 199, 0.8)',
+                                    borderLeft: task.status ? '4px solid rgb(133, 190, 124)' : '4px solid rgb(155, 150, 169)', // Slightly darker for border
+                                    color: '#4b5563' // Gray-600
                                 }}
-                                className="rounded-md bg-cyan-100 border-l-4 border-cyan-500 shadow-sm flex flex-col justify-center px-1 text-xs overflow-hidden group hover:z-20 hover:shadow-md transition-shadow"
+                                className="rounded-md shadow-sm flex flex-col justify-center px-1 text-xs overflow-hidden group hover:z-20 hover:shadow-md transition-shadow relative"
                                 onMouseDown={(e) => handleMouseDown(e, task.id, 'move')}
                                 onTouchStart={(e) => handleMouseDown(e, task.id, 'move')}
                                 onTouchEnd={handleTouchEnd}
                             >
+                                {/* Overdue Alert */}
+                                {isOverdue && (
+                                    <div className="absolute top-1 right-1 bg-white rounded-full p-0.5 shadow-sm z-30 border border-red-200">
+                                        <FaClock className="text-red-500" size={10} />
+                                    </div>
+                                )}
+
                                 {/* Start Drag Handle */}
                                 <div
-                                    className={`absolute top-0 left-0 w-full h-2 cursor-ns-resize bg-gradient-to-b from-cyan-400 to-transparent flex items-center justify-center ${dragging?.taskId === task.id || dragging?.handle === 'start' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} hover:opacity-100 transition-opacity z-10`}
+                                    className={`absolute top-0 left-0 w-full h-2 cursor-ns-resize flex items-center justify-center ${dragging?.taskId === task.id || dragging?.handle === 'start' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} hover:opacity-100 transition-opacity z-10`}
+                                    style={{ background: 'linear-gradient(to bottom, var(--color-accent-alpha), transparent)' }}
                                     onMouseDown={(e) => handleMouseDown(e, task.id, 'start')}
                                     onTouchStart={(e) => handleMouseDown(e, task.id, 'start')}
                                     onTouchEnd={handleTouchEnd}
                                     title="開始日を変更"
                                 >
-                                    <div className="w-6 h-0.5 bg-cyan-600 rounded"></div>
+                                    <div className="w-6 h-0.5 rounded" style={{ background: 'var(--color-accent)' }}></div>
                                 </div>
 
                                 <Link
                                     href={`/detail/${task.id}?returnPath=/gantt`}
                                     className="block w-full h-full relative"
-                                    onClick={(e) => e.stopPropagation()} // Stop propagation to prevent drag start on simple click? No, we want drag possible. But if we drag, click is canceled. If we click, we want nav.
-                                // Actually, if we stop propagation of Click, it doesn't affect Drag (mousedown).
-                                // But if we stop propagation of Mousedown, Drag won't start.
-                                // We want Drag to start on Mousedown.
-                                // So do NOT stop propagation of mousedown/touchstart.
-                                // But what about onClick? We want navigation.
+                                    onClick={(e) => e.stopPropagation()}
                                 >
-                                    <div className="font-bold text-cyan-900 leading-tight select-none [writing-mode:vertical-rl] block w-full h-full align-middle pt-2">
+                                    <div className="font-bold leading-tight select-none [writing-mode:vertical-rl] block w-full h-full align-middle pt-2"
+                                        style={{ color: 'var(--color-text-primary)' }}>
                                         {task.title}
                                     </div>
                                     {task.user_icon && (
@@ -414,13 +422,14 @@ const MobileGanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: D
                                 </Link>
 
                                 <div
-                                    className={`absolute bottom-0 left-0 w-full h-2 cursor-ns-resize bg-gradient-to-t from-cyan-400 to-transparent flex items-center justify-center ${dragging?.taskId === task.id || dragging?.handle === 'end' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} hover:opacity-100 transition-opacity z-10`}
+                                    className={`absolute bottom-0 left-0 w-full h-2 cursor-ns-resize flex items-center justify-center ${dragging?.taskId === task.id || dragging?.handle === 'end' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} hover:opacity-100 transition-opacity z-10`}
+                                    style={{ background: 'linear-gradient(to top, var(--color-accent-alpha), transparent)' }}
                                     onMouseDown={(e) => handleMouseDown(e, task.id, 'end')}
                                     onTouchStart={(e) => handleMouseDown(e, task.id, 'end')}
                                     onTouchEnd={handleTouchEnd}
                                     title="終了日を変更"
                                 >
-                                    <div className="w-6 h-0.5 bg-cyan-600 rounded"></div>
+                                    <div className="w-6 h-0.5 rounded" style={{ background: 'var(--color-accent)' }}></div>
                                 </div>
                             </div>
                         );

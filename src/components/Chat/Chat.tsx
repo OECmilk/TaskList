@@ -45,7 +45,7 @@ const highlightMentions = (text: string) => {
       parts.push(text.substring(lastIndex, match.index));
     }
     parts.push(
-      <span key={match.index} className="text-cyan-600 font-bold bg-cyan-50 px-1 rounded mx-0.5 text-sm">
+      <span key={match.index} className="font-bold px-1 rounded mx-0.5 text-sm" style={{ color: 'var(--color-accent)', background: 'var(--color-accent-alpha)' }}>
         {match[0]}
       </span>
     );
@@ -215,16 +215,17 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
     : [];
 
   return (
-    <div className="flex flex-col h-[500px]">
+    <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 mb-3 px-1">
-        <h2 className="text-lg font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Chat</h2>
-        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full font-medium">{messages.length}</span>
+        <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Chat</h2>
+        <span className="px-2 py-0.5 text-xs rounded-full font-medium" style={{ background: 'var(--color-accent-alpha)', color: 'var(--color-text-secondary)' }}>{messages.length}</span>
       </div>
 
       {/* Messages Area */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto space-y-6 px-3 py-5 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent bg-slate-100/70 rounded-2xl border border-slate-200 shadow-inner"
+        className="flex-1 overflow-y-auto space-y-6 px-3 py-5 rounded-2xl shadow-inner"
+        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
       >
         {messages.map((msg) => {
           const isMe = msg.user_id === profile?.id;
@@ -255,10 +256,14 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
                   className={`
                     relative px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm
                     ${isMe
-                      ? 'bg-gradient-to-br from-cyan-500 to-blue-500 text-white rounded-br-none'
-                      : 'bg-white border border-gray-100 text-gray-700 rounded-bl-none'
+                      ? 'rounded-br-none'
+                      : 'rounded-bl-none'
                     }
                 `}
+                  style={isMe
+                    ? { background: 'rgb(250, 240, 230)', color: '#374151' }
+                    : { background: 'var(--color-card)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }
+                  }
                 >
                   <p className="break-words whitespace-pre-wrap">
                     {highlightMentions(msg.message)}
@@ -296,7 +301,8 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
                     key={member.user_id}
                     type="button"
                     onClick={() => handleMentionSelect(member.users)}
-                    className="w-full text-left px-4 py-2 hover:bg-cyan-50 flex items-center gap-3 transition-colors"
+                    className="w-full text-left px-4 py-2 flex items-center gap-3 transition-colors"
+                    style={{ color: 'var(--color-text-primary)' }}
                   >
                     <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-200 relative flex-shrink-0">
                       <Image src={member.users.icon || '/default_icon.svg'} alt={member.users.name} fill className="object-cover" />
@@ -317,12 +323,12 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
               required
               rows={1}
               placeholder="Type a message..."
-              className="w-full pl-5 pr-14 py-4 rounded-3xl border-2 border-gray-200 bg-white shadow-sm focus:border-cyan-400 focus:ring-0 transition-all resize-none text-gray-700 placeholder:text-gray-400 leading-normal"
+              className="input-field w-full pl-5 pr-14 py-4 rounded-3xl resize-none leading-normal"
               style={{ minHeight: '56px', maxHeight: '120px' }}
             />
             <button
               type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-full text-white shadow-lg hover:shadow-cyan-500/30 transition-all active:scale-95"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-lg transition-all active:scale-95 bg-gray-800 text-white hover:bg-gray-700"
             >
               <MdSend className="w-5 h-5 ml-0.5" />
             </button>

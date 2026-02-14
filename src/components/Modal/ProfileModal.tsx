@@ -34,12 +34,10 @@ const ProfileModal = (
             }
         }
 
-        // モーダル表示中のみイベントリスナーを追加
         if (isOpenModal) {
             document.addEventListener('mousedown', handleClickOutside);
         }
 
-        // クリーンアップ関数：コンポーネントがアンマウントされるか、モーダルを閉じるときにリスナーを削除
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
@@ -53,7 +51,6 @@ const ProfileModal = (
         } else {
             document.body.style.overflow = 'auto';
         }
-        // コンポーネントがアンマウントされた際にもスクロールを元に戻す
         return () => {
             document.body.style.overflow = 'auto';
         };
@@ -72,11 +69,10 @@ const ProfileModal = (
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // 圧縮オプションを設定
         const options = {
             maxSizeMB: 0.5,
             maxWidthOrHeight: 416,
-            useWebWorker: true, // 処理高速化
+            useWebWorker: true,
         };
 
         try {
@@ -84,20 +80,16 @@ const ProfileModal = (
 
             const compressedFileBlob = await imageCompression(file, options);
 
-            // BlobをFileオブジェクトに変換
             const compressedFile = new File([compressedFileBlob], file.name, {
                 type: compressedFileBlob.type,
                 lastModified: Date.now(),
             });
 
-            // デバッグ
             console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
             console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
 
-            // 圧縮後のファイルでプレビューURLを更新
             setPreviewUrl(URL.createObjectURL(compressedFile));
 
-            // フォームに圧縮後のファイルをセット
             if (fileInputRef.current) {
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(compressedFile);
@@ -113,7 +105,6 @@ const ProfileModal = (
     // Server Actionを呼び出すラッパー関数
     const handleFormSubmit = (formData: FormData) => {
         startTransition(async () => {
-            // Server Actionを呼び出してデータベースを更新
             const result = await updateProfile(formData) as { success: boolean; newIconUrl?: string | null; message?: string } | undefined;
 
             if (result?.success) {
@@ -131,23 +122,21 @@ const ProfileModal = (
                 router.refresh();
             } else {
                 console.error("Profile update failed:", result?.message);
-                // Optionally show error to user
                 alert(result?.message || 'Failed to update profile');
             }
         });
     };
 
-    // profileがまだ読み込まれていない場合は何も表示しない
     if (!profile) return null;
 
 
     return (
         <>
             {isOpenModal && (
-                <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-50">
-                    <div ref={modalRef} className="p-8 sm:p-10 bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+                <div className="fixed inset-0 flex justify-center items-center z-50" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+                    <div ref={modalRef} className="card p-8 sm:p-10 w-full max-w-md mx-4">
                         <header className="w-full max-w-xl">
-                            <h1 className="text-2xl font-bold text-gray-900">
+                            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                                 Edit Profile
                             </h1>
                         </header>
@@ -160,15 +149,17 @@ const ProfileModal = (
                                             width={96}
                                             height={96}
                                             alt="No image"
-                                            className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+                                            className="w-24 h-24 rounded-full object-cover"
+                                            style={{ border: '2px solid var(--color-border)' }}
                                         />
                                         {/* ホバー時に表示される半透明のオーバーレイ */}
-                                        <div className="absolute inset-0 rounded-full bg-black/40 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
+                                        <div className="absolute inset-0 rounded-full transition-all flex items-center justify-center"
+                                            style={{ background: 'rgba(0,0,0,0.25)' }}>
                                             <FaCamera className="text-white text-2xl opacity-0 group-hover:opacity-80 transition-opacity" />
                                         </div>
 
                                         {isUploading && (
-                                            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                                            <div className="absolute inset-0 rounded-full flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
                                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                                             </div>
                                         )}
@@ -183,25 +174,25 @@ const ProfileModal = (
                                     ref={fileInputRef}
                                     onChange={handleFileChange}
                                 />
-                                <div className="mt-6 text-left">
-                                    <label htmlFor="userName" className="block text-sm font-medium">ユーザー名</label>
-                                    <input type="text" id="userName" name="userName" required defaultValue={profile.name || ''} className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300" />
+                                <div className="mt-6 text-left space-y-1.5">
+                                    <label htmlFor="userName" className="block text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>ユーザー名</label>
+                                    <input type="text" id="userName" name="userName" required defaultValue={profile.name || ''} className="input-field" />
                                 </div>
-                                <div className="mt-6 text-left">
-                                    <label htmlFor="email" className="block text-sm font-medium">メールアドレス</label>
-                                    <input type="text" id="email" name="email" required defaultValue={profile.email} className="block py-1.5 px-2 w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300" />
+                                <div className="mt-5 text-left space-y-1.5">
+                                    <label htmlFor="email" className="block text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>メールアドレス</label>
+                                    <input type="text" id="email" name="email" required defaultValue={profile.email} className="input-field" />
                                 </div>
-                                <div className="mt-8 flex justify-center gap-4">
+                                <div className="mt-8 flex justify-center gap-3">
                                     <button
                                         type="submit"
-                                        className="w-45 px-8 py-2 rounded-md text-white font-semibold bg-cyan-700 hover:bg-cyan-600"
+                                        className="btn-primary flex-1"
                                         disabled={isPending}
                                     >
-                                        {isPending ? 'Saving' : 'Save'}
+                                        {isPending ? 'Saving...' : 'Save'}
                                     </button>
                                     <button
                                         onClick={() => setIsOpenModal(false)}
-                                        className="w-45 px-8 py-2 rounded-md text-cyan-700 font-semibold border border-cyan-700 hover:bg-cyan-50"
+                                        className="btn-secondary flex-1"
                                     >
                                         Cancel
                                     </button>

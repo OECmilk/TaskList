@@ -45,8 +45,7 @@ const SideMenu = ({ initialUnreadCount, initialNotifications }: SideMenuProps) =
   const [mounted, setMounted] = useState(false);
   const { isSubscribed, subscribeToPush, unsubscribeFromPush } = usePushSubscription();
 
-  // Debug SideMenu render
-  console.log('SideMenu Render Profile:', profile?.icon);
+
 
   // 元のfaviconのHREFを記憶するためのref
   const originalFaviconHref = useRef<string>('');
@@ -253,14 +252,15 @@ const SideMenu = ({ initialUnreadCount, initialNotifications }: SideMenuProps) =
   return (
     <>
       <button
-        className={`md:hidden fixed top-3 left-4 z-30 ${isOpenBurger ? "text-white" : "text-gray-800"}`}
+        className={`md:hidden fixed top-3 left-4 z-30 transition-colors ${isOpenBurger ? "opacity-0" : ""}`}
+        style={{ color: 'var(--color-text-primary)' }}
         onClick={() => setisOpenBurger(!isOpenBurger)}
         aria-label="サイドメニューを開閉する"
       >
         {isOpenBurger ? <></> : <FaBars size={20} />}
       </button>
 
-      <div className={`w-62 pt-8 bg-cyan-900 text-white fixed h-full z-50 transform transition-transform duration-300 ease-in-out pb-20 
+      <div className={`sidebar w-64 pt-6 fixed h-full z-50 transform transition-transform duration-300 ease-in-out pb-20 
           ${isOpenBurger ? "translate-x-0" : "-translate-x-full"}
           md:relative md:translate-x-0 overflow-y-auto`}
       >
@@ -270,10 +270,13 @@ const SideMenu = ({ initialUnreadCount, initialNotifications }: SideMenuProps) =
             <div className="relative">
               <FaRegBell
                 onClick={handleBellClick}
-                className="drawer-ignore-click size-11 ml-auto mr-4 mb-2 rounded-full p-2 hover:bg-cyan-800 cursor-pointer z-50"
+                className="drawer-ignore-click size-11 ml-auto mr-4 mb-2 rounded-full p-2.5 cursor-pointer z-50 transition-colors"
+                style={{ color: 'rgba(var(--theme-1), 0.7)' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(var(--theme-1), 0.08)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               />
               {countUnread > 0 && (
-                <div className="absolute top-0 right-4 w-5 h-5 bg-orange-500 rounded-full border-2 border-cyan-900 text-xs flex items-center justify-center font-bold">
+                <div className="badge absolute top-0 right-4 border-2" style={{ borderColor: 'rgb(var(--theme-4))' }}>
                   {countUnread}
                 </div>
               )}
@@ -282,34 +285,31 @@ const SideMenu = ({ initialUnreadCount, initialNotifications }: SideMenuProps) =
             {/* 通知ボード本体（ポータルで body にレンダリングして、親の transform/overflow による切り取りを回避） */}
             {
               mounted && createPortal(
-                <div className={`w-62 md:w-80 bg-white fixed h-full z-50 top-0 text-black shadow-xl transition-transform duration-300 ease-in-out
-                  ${isOpenNotifications ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className={`w-64 md:w-80 fixed h-full z-50 top-0 shadow-xl transition-transform duration-300 ease-in-out
+                  ${isOpenNotifications ? 'translate-x-0' : '-translate-x-full'}`}
+                  style={{ background: 'var(--color-card)', color: 'var(--color-text-primary)' }}>
 
-                  <div className="flex border-b p-4 items-center justify-between">
+                  <div className="flex p-4 items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
                     <div>
-                      <h2 className="px-2 text-xl font-bold">通知</h2>
-                      <div className="px-2">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={isSubscribed}
-                            onChange={() => {
-                              if (isSubscribed) {
-                                unsubscribeFromPush();
-                              } else {
-                                subscribeToPush();
-                              }
-                            }}
-                          />
-                          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
-                          <span className="ms-2 text-xs font-medium text-gray-500">プッシュ通知</span>
-                        </label>
+                      <h2 className="px-2 text-lg font-bold">通知</h2>
+                      <div className="px-2 flex items-center gap-2 mt-1">
+                        <div
+                          className={`toggle-switch ${isSubscribed ? 'active' : ''}`}
+                          onClick={() => {
+                            if (isSubscribed) {
+                              unsubscribeFromPush();
+                            } else {
+                              subscribeToPush();
+                            }
+                          }}
+                        />
+                        <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>プッシュ通知</span>
                       </div>
                     </div>
                     <FaArrowLeft
                       onClick={() => { setIsOpenNotifications(false) }}
-                      className="size-10 p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
+                      className="size-9 p-2 rounded-full cursor-pointer transition-colors"
+                      style={{ color: 'var(--color-text-secondary)' }}
                     />
                   </div>
 
@@ -327,7 +327,7 @@ const SideMenu = ({ initialUnreadCount, initialNotifications }: SideMenuProps) =
                           </li>
                         ))
                       ) : (
-                        <p className="text-gray-500 text-center p-6">No notifications yet.</p>
+                        <p className="text-center p-6" style={{ color: 'var(--color-text-muted)' }}>No notifications yet.</p>
                       )}
                     </ul>
                   </div>
@@ -340,14 +340,15 @@ const SideMenu = ({ initialUnreadCount, initialNotifications }: SideMenuProps) =
 
           {/* userと、Contextから取得したprofileを使ってUIを構築 */}
           {profile && (
-            <div className="p-4 border-t border-cyan-800">
-              <Link href="/profile" className={`flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-cyan-800 ${pathname === '/profile' ? 'bg-cyan-800' : ''}`}>
+            <div className="p-3" style={{ borderTop: '1px solid rgba(var(--theme-1), 0.1)' }}>
+              <Link href="/profile" className={`sidebar-item ${pathname === '/profile' ? 'active' : ''}`}>
                 <Image
                   src={profile.icon || "/default_icon.svg"}
-                  width={40}
-                  height={40}
+                  width={36}
+                  height={36}
                   alt="User Icon"
-                  className="w-10 h-10 rounded-full bg-cyan-700 object-cover"
+                  className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                  style={{ background: 'rgba(var(--theme-1), 0.15)' }}
                 />
                 <div className="flex-1 truncate">
                   <p className="text-sm font-semibold truncate" title={getDisplayName() || ''}>

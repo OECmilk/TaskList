@@ -5,10 +5,11 @@ import GanttContainer from "@/components/Gantt/GanttContainer";
 
 // ガントチャートで扱うタスクの型を定義
 export type GanttTask = {
-    id: number; // Server Actionに渡すため、stringからnumberに変更
+    id: number;
     title: string;
     start: string;
     end: string;
+    status: boolean; // Added status
     user_id: string;
     user_name: string;
     user_icon: string | null;
@@ -26,6 +27,7 @@ type TaskForGantt = {
     title: string;
     start_date: string;
     due_date: string;
+    status: boolean; // Added status
     user_id: string;
     projects: {
         id: number;
@@ -83,6 +85,7 @@ const GanttPage = async (props: GanttPageProps) => {
             title,
             start_date,
             due_date,
+            status,
             user_id,
             projects( 
                 id,
@@ -96,7 +99,7 @@ const GanttPage = async (props: GanttPageProps) => {
                 ),
             users( name, icon )
         `)
-        .eq('status', false)
+        // .eq('status', false) // status = true (完了) も表示するため削除
         // .in('project_id', projectIds)
         .or(orFilter)
         .order('id', { ascending: true });
@@ -113,9 +116,6 @@ const GanttPage = async (props: GanttPageProps) => {
     const projectsMap = new Map<number, Project>();
     tasks.forEach(task => {
         if (task.projects) {
-            // ここで project_members を除外せず、そのまま Project 型として扱う
-            // Supabaseの型とLocalのProject型定義の整合性をとるため、キャストを使用
-            // または、型定義に合わせてマッピングする
             const projectData = {
                 id: task.projects.id,
                 name: task.projects.name,
@@ -146,10 +146,11 @@ const GanttPage = async (props: GanttPageProps) => {
         })) || [];
 
         return {
-            id: task.id, // idを数値型に
+            id: task.id,
             title: task.title,
             start: startDate.toISOString().split('T')[0],
             end: task.due_date,
+            status: task.status, // Added status
             user_id: task.user_id,
             user_name: task.users.name,
             user_icon: task.users.icon,
@@ -159,7 +160,7 @@ const GanttPage = async (props: GanttPageProps) => {
     });
 
     return (
-        <div className="p-4 sm:p-6 h-full overflow-y-auto text-gray-800">
+        <div className="p-4 sm:p-6 h-full overflow-y-auto" style={{ color: 'var(--color-text-primary)' }}>
             {/* <header className="mb-8 flex">
                 <h1 className="text-2xl font-bold">Gantt Chart</h1>
                 <ProjectTab projects={projectsForTab || []} />
