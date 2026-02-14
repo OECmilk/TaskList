@@ -5,16 +5,29 @@ import { useRouter } from "next/navigation";
 
 interface NewTaskFormProps {
   projects: { id: string; name: string }[];
+  defaultProjectId?: string;
+  returnTo?: string;
 }
 
-const NewTaskForm = ({ projects }: NewTaskFormProps) => {
+const NewTaskForm = ({ projects, defaultProjectId, returnTo }: NewTaskFormProps) => {
   const router = useRouter();
   const today = new Date().toISOString().split('T')[0];
+
+  const handleCancel = () => {
+    if (returnTo) {
+      router.push(returnTo);
+    } else {
+      router.back();
+    }
+  };
 
   return (
     <div className="mt-8 mx-auto w-full max-w-md">
       <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
         <form action={createNewTask} className="space-y-6">
+
+          {/* Hidden input for return path if provided */}
+          {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
 
           {/* Title Input */}
           <div className="space-y-2">
@@ -71,7 +84,7 @@ const NewTaskForm = ({ projects }: NewTaskFormProps) => {
                 <select
                   id="projectId"
                   name="projectId"
-                  defaultValue=""
+                  defaultValue={defaultProjectId || ""}
                   className="appearance-none block w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 transition-all duration-200 outline-none font-medium text-gray-700 cursor-pointer"
                 >
                   <option value="">プロジェクトなし</option>
@@ -98,7 +111,7 @@ const NewTaskForm = ({ projects }: NewTaskFormProps) => {
             </button>
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={handleCancel}
               className="w-full py-3.5 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all duration-200 font-bold active:scale-[0.98]"
             >
               Cancel

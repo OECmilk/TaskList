@@ -47,7 +47,11 @@ type TaskForGantt = {
     };
 };
 
-const GanttPage = async () => {
+interface GanttPageProps {
+    searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+const GanttPage = async ({ searchParams }: GanttPageProps) => {
     const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -170,7 +174,12 @@ const GanttPage = async () => {
                 )}
             </div> */}
 
-            <GanttContainer initialTasks={ganttTasks} projects={projectsForTab} />
+            <GanttContainer
+                initialTasks={ganttTasks}
+                projects={projectsForTab}
+                userId={user.id}
+                initialProjectId={searchParams?.project ? Number(searchParams.project) : 0}
+            />
         </div>
     );
 };

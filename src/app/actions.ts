@@ -34,7 +34,13 @@ export const createNewTask = async (formData: FormData) => {
 
   // データ挿入後のキャッシュをクリアして、一覧ページに最新のリストを表示
   revalidatePath("/gantt");
-  redirect("/gantt");
+
+  const returnTo = formData.get('returnTo') as string;
+  if (returnTo) {
+    redirect(returnTo);
+  } else {
+    redirect("/gantt");
+  }
 };
 
 /**
