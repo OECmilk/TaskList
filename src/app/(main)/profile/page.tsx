@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { signOut } from '@/app/auth/actions';
 import Image from 'next/image';
 import EditProfileButton from '@/components/Button/EditProfileButton';
+export const dynamic = 'force-dynamic';
 
 export type Profile = {
     name: string;
@@ -20,14 +21,18 @@ export default async function ProfilePage() {
     }
 
     // usersテーブルからプロフィール情報を取得
-    const { data: profileData } = await supabase
+    const { data: profileData, error } = await supabase
         .from('users')
         .select('name, icon')
         .eq('id', user.id)
         .single();
 
+    if (error) {
+        console.error('Error fetching profile in ProfilePage:', error);
+    }
+
     const profile: Profile = {
-        name: profileData?.name,
+        name: profileData?.name || '',
         icon: profileData?.icon || null,
         email: user.email || '',
     };
@@ -52,13 +57,13 @@ export default async function ProfilePage() {
                     <p className='text-xl font-semibold'>{profile?.name || 'No name set'}</p>
                     <p className="text-gray-500">{user.email}</p>
                 </div>
-                
+
                 {/* Edit Profileボタン */}
                 <EditProfileButton />
 
                 {/* ログアウトボタン */}
                 <form action={signOut}>
-                    <button 
+                    <button
                         type="submit"
                         className="w-full px-4 py-2 text-sm font-medium text-cyan-700 bg-white border border-cyan-700 rounded-md hover:bg-cyan-50"
                     >

@@ -78,7 +78,7 @@ const ProjectCard = ({ project, currentUserId }: ProjectCardProps) => {
         <div className="relative group block p-6 bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all h-full">
             <Link href={`/projects/${project.id}`} className="absolute inset-0 z-0" />
 
-            <div className="relative z-10 flex items-center gap-4">
+            <div className="relative z-10 flex items-center gap-4 pointer-events-none">
                 <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
                     <Image
                         src={project.users?.icon ?? "/default-avatar.png"}
@@ -91,7 +91,7 @@ const ProjectCard = ({ project, currentUserId }: ProjectCardProps) => {
 
                 <div className="flex-1 min-w-0">
                     {isEditing ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 pointer-events-auto">
                             <input
                                 type="text"
                                 value={editedName}

@@ -48,10 +48,11 @@ type TaskForGantt = {
 };
 
 interface GanttPageProps {
-    searchParams?: { [key: string]: string | string[] | undefined };
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-const GanttPage = async ({ searchParams }: GanttPageProps) => {
+const GanttPage = async (props: GanttPageProps) => {
+    const searchParams = await props.searchParams;
     const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();

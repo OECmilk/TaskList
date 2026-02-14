@@ -21,9 +21,26 @@ type ProfileContextType = {
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 // 2. 作成した「データ置き場」をアプリケーションに提供するための部品（Providerコンポーネント）です。
-//    この部品で囲まれた範囲内では、どこからでもプロフィール情報にアクセスできるようになります。
-export const ProfileProvider = ({ children }: { children: ReactNode }) => {
-  const [profile, setProfile] = useState<Profile | null>(null);
+export const ProfileProvider = ({
+  children,
+  initialProfile = null
+}: {
+  children: ReactNode;
+  initialProfile?: Profile | null;
+}) => {
+  // 初期値をサーバーから渡されたデータで設定
+  const [profile, setProfile] = useState<Profile | null>(initialProfile);
+
+
+
+  // サーバーからのデータが変更された場合（router.refresh()など）、stateも更新する
+  // ただし、クライアント側での一時的な変更（楽観的更新）を上書きしないように注意が必要だが、
+  // 今回の構成ではサーバーデータが正とする方が安全。
+  const [prevInitialProfile, setPrevInitialProfile] = useState(initialProfile);
+  if (initialProfile !== prevInitialProfile) {
+    setProfile(initialProfile);
+    setPrevInitialProfile(initialProfile);
+  }
 
   return (
     <ProfileContext.Provider value={{ profile, setProfile }}>

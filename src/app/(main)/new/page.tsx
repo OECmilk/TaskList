@@ -3,10 +3,11 @@ import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 
 interface NewTaskPageProps {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-const NewTaskPage = async ({ searchParams }: NewTaskPageProps) => {
+const NewTaskPage = async (props: NewTaskPageProps) => {
+  const searchParams = await props.searchParams;
   const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
