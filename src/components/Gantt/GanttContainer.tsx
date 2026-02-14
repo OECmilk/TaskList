@@ -63,7 +63,14 @@ const GanttContainer = ({ initialTasks, projects, userId, initialProjectId }: Ga
         </Link>
       </header>
 
-      <div className="card p-2 sm:p-3">
+      <div
+        className="p-2 sm:p-3"
+        style={{
+          background: 'var(--color-card)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-lg)'
+        }}
+      >
         {filteredTasks.length > 0 ? (
           <>
             <div className="hidden md:block">

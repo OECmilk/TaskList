@@ -25,14 +25,18 @@ export type Project = {
     }[];
 };
 
+// Task status type definition
+export type TaskStatus = '未着手' | '処理中' | '保留' | '完了';
+
 // Taskの型定義
 export type Task = {
     id: number;
     title: string;
     description: string | null;
-    status: boolean;
+    status: TaskStatus;
     due_date: string;
-    user_id: UUID;
+    start_date?: string;
+    user_id: string; // Changed UUID to string for simplicity if needed, or keep UUID
     project_id: number | null;
     sub_tasks?: SubTask[];
     projects?: Project;

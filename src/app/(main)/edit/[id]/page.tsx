@@ -61,8 +61,8 @@ const EditTaskPage = async ({ params }: EditTaskPageProps) => {
 
   return (
     <div className="flex flex-col justify-center py-20">
-        <h2 className="text-center text-2xl font-bold">Edit Task</h2>
-        <EditTaskForm task={task} projects={projects || []}/>
+      <h2 className="text-center text-2xl font-bold">タスクの編集</h2>
+      <EditTaskForm task={task} projects={projects || []} />
     </div>
   )
 };

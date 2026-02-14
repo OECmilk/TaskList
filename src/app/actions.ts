@@ -78,16 +78,28 @@ export async function addSubTask(formData: FormData) {
 /**
  * タスクの完了状態を更新するサーバーアクション
  */
+import { TaskStatus } from '@/types';
+
+// ... (other imports)
+
+// ...
+
+/**
+ * タスクの完了状態を更新するサーバーアクション
+ */
 export async function updateTaskStatus(formData: FormData) {
   const supabase = createClient();
 
   //フォームデータからidとstatusを取得
   const id = formData.get('id') as string;
-  const currentStatus = formData.get('status') === 'true'; // 文字列をbooleanに変換
+  const currentStatus = formData.get('status') as TaskStatus;
+
+  // 完了なら未着手に、それ以外なら完了にトグル
+  const newStatus: TaskStatus = currentStatus === '完了' ? '未着手' : '完了';
 
   const { error } = await supabase
     .from('tasks')
-    .update({ status: !currentStatus }) // 現在の状態を反転
+    .update({ status: newStatus })
     .eq('id', id);
 
   if (error) {
@@ -101,7 +113,7 @@ export async function updateTaskStatus(formData: FormData) {
 /**
  * タスクの完了状態を直接指定の値に更新するサーバーアクション
  */
-export async function setTaskStatus(taskId: number, status: boolean) {
+export async function setTaskStatus(taskId: number, status: TaskStatus) {
   const supabase = createClient();
 
   const { error } = await supabase

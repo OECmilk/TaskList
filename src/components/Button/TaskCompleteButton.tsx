@@ -1,9 +1,11 @@
 import { updateTaskStatus } from "@/app/actions";
 import { FaCheckCircle } from "react-icons/fa";
 
+import { TaskStatus } from "@/types";
+
 interface TaskCompleteButtonProps {
     id: number;
-    status: boolean;
+    status: TaskStatus;
     size: string;
 }
 
@@ -12,10 +14,10 @@ const TaskCompleteButton: React.FC<TaskCompleteButtonProps> = ({ id, status, siz
     return (
         <form action={updateTaskStatus}>
             <input type="hidden" name="id" value={id} />
-            <input type="hidden" name="status" value={status.toString()} />
+            <input type="hidden" name="status" value={status} />
 
             <button type="submit" className={`hover:opacity-70 text-${size} cursor-pointer`}>
-                <FaCheckCircle style={{ color: status ? 'rgb(163, 220, 154)' : 'var(--color-text-muted)' }} />
+                <FaCheckCircle style={{ color: status === '完了' ? 'rgb(163, 220, 154)' : 'var(--color-text-muted)' }} />
             </button>
         </form>
     )

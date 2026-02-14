@@ -271,7 +271,7 @@ const SideMenu = ({ initialUnreadCount, initialNotifications }: SideMenuProps) =
               <FaRegBell
                 onClick={handleBellClick}
                 className="drawer-ignore-click size-11 ml-auto mr-4 mb-2 rounded-full p-2.5 cursor-pointer z-50 transition-colors"
-                style={{ color: 'rgba(var(--theme-1), 0.7)' }}
+                style={{ color: 'rgb(255, 212, 29)' }}
                 onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(var(--theme-1), 0.08)'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               />

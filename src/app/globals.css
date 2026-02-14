@@ -21,7 +21,7 @@
 
   /* Transparent variants */
   --color-surface-alpha: rgba(var(--theme-1), 0.5);
-  --color-accent-alpha: rgba(var(--theme-3), 0.15);
+  --color-accent-alpha: rgb(234, 216, 192);
   --color-ink-alpha: rgba(var(--theme-4), 0.08);
 
   /* Neutral palette */
@@ -68,7 +68,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-accent);
+  background: var(--color-ink);
   border-radius: 3px;
 }
 

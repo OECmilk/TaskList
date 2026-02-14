@@ -1,14 +1,16 @@
+import { TaskStatus } from "@/types";
+
 interface ProgressBarProps {
   total: number;
   completed: number;
-  status: boolean;
+  status: TaskStatus;
 }
 
 const ProgressBar = ({ total, completed, status }: ProgressBarProps) => {
   // ゼロ除算を避けるための計算
   const progressPercentage = total > 0
     ? (completed / total) * 100
-    : status ? 100 : 0;
+    : status === '完了' ? 100 : 0;
 
   return (
     <div className="mb-2">
