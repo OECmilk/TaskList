@@ -3,20 +3,26 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import webPush from 'web-push';
 
-// Admin client to bypass RLS for fetching subscriptions
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-webPush.setVapidDetails(
-    `mailto:${process.env.VAPID_Subject || 'test@example.com'}`,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-);
+// Lazy initialization to avoid build-time errors when env vars are missing
+let initialized = false;
+function getSupabaseAdmin() {
+    if (!initialized) {
+        webPush.setVapidDetails(
+            `mailto:${process.env.VAPID_Subject || 'test@example.com'}`,
+            process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+            process.env.VAPID_PRIVATE_KEY!
+        );
+        initialized = true;
+    }
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+}
 
 export async function POST(request: Request) {
     try {
+        const supabaseAdmin = getSupabaseAdmin();
         const body = await request.json();
         const record = body.record; // Supabase webhook payload structure
 
