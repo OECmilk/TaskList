@@ -17,7 +17,7 @@ const TaskCard = ({ task }: { task: Task }) => {
     const completedSubTasks = task.sub_tasks ? task.sub_tasks.filter(subtask => subtask.status).length : 0;
 
     const today = new Date().toISOString().split('T')[0];
-    const isOverdue = task.due_date < today && task.status === false;
+    const isOverdue = task.due_date < today && task.status !== '完了';
 
 
     return (

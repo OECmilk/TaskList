@@ -59,15 +59,17 @@ const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) =>
                                 {displayMembers.map((member) => (
                                     <div
                                         key={member.user_id}
-                                        className="relative w-8 h-8 rounded-full ring-2 ring-white overflow-hidden shadow-sm hover:z-10 hover:scale-110 transition-all cursor-help group"
+                                        className="relative w-8 h-8 rounded-full ring-2 ring-white shadow-sm hover:z-10 hover:scale-110 transition-all cursor-default group"
                                         style={{ background: 'var(--color-surface)' }}
                                     >
-                                        <Image
-                                            src={member.users.icon || '/default_icon.svg'}
-                                            alt={member.users.name}
-                                            fill
-                                            className="object-cover"
-                                        />
+                                        <div className="w-full h-full rounded-full overflow-hidden relative">
+                                            <Image
+                                                src={member.users.icon || '/default_icon.svg'}
+                                                alt={member.users.name}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
                                         {/* Tooltip */}
                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20"
                                             style={{ background: 'var(--color-ink)', color: 'var(--color-surface)' }}>

@@ -88,9 +88,9 @@ const EditTaskForm = ({ task, projects }: EditTaskFormProps) => {
           {/* --- SubTasks Section --- */}
           <div className="pt-4" style={{ borderTop: '1px solid var(--color-border)' }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>SubTasks</h3>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>サブタスク</h3>
               <span className="text-xs font-medium px-2 py-1 rounded-lg" style={{ background: 'var(--color-accent-alpha)', color: 'var(--color-text-secondary)' }}>
-                {task.sub_tasks ? task.sub_tasks.length : 0} items
+                {task.sub_tasks ? task.sub_tasks.length : 0} 件
               </span>
             </div>
 
@@ -101,7 +101,12 @@ const EditTaskForm = ({ task, projects }: EditTaskFormProps) => {
                     style={{ background: 'var(--color-surface)', border: '2px solid transparent' }}>
                     <div className="flex justify-between items-start gap-3">
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>{subtask.title}</h4>
+                        <h4
+                          className={`font-bold truncate ${subtask.status ? "line-through opacity-60" : ""}`}
+                          style={{ color: subtask.status ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}
+                        >
+                          {subtask.title}
+                        </h4>
                         {subtask.description && (
                           <p className="text-sm mt-1 line-clamp-1" style={{ color: 'var(--color-text-muted)' }}>{subtask.description}</p>
                         )}

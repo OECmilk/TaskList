@@ -99,9 +99,8 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                                     {task.projects.project_members.map((member: { user_id: string; users: { id: string; name: string; icon: string | null } }, idx: number) => (
                                         <div
                                             key={member.user_id}
-                                            className={idx === 0 ? 'relative' : '-ml-2 relative'}
+                                            className={idx === 0 ? 'relative group cursor-default' : '-ml-2 relative group cursor-default'}
                                             style={{ zIndex: 10 + idx }}
-                                            title={member.users.name}
                                         >
                                             <Image
                                                 src={member.users.icon || "/default_icon.svg"}
@@ -111,12 +110,20 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                                                 className="w-6 h-6 rounded-full object-cover border border-white"
                                                 style={{ background: 'var(--color-surface)' }}
                                             />
+                                            {/* Tooltip */}
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-sm"
+                                                style={{ background: 'var(--color-ink)', color: 'var(--color-surface)' }}>
+                                                {member.users.name}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
                         <h1 className="text-lg sm:text-xl font-bold leading-snug" style={{ color: 'var(--color-text-primary)' }}>{task.title}</h1>
+                        <div className="flex items-center gap-1 mt-1 text-xs font-mono" style={{ color: 'var(--color-text-muted)' }}>
+                            {task.start_date ? task.start_date.replace(/-/g, '/') : ''} ~ {task.due_date.replace(/-/g, '/')}
+                        </div>
                     </div>
                     <div className="flex-shrink-0 pt-1">
                         <TaskCompleteButton id={task.id} status={task.status} size="2xl" />
@@ -145,7 +152,7 @@ const DrawerContent = ({ task, initialMessages, returnPath }: DrawerContentProps
                         <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-300 pb-20">
                             {/* Description */}
                             <div>
-                                <h2 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 sm:mb-2" style={{ color: 'var(--color-text-muted)' }}>タスク説明</h2>
+                                <h2 className="font-bold text-sm mb-2" style={{ color: 'var(--color-text-primary)' }}>タスク説明</h2>
                                 <div className="p-3 sm:p-5 rounded-xl sm:rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap"
                                     style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
                                     {task.description || <span style={{ color: 'var(--color-text-muted)' }} className="italic">No description provided.</span>}

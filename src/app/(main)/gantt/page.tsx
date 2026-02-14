@@ -3,13 +3,15 @@ import { notFound } from "next/navigation";
 import { Project } from "@/types";
 import GanttContainer from "@/components/Gantt/GanttContainer";
 
+import { TaskStatus } from "@/types";
+
 // ガントチャートで扱うタスクの型を定義
 export type GanttTask = {
     id: number;
     title: string;
     start: string;
     end: string;
-    status: boolean; // Added status
+    status: TaskStatus; // Added status
     user_id: string;
     user_name: string;
     user_icon: string | null;
@@ -27,7 +29,7 @@ type TaskForGantt = {
     title: string;
     start_date: string;
     due_date: string;
-    status: boolean; // Added status
+    status: TaskStatus; // Added status
     user_id: string;
     projects: {
         id: number;
@@ -112,28 +114,41 @@ const GanttPage = async (props: GanttPageProps) => {
     // 取得したデータに型アサーションを適用
     const tasks = data as unknown as TaskForGantt[];
 
-    // プロジェクトタブ用のデータを抽出
-    const projectsMap = new Map<number, Project>();
-    tasks.forEach(task => {
-        if (task.projects) {
-            const projectData = {
-                id: task.projects.id,
-                name: task.projects.name,
-                owner: task.projects.owner,
-                status: task.projects.status,
-                project_members: task.projects.project_members.map(m => ({
-                    user_id: m.user_id,
-                    users: {
-                        id: m.users.id,
-                        name: m.users.name,
-                        icon: m.users.icon
-                    }
-                }))
-            };
-            projectsMap.set(projectData.id, projectData);
-        }
-    });
-    const projectsForTab: Project[] = Array.from(projectsMap.values());
+    // プロジェクト情報を直接取得（タスク0件のプロジェクトも表示するため）
+    const { data: userProjects, error: projectsError } = await supabase
+        .from('projects')
+        .select(`
+            id,
+            name,
+            owner,
+            status,
+            project_members(
+                user_id,
+                users( id, name, icon )
+            )
+        `)
+        .in('id', projectIds);
+
+    if (projectsError) {
+        console.error('Error fetching projects:', projectsError);
+    }
+
+    // 型変換と整形
+    const projectsForTab: Project[] = (userProjects || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        owner: p.owner,
+        status: p.status,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        project_members: p.project_members.map((m: any) => ({
+            user_id: m.user_id,
+            users: {
+                id: m.users.id,
+                name: m.users.name,
+                icon: m.users.icon
+            }
+        }))
+    }));
 
     // ガントチャート用のデータを抽出
     const ganttTasks: GanttTask[] = tasks.map(task => {

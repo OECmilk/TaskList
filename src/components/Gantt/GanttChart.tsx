@@ -1,6 +1,7 @@
 'use client';
 
 import { GanttTask } from '@/app/(main)/gantt/page';
+import { TaskStatus } from '@/types';
 import { useMemo, useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import { updateTaskDates, updateTaskUser, setTaskStatus } from '@/app/actions';
 import Link from 'next/link';
@@ -8,7 +9,14 @@ import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { FaClock } from 'react-icons/fa';
 
-const StatusSelector = ({ task, onChange }: { task: GanttTask, onChange: (status: boolean) => void }) => {
+const STATUS_COLORS: Record<TaskStatus, string> = {
+    '未着手': 'rgb(255, 143, 143)',
+    '処理中': 'rgb(170, 215, 217)',
+    '保留': 'rgb(167, 146, 119)',
+    '完了': 'rgb(163, 220, 154)',
+};
+
+const StatusSelector = ({ task, onChange }: { task: GanttTask, onChange: (status: TaskStatus) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState<{ top?: number, bottom?: number, left: number, width: number } | null>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -18,7 +26,7 @@ const StatusSelector = ({ task, onChange }: { task: GanttTask, onChange: (status
             const rect = buttonRef.current.getBoundingClientRect();
             const viewportHeight = window.innerHeight;
             const viewportWidth = window.innerWidth;
-            const dropdownHeight = 100;
+            const dropdownHeight = 160;
             const spaceBelow = viewportHeight - rect.bottom;
             const dropdownWidth = 140;
 
@@ -55,12 +63,17 @@ const StatusSelector = ({ task, onChange }: { task: GanttTask, onChange: (status
             <button
                 ref={buttonRef}
                 onClick={toggleDropdown}
-                className={`h-8 flex items-center justify-center gap-1 px-2 rounded-lg border shadow-sm transition-colors w-16 md:w-[80px] bg-white hover:bg-gray-50 hover:opacity-70 cursor-pointer ${isOpen ? 'ring-2 ring-blue-500' : ''}`}
+                className={`h-8 flex items-center justify-center gap-2 px-2 rounded-lg border shadow-sm transition-colors w-16 md:w-[90px] bg-white hover:bg-gray-50 hover:opacity-70 cursor-pointer ${isOpen ? 'ring-2 ring-blue-500' : ''}`}
                 style={{ borderColor: 'var(--color-border)' }}
             >
-                <span className={`text-xs font-bold ${task.status ? 'text-[rgb(163,220,154)]' : 'text-[rgb(185,180,199)]'}`}>
-                    {task.status ? '完了' : '未完了'}
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: STATUS_COLORS[task.status] }}></span>
+                <span
+                    className="text-xs font-bold truncate flex-1 text-left"
+                    style={{ color: '#4b5563' }}
+                >
+                    {task.status}
                 </span>
+                <span className="text-gray-400 text-[10px] ml-auto hidden md:block">▼</span>
             </button>
             {isOpen && dropdownPosition && createPortal(
                 <>
@@ -69,17 +82,21 @@ const StatusSelector = ({ task, onChange }: { task: GanttTask, onChange: (status
                         className="fixed z-[9999] rounded-lg shadow-xl border bg-white py-1 overflow-hidden"
                         style={{
                             left: dropdownPosition.left,
-                            width: 100, // Reduced width
+                            width: 100,
                             ...(dropdownPosition.top ? { top: dropdownPosition.top } : {}),
                             ...(dropdownPosition.bottom ? { bottom: dropdownPosition.bottom } : {}),
                         }}
                     >
-                        <button onClick={() => { onChange(false); setIsOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 hover:opacity-70 cursor-pointer text-left">
-                            <span className="w-2 h-2 rounded-full bg-[rgb(185,180,199)]"></span> <span className="text-xs">未完了</span>
-                        </button>
-                        <button onClick={() => { onChange(true); setIsOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 hover:opacity-70 cursor-pointer text-left">
-                            <span className="w-2 h-2 rounded-full bg-[rgb(163,220,154)]"></span> <span className="text-xs">完了</span>
-                        </button>
+                        {(Object.keys(STATUS_COLORS) as TaskStatus[]).map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => { onChange(status); setIsOpen(false); }}
+                                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 hover:opacity-70 cursor-pointer text-left"
+                            >
+                                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: STATUS_COLORS[status] }}></span>
+                                <span className="text-xs truncate">{status}</span>
+                            </button>
+                        ))}
                     </div>
                 </>,
                 document.body
@@ -261,22 +278,50 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
 
     // タイムラインの計算
     const { timelineStart, totalDays } = useMemo(() => {
-        if (localTasks.length === 0) {
-            const today = new Date(baseDate);
-            today.setHours(0, 0, 0, 0);
-            const tomorrow = new Date(today);
-            tomorrow.setDate(today.getDate() + 1);
-            return { timelineStart: today, totalDays: 1 };
-        }
         const today = new Date(baseDate);
-        today.setHours(0, 0, 0, 0); // Normalize to midnight to prevent timezone/time offset issues
-        const endDates = localTasks.map(t => new Date(t.end));
-        const minDate = new Date(today);
-        const maxDate = new Date(Math.max(...endDates.map(d => d.getTime())));
-        minDate.setDate(minDate.getDate() - 4);
-        maxDate.setDate(maxDate.getDate() + 25);
+        today.setHours(0, 0, 0, 0);
+
+        // デフォルトの表示範囲（今日-4日 〜 今日+60日）
+        // これにより、タスクがない場合や日付が極端な場合でも最低限の期間を確保する
+        const defaultMin = new Date(today);
+        defaultMin.setDate(defaultMin.getDate() - 4);
+
+        const defaultMax = new Date(today);
+        defaultMax.setDate(defaultMax.getDate() + 60);
+
+        const minDate = new Date(defaultMin);
+        let maxDate = new Date(defaultMax);
+
+        if (localTasks.length > 0) {
+            // タスクがある場合、タスクの期間も考慮して範囲を広げる
+            const startDates = localTasks.map(t => new Date(t.start));
+            const endDates = localTasks.map(t => new Date(t.end));
+
+            const minTaskStart = new Date(Math.min(...startDates.map(d => d.getTime())));
+            const maxTaskEnd = new Date(Math.max(...endDates.map(d => d.getTime())));
+
+            // 開始日: 過去のタスクがあっても、タイムラインは「今日-4日」から開始する（ユーザー要望）
+            // そのため、这里的 minDate 拡張ロジックは削除します。
+
+            /* 
+            if (minTaskStart < minDate) {
+                minDate = new Date(minTaskStart);
+                minDate.setDate(minDate.getDate() - 4);
+            }
+            */
+
+            // 終了日: デフォルトより先のタスクがあればそこまで広げる（さらに25日余裕を持たせる）
+            const potentialMax = new Date(maxTaskEnd);
+            potentialMax.setDate(potentialMax.getDate() + 25);
+
+            if (potentialMax > maxDate) {
+                maxDate = potentialMax;
+            }
+        }
+
         const diffInMs = maxDate.getTime() - minDate.getTime();
         const days = Math.round(diffInMs / DAY_IN_MS);
+
         return { timelineStart: minDate, totalDays: days };
     }, [localTasks, baseDate]);
 
@@ -461,8 +506,9 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
     };
 
 
+
     // Status change handler
-    const handleStatusChange = async (taskId: number, newStatus: boolean) => {
+    const handleStatusChange = async (taskId: number, newStatus: TaskStatus) => {
         // Optimistic update
         setLocalTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
 
@@ -473,7 +519,6 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
             setLocalTasks(tasks); // Revert on error
         }
     };
-
 
     return (
         <div ref={ganttRef} className="overflow-x-auto select-none flex">
@@ -588,23 +633,23 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
                         }
 
                         // 期限切れチェック: 期限が今日より前 かつ 未完了
-                        const isOverdue = new Date(task.end) < new Date(todayString) && !task.status;
+                        const isOverdue = new Date(task.end) < new Date(todayString) && task.status !== '完了';
 
                         return (
                             <div key={task.id} className="h-12 flex items-center border-b border-gray-100 relative">
 
                                 {/* タスクバー本体 */}
                                 <div
-                                    title={`${task.title} (${task.start} ~ ${task.end})`}
                                     className="absolute h-8 rounded-md flex items-center px-2 font-bold text-sm group transition-all duration-200"
                                     style={{
                                         left: `${left}px`,
                                         width: `${width}px`,
                                         top: '8px',
-                                        background: task.status ? 'rgba(163, 220, 154, 0.8)' : 'rgba(185, 180, 199, 0.8)',
-                                        color: '#4b5563', // Gray-600
-                                        textShadow: 'none', // Remove text shadow for cleaner look on light bg
-                                        border: '1px solid rgba(0,0,0,0.05)' // Subtle border
+                                        background: STATUS_COLORS[task.status],
+                                        opacity: 0.9,
+                                        color: '#1f2937', // Darker gray for better contrast
+                                        textShadow: 'none',
+                                        border: '1px solid rgba(0,0,0,0.1)'
                                     }}
                                 >
                                     {/* Overdue Alert Icon */}
