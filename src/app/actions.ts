@@ -34,7 +34,13 @@ export const createNewTask = async (formData: FormData) => {
 
   // データ挿入後のキャッシュをクリアして、一覧ページに最新のリストを表示
   revalidatePath("/gantt");
-  redirect("/gantt");
+
+  const returnTo = formData.get('returnTo') as string;
+  if (returnTo) {
+    redirect(returnTo);
+  } else {
+    redirect("/gantt");
+  }
 };
 
 /**
@@ -346,80 +352,113 @@ export async function submitContactForm(formData: FormData) {
 }
 
 /**
- * プロフィール情報を更新するサーバアクション
+ * プロフィール情報を更新するサーバアクション (Refactored)
  */
 export async function updateProfile(formData: FormData) {
   const supabase = createClient();
 
-  // ログインしているユーザー情報を取得
+  // 1. 認証チェック
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    const message = encodeURIComponent('You must be logged in to update your profile.');
-    return redirect(`/auth/login?message=${message}`);
+    return { success: false, message: 'Unauthorized' };
   }
 
-  // フォームから更新後の値を取得
+  // 2. 入力データの取得
   const userName = formData.get('userName') as string;
   const email = formData.get('email') as string;
   const iconFile = formData.get('icon') as File;
 
-  let newIconUrl: string | null = null;
-
-  // 新しいアイコンファイルがアップロードされた場合のみ、Supabaseストレージに保存
-  if (iconFile && iconFile.size > 0) {
-    const fileExt = iconFile.name.split('.').pop(); // 拡張子だけを取得
-    const filePath = `${user.id}/${Date.now()}.${fileExt}`; // ファイル名を作成（日本語などを避けるため）
-
-    const { error: uploadError } = await supabase.storage
-      .from('icons')
-      .upload(filePath, iconFile, { upsert: true });
-
-    if (uploadError) {
-      console.error('Icon upload error:', uploadError.message);
-      const message = encodeURIComponent('Failed to upload icon.');
-      return redirect(`/profile?message=${message}`);
-    }
-
-    // アップロードしたファイルの公開URLを取得
-    const { data: { publicUrl } } = supabase.storage
-      .from('icons')
-      .getPublicUrl(filePath);
-
-    newIconUrl = publicUrl;
+  if (!userName || !email) {
+    return { success: false, message: 'Name and email are required.' };
   }
 
-  // public.usersの更新するカラムを決定
-  const updates: { name: string, icon?: string } = {
-    name: userName,
-  };
+  // 3. 現在のプロフィールを取得 (古いアイコン削除のため)
+  const { data: currentProfile } = await supabase
+    .from('users')
+    .select('icon')
+    .eq('id', user.id)
+    .single();
+
+  const oldIconUrl = currentProfile?.icon;
+  let newIconUrl: string | undefined;
+
+  // 4. アイコン画像のアップロード処理 (ファイルがある場合のみ)
+  if (iconFile && iconFile.size > 0) {
+    try {
+      // ファイル名の衝突を避けるためにタイムスタンプとランダム文字列を使用
+      const fileExt = iconFile.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      // Upload
+      const { error: uploadError } = await supabase.storage
+        .from('icons')
+        .upload(filePath, iconFile, { upsert: false });
+
+      if (uploadError) {
+        console.error('Upload failed:', uploadError);
+        return { success: false, message: 'Failed to upload image.' };
+      }
+
+      // Public URL取得
+      const { data: { publicUrl } } = supabase.storage
+        .from('icons')
+        .getPublicUrl(filePath);
+
+      newIconUrl = publicUrl;
+      console.log('New icon uploaded:', newIconUrl);
+
+    } catch (e) {
+      console.error('Unexpected error during upload:', e);
+      return { success: false, message: 'Error processing image.' };
+    }
+  }
+
+  // 5. DB (public.users) を更新
+  const updates: { name: string; icon?: string } = { name: userName };
   if (newIconUrl) {
     updates.icon = newIconUrl;
   }
 
-  // 更新
-  const { error: profileError } = await supabase
+  const { error: updateError } = await supabase
     .from('users')
     .update(updates)
     .eq('id', user.id);
-  if (profileError) {
-    console.error('Profile update error:', profileError.message);
-    const message = encodeURIComponent('Failed to update profile name.');
-    return redirect(`/profile/edit?message=${message}`);
+
+  if (updateError) {
+    console.error('DB Update failed:', updateError);
+    return { success: false, message: 'Failed to update profile.' };
   }
 
+  // 6. Email更新
   if (email !== user.email) {
-    const { error: authError } = await supabase.auth.updateUser({
-      email: email,
-    });
+    const { error: authError } = await supabase.auth.updateUser({ email });
     if (authError) {
-      console.error('Auth update error:', authError.message);
-      const message = encodeURIComponent('Failed to update email. It may already be in use.');
-      return redirect(`/profile/edit?message=${message}`);
+      console.error('Email update failed:', authError.message);
+      return { success: false, message: 'Profile updated, but failed to update email.' };
     }
   }
 
-  revalidatePath('/profile');
-  redirect('/profile');
+  // 7. 古いアイコンの削除
+  if (newIconUrl && oldIconUrl && newIconUrl !== oldIconUrl) {
+    try {
+      const pathParts = oldIconUrl.split('/icons/');
+      if (pathParts.length > 1) {
+        const relativePath = decodeURIComponent(pathParts[1]);
+        await supabase.storage.from('icons').remove([relativePath]);
+      }
+    } catch (e) {
+      console.warn('Failed to delete old icon:', e);
+    }
+  }
+
+  // 8. キャッシュの再検証
+  revalidatePath('/', 'layout');
+
+  return {
+    success: true,
+    newIconUrl: newIconUrl || oldIconUrl
+  };
 }
 
 

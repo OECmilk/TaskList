@@ -29,12 +29,11 @@ export type Notification = {
 };
 
 interface SideMenuProps {
-  initialProfile: Profile | null;
   initialUnreadCount: number;
   initialNotifications: Notification[];
 }
 
-const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: SideMenuProps) => {
+const SideMenu = ({ initialUnreadCount, initialNotifications }: SideMenuProps) => {
 
   const [isOpenBurger, setisOpenBurger] = useState(false);
   const { profile, setProfile } = useProfile();
@@ -46,15 +45,20 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
   const [mounted, setMounted] = useState(false);
   const { isSubscribed, subscribeToPush, unsubscribeFromPush } = usePushSubscription();
 
+  // Debug SideMenu render
+  console.log('SideMenu Render Profile:', profile?.icon);
+
   // 元のfaviconのHREFを記憶するためのref
   const originalFaviconHref = useRef<string>('');
 
-  // ... (Contextへの初回データセットuseEffectは変更なし)
+  // No need for useEffect to set profile here since ProfileProvider handles it now
+  /* 
   useEffect(() => {
     if (initialProfile && !profile) {
       setProfile(initialProfile);
     }
   }, [initialProfile, profile, setProfile]);
+  */
 
   // リアルタイム通知の購読
   useEffect(() => {
@@ -339,7 +343,7 @@ const SideMenu = ({ initialProfile, initialUnreadCount, initialNotifications }: 
             <div className="p-4 border-t border-cyan-800">
               <Link href="/profile" className={`flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-cyan-800 ${pathname === '/profile' ? 'bg-cyan-800' : ''}`}>
                 <Image
-                  src={profile.icon || "/default_icon"}
+                  src={profile.icon || "/default_icon.svg"}
                   width={40}
                   height={40}
                   alt="User Icon"

@@ -12,19 +12,21 @@ import MobileGanttChart from './MobileGanttChart'; // Assuming this path is corr
 interface GanttContainerProps {
   initialTasks: GanttTask[];
   projects: Project[] | [];
+  userId: string;
+  initialProjectId: number;
 }
 
-const GanttContainer = ({ initialTasks, projects }: GanttContainerProps) => {
-  const [nowProject, setNowProject] = useState<number>(0);
+const GanttContainer = ({ initialTasks, projects, userId, initialProjectId }: GanttContainerProps) => {
+  const [nowProject, setNowProject] = useState<number>(initialProjectId);
 
   const filteredTasks = useMemo(() => {
     if (nowProject === 0) {
-      return initialTasks;
+      return initialTasks.filter(task => task.user_id === userId);
     }
 
     const selectedProjectName = projects.find(p => p.id === nowProject)?.name;
     return initialTasks.filter(task => task.project === selectedProjectName);
-  }, [nowProject, initialTasks, projects]);
+  }, [nowProject, initialTasks, projects, userId]);
 
   // SSRとクライアントでのDate不整合を防ぐため、サーバー側で基準日を生成して渡す
   const baseDate = new Date();
@@ -36,11 +38,26 @@ const GanttContainer = ({ initialTasks, projects }: GanttContainerProps) => {
           <ProjectTab
             projects={projects}
             nowProject={nowProject}
-            setNowProject={setNowProject}
+            setNowProject={(val) => {
+              if (typeof val === 'function') {
+                setNowProject((prev) => {
+                  const next = val(prev);
+                  window.history.replaceState(null, '', `?project=${next}`);
+                  return next;
+                });
+              } else {
+                setNowProject(val);
+                window.history.replaceState(null, '', `?project=${val}`);
+              }
+            }}
           />
         </div>
 
-        <Link href="/new" prefetch={true} className="flex items-center gap-2 px-6 py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all flex-shrink-0">
+        <Link
+          href={`/new?projectId=${nowProject !== 0 ? nowProject : ''}&returnTo=/gantt?project=${nowProject}`}
+          prefetch={true}
+          className="flex items-center gap-2 px-6 py-2.5 font-bold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 hover:scale-105 transition-all flex-shrink-0"
+        >
           <MdAddTask className="size-5" />
           <div className="hidden sm:inline">Add Task</div>
         </Link>
@@ -65,5 +82,6 @@ const GanttContainer = ({ initialTasks, projects }: GanttContainerProps) => {
     </>
   );
 };
+
 
 export default GanttContainer;

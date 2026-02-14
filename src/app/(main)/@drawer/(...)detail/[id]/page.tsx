@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-// import { notFound } from "next/navigation"; // notFound is no longer needed
 import { ChatMessage } from "@/components/Chat/Chat";
 import DrawerContent from "./DrawerContent";
 import DeletedTaskRedirect from "@/components/Redirect/DeletedTaskRedirect";
@@ -9,7 +8,6 @@ type PageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-// これは、右側からスライドインする「ドロワー」コンポーネントです
 const TaskDetailDrawer = async ({ params, searchParams }: PageProps) => {
   const { id } = await params;
   const returnPath = ((await searchParams).returnPath as string) || '/';

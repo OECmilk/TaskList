@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Profile } from "@/contexts/ProfileContext";
 import { type Notification } from "@/components/SideMenu/SideMenu";
 import { Suspense } from 'react';
+export const dynamic = 'force-dynamic';
 
 const MainLayout = async ({
   children,
@@ -23,6 +24,7 @@ const MainLayout = async ({
 
   if (user) {
     // プロフィール情報と未読通知件数を並列で取得
+
     const [profileResult, notificationResult] = await Promise.all([
       supabase
         .from('users')
@@ -92,10 +94,9 @@ const MainLayout = async ({
   }
 
   return (
-    <ProfileProvider>
+    <ProfileProvider initialProfile={initialProfile}>
       <div className="flex h-screen">
         <SideMenu
-          initialProfile={initialProfile}
           initialUnreadCount={initialUnreadCount}
           initialNotifications={initialNotifications}
         />

@@ -26,7 +26,7 @@ const ProjectTab = ({ projects, nowProject, setNowProject }: ProjectTabProps) =>
                         }
                     `}
                 >
-                    All
+                    自分のタスク
                 </button>
 
                 {projects.map((project) => (

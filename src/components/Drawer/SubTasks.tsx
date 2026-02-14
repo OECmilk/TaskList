@@ -29,7 +29,7 @@ const SubTasks = ({ sub_tasks, taskId }: { sub_tasks: SubTask[], taskId: number 
                 {isExpanded ? <FaChevronUp className="text-gray-400 text-xs" /> : <FaChevronDown className="text-gray-400 text-xs" />}
             </button>
 
-            <div className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[500px] opacity-100 border-t border-gray-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+            <div className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[500px] opacity-100 border-t border-gray-100 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="p-4 space-y-3">
                     {sub_tasks && sub_tasks.length > 0 ? (
                         sub_tasks.map((sub: SubTask) => (

@@ -215,7 +215,7 @@ const Chat = ({ taskId, initialMessages, projectMembers = [] }: ChatProps) => {
     : [];
 
   return (
-    <div className="flex flex-col h-[600px]">
+    <div className="flex flex-col h-[500px]">
       <div className="flex items-center gap-2 mb-3 px-1">
         <h2 className="text-lg font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Chat</h2>
         <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full font-medium">{messages.length}</span>
