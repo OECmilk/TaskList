@@ -4,24 +4,29 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface NavItemProps {
-    label: string;
-    link: string;
-    icon: React.ReactNode;
+  label: string;
+  link: string;
+  icon: React.ReactNode;
 }
 
 const NavItem: React.FC<NavItemProps> = ({
-    label,
-    link,
-    icon,
+  label,
+  link,
+  icon,
 }) => {
-    const pathname = usePathname()
-  return (
-    <Link href={link} prefetch={true} className={`flex p-4 items-center w-full hover:bg-cyan-800 font-medium
-        ${pathname === link ? 'bg-cyan-900 border-r-5 border-r-orange-200': ''}`}>
-        <div className="mr-2">{icon}</div>
-        <div>{label}</div>
-    </Link>
-  )
-}
+  const pathname = usePathname();
+  const isActive = pathname === link;
 
-export default NavItem
+  return (
+    <Link
+      href={link}
+      prefetch={true}
+      className={`sidebar-item ${isActive ? 'active' : ''}`}
+    >
+      <span className="flex-shrink-0">{icon}</span>
+      <span>{label}</span>
+    </Link>
+  );
+};
+
+export default NavItem;

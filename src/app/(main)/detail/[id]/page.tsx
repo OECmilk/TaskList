@@ -9,13 +9,11 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-// サーバーコンポーネントとして、ページ自身がデータを取得します
 const TaskDetailPage = async ({ params }: PageProps) => {
   const { id } = await params;
 
   const supabase = createClient();
 
-  // IDに基づいてタスク、サブタスク、プロジェクト情報を取得
   const { data: task, error } = await supabase
     .from("tasks")
     .select(
@@ -33,39 +31,39 @@ const TaskDetailPage = async ({ params }: PageProps) => {
   }
 
   return (
-    <div className="p-8 sm:p-10 text-gray-800">
+    <div className="p-8 sm:p-10" style={{ color: 'var(--color-text-primary)' }}>
       <header className="flex justify-between items-center mb-8">
         <div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             {task.projects?.name || "Personal Task"}
           </p>
           <h1 className="text-3xl font-bold">{task.title}</h1>
         </div>
         <Link
           href={`/edit/${task.id}`}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-cyan-700 rounded-md hover:bg-cyan-600"
+          className="btn-primary flex items-center gap-2"
         >
           <FaEdit />
           Edit Task
         </Link>
       </header>
 
-      <div className="bg-white p-8 rounded-lg shadow-md">
+      <div className="card p-8">
         <h2 className="text-xl font-semibold mb-4">Description</h2>
-        <p className="mb-8">{task.description || "No description."}</p>
+        <p className="mb-8" style={{ color: 'var(--color-text-secondary)' }}>{task.description || "No description."}</p>
 
         <h2 className="text-xl font-semibold mb-4">Sub-Tasks</h2>
         <ul className="space-y-2">
           {task.sub_tasks && task.sub_tasks.length > 0 ? (
             task.sub_tasks.map((sub: SubTask) => (
-              <li key={sub.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                <span className={sub.status ? "line-through text-gray-400" : ""}>
+              <li key={sub.id} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--color-surface)' }}>
+                <span className={sub.status ? "line-through" : ""} style={{ color: sub.status ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}>
                   {sub.title}
                 </span>
               </li>
             ))
           ) : (
-            <p className="text-gray-500">No sub-tasks.</p>
+            <p style={{ color: 'var(--color-text-muted)' }}>No sub-tasks.</p>
           )}
         </ul>
       </div>

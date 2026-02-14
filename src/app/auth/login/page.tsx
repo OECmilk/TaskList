@@ -7,49 +7,28 @@ import ReadEchoesIcon from '@/components/icons/ReadEchoesIcon';
 
 export default function LoginPage() {
     return (
-        <div className="flex justify-center items-center h-full bg-gray-50">
-            <div className="w-full max-w-md p-8 space-y-4 sm:space-y-4 bg-white">
-                <h1 className="text-lg sm:text-2xl font-bold text-center text-gray-900">
+        <div className="flex justify-center items-center h-full" style={{ background: 'var(--color-bg)' }}>
+            <div className="card w-full max-w-md p-8 space-y-5 mx-4">
+                <h1 className="text-2xl font-bold text-center" style={{ color: 'var(--color-text-primary)' }}>
                     Welcome
                 </h1>
 
                 {/* --- Email/Password Form --- */}
-                <form className="space-y-6">
-                    <div>
-                        <label
-                            htmlFor="name"
-                            className="text-sm font-medium text-gray-700"
-                        >
+                <form className="space-y-5">
+                    <div className="space-y-1.5">
+                        <label htmlFor="name" className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                             Username
                         </label>
-                        <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            required
-                            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        />
+                        <input id="name" name="name" type="text" required className="input-field" />
                     </div>
-                    <div>
-                        <label
-                            htmlFor="email"
-                            className="text-sm font-medium text-gray-700"
-                        >
+                    <div className="space-y-1.5">
+                        <label htmlFor="email" className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                             Email
                         </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        />
+                        <input id="email" name="email" type="email" required className="input-field" />
                     </div>
-                    <div>
-                        <label
-                            htmlFor="password"
-                            className="text-sm font-medium text-gray-700"
-                        >
+                    <div className="space-y-1.5">
+                        <label htmlFor="password" className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                             Password
                         </label>
                         <input
@@ -59,41 +38,33 @@ export default function LoginPage() {
                             required
                             minLength={6}
                             placeholder="6 characters minimum"
-                            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            className="input-field"
                         />
                     </div>
-                    <div className="flex gap-4">
-                        <button
-                            type="submit"
-                            formAction={login}
-                            className="w-full px-4 py-2 text-sm font-medium text-white bg-cyan-700 rounded-md hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
+                    <div className="flex gap-3 pt-1">
+                        <button type="submit" formAction={login} className="btn-primary flex-1">
                             Sign In
                         </button>
-                        <button
-                            type="submit"
-                            formAction={signup}
-                            className="w-full px-4 py-2 text-sm font-medium text-cyan-700 bg-white border border-cyan-700 rounded-md hover:bg-cyan-50"
-                        >
+                        <button type="submit" formAction={signup} className="btn-secondary flex-1">
                             Sign Up
                         </button>
                     </div>
                 </form>
 
                 {/* --- Separator --- */}
-                <div className="flex items-center">
-                    <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="mx-4 text-sm text-gray-500">OR</span>
-                    <div className="flex-grow border-t border-gray-300"></div>
+                <div className="flex items-center gap-4">
+                    <div className="flex-grow h-px" style={{ background: 'var(--color-border)' }} />
+                    <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>OR</span>
+                    <div className="flex-grow h-px" style={{ background: 'var(--color-border)' }} />
                 </div>
 
                 {/* --- OAuth Buttons --- */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <form action={signInWithOAuth}>
                         <input type="hidden" name="provider" value="google" />
                         <button
                             type="submit"
-                            className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:border-cyan-700 rounded-md shadow-sm hover:bg-gray-100"
+                            className="btn-secondary w-full flex justify-center items-center gap-2"
                         >
                             <GoogleIcon />
                             Continue with Google
@@ -103,19 +74,18 @@ export default function LoginPage() {
                         <input type="hidden" name="provider" value="github" />
                         <button
                             type="submit"
-                            className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:border-cyan-700 rounded-md shadow-sm hover:bg-gray-100"
+                            className="btn-secondary w-full flex justify-center items-center gap-2"
                         >
                             <FaGithub className='size-5' />
                             Continue with GitHub
                         </button>
                     </form>
 
-                    {/* 未実装: ReadEchoes認証 */}
                     <form action={signInWithOAuth}>
                         <input type="hidden" name="provider" value="readEchoes" />
                         <button
                             type="submit"
-                            className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:border-cyan-700 rounded-md shadow-sm hover:bg-gray-100"
+                            className="btn-secondary w-full flex justify-center items-center gap-2"
                         >
                             <ReadEchoesIcon className='size-5' />
                             Continue with ReadEchoes

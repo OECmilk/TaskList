@@ -4,11 +4,9 @@ import { Project } from "@/types";
 import { addProjectMember } from "@/app/actions";
 import Image from "next/image";
 
-// このページで取得する、メンバー情報がネストされたプロジェクトの型を定義
 type ProjectWithMembers = Project & {
   project_members: {
     user_id: string;
-    // usersテーブルから取得したプロフィール情報
     users: {
       name: string | null;
       icon: string | null;
@@ -48,41 +46,39 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">
+    <div className="p-8 sm:p-10 h-full overflow-y-auto" style={{ color: 'var(--color-text-primary)' }}>
       <header className="mb-8">
         <h1 className="text-3xl font-bold">{project.name}</h1>
-        {/* 今後ここにプロジェクトの説明などを表示できます */}
       </header>
 
-      <div className="bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-6 border-b pb-4">Members</h2>
+      <div className="card p-8">
+        <h2 className="text-xl font-semibold mb-6 pb-4" style={{ borderBottom: '1px solid var(--color-border)' }}>Members</h2>
         <div className="space-y-4">
           {project.project_members.map((member) => (
-            member.users && ( // メンバーのプロフィール情報が存在する場合のみ表示
+            member.users && (
               <div key={member.user_id} className="flex items-center gap-4">
                 {member.users.icon ? (
                   <Image
                     src={member.users.icon}
                     alt={member.users.name || 'User avatar'}
-                    width={48} // w-12 -> 48px
-                    height={48} // h-12 -> 48px
-                    className="w-12 h-12 rounded-full"
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold" style={{ background: 'var(--color-accent-alpha)', color: 'var(--color-text-secondary)' }}>
                     {member.users.name?.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div>
                   <p className="font-semibold">{member.users.name}</p>
-                  {/* 今後ここにユーザーのロールなどを表示できます */}
                 </div>
               </div>
             )
           ))}
         </div>
         {/* 新しいメンバーを招待するフォーム */}
-        <div className="mt-8 pt-6 border-t">
+        <div className="mt-8 pt-6" style={{ borderTop: '1px solid var(--color-border)' }}>
           <h3 className="text-lg font-semibold mb-4">Invite New Member</h3>
           <form action={addProjectMember} className="flex flex-col sm:flex-row gap-4">
             <input type="hidden" name="projectId" value={project.id} />
@@ -94,12 +90,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                 type="email"
                 required
                 placeholder="user@example.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                className="input-field"
               />
             </div>
             <button
               type="submit"
-              className="px-6 py-2 bg-cyan-700 text-white font-semibold rounded-md shadow-sm hover:bg-cyan-600 transition-colors"
+              className="btn-primary"
             >
               Invite
             </button>

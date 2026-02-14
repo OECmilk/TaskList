@@ -38,38 +38,43 @@ export default async function ProfilePage() {
     };
 
     return (
-        <div className="p-8 sm:p-10 h-full bg-gray-50">
+        <div className="p-8 sm:p-10 h-full">
             <header className="w-full max-w-xl">
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                     Profile
                 </h1>
             </header>
-            <div className="max-w-xl mx-auto p-8 space-y-6 text-center">
-                <Image
-                    src={profile?.icon || "/default_icon.svg"}
-                    alt="User Avatar"
-                    width={96} // w-24
-                    height={96} // h-24
-                    className="w-24 h-24 rounded-full mx-auto border-2 border-gray-300 p-1 object-cover"
-                />
-                {/* ユーザー名とEmailを表示 */}
-                <div className="space-y-1">
-                    <p className='text-xl font-semibold'>{profile?.name || 'No name set'}</p>
-                    <p className="text-gray-500">{user.email}</p>
+            <div className="max-w-xl mx-auto mt-6">
+                <div className="card p-8 space-y-6 text-center">
+                    <Image
+                        src={profile?.icon || "/default_icon.svg"}
+                        alt="User Avatar"
+                        width={96}
+                        height={96}
+                        className="w-24 h-24 rounded-full mx-auto object-cover"
+                        style={{ border: '3px solid var(--color-accent)', padding: '2px' }}
+                    />
+                    {/* ユーザー名とEmailを表示 */}
+                    <div className="space-y-1">
+                        <p className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                            {profile?.name || 'No name set'}
+                        </p>
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{user.email}</p>
+                    </div>
+
+                    {/* Edit Profileボタン */}
+                    <EditProfileButton />
+
+                    {/* ログアウトボタン */}
+                    <form action={signOut}>
+                        <button
+                            type="submit"
+                            className="btn-secondary w-full"
+                        >
+                            Sign Out
+                        </button>
+                    </form>
                 </div>
-
-                {/* Edit Profileボタン */}
-                <EditProfileButton />
-
-                {/* ログアウトボタン */}
-                <form action={signOut}>
-                    <button
-                        type="submit"
-                        className="w-full px-4 py-2 text-sm font-medium text-cyan-700 bg-white border border-cyan-700 rounded-md hover:bg-cyan-50"
-                    >
-                        Sign Out
-                    </button>
-                </form>
             </div>
         </div>
     );

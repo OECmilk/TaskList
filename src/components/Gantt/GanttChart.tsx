@@ -2,10 +2,91 @@
 
 import { GanttTask } from '@/app/(main)/gantt/page';
 import { useMemo, useState, useEffect, useRef, useCallback, startTransition } from 'react';
-import { updateTaskDates, updateTaskUser } from '@/app/actions';
+import { updateTaskDates, updateTaskUser, setTaskStatus } from '@/app/actions';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
+import { FaClock } from 'react-icons/fa';
+
+const StatusSelector = ({ task, onChange }: { task: GanttTask, onChange: (status: boolean) => void }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState<{ top?: number, bottom?: number, left: number, width: number } | null>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    const toggleDropdown = () => {
+        if (!isOpen && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            const dropdownHeight = 100;
+            const spaceBelow = viewportHeight - rect.bottom;
+            const dropdownWidth = 140;
+
+            let left = rect.left;
+            if (left + dropdownWidth > viewportWidth) left = viewportWidth - dropdownWidth - 10;
+            if (left < 10) left = 10;
+
+            setDropdownPosition({
+                ...(spaceBelow < dropdownHeight
+                    ? { bottom: viewportHeight - rect.top + 4 }
+                    : { top: rect.bottom + 4 }),
+                left,
+                width: dropdownWidth
+            });
+            setIsOpen(true);
+        } else {
+            setIsOpen(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleScroll = () => setIsOpen(false);
+        window.addEventListener('scroll', handleScroll, true);
+        window.addEventListener('resize', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll, true);
+            window.removeEventListener('resize', handleScroll);
+        };
+    }, [isOpen]);
+
+    return (
+        <div className="relative mb-4">
+            <button
+                ref={buttonRef}
+                onClick={toggleDropdown}
+                className={`h-8 flex items-center justify-center gap-1 px-2 rounded-lg border shadow-sm transition-colors w-16 md:w-[80px] bg-white hover:bg-gray-50 hover:opacity-70 cursor-pointer ${isOpen ? 'ring-2 ring-blue-500' : ''}`}
+                style={{ borderColor: 'var(--color-border)' }}
+            >
+                <span className={`text-xs font-bold ${task.status ? 'text-[rgb(163,220,154)]' : 'text-[rgb(185,180,199)]'}`}>
+                    {task.status ? '完了' : '未完了'}
+                </span>
+            </button>
+            {isOpen && dropdownPosition && createPortal(
+                <>
+                    <div className="fixed inset-0 z-[9998]" onClick={() => setIsOpen(false)} />
+                    <div
+                        className="fixed z-[9999] rounded-lg shadow-xl border bg-white py-1 overflow-hidden"
+                        style={{
+                            left: dropdownPosition.left,
+                            width: 100, // Reduced width
+                            ...(dropdownPosition.top ? { top: dropdownPosition.top } : {}),
+                            ...(dropdownPosition.bottom ? { bottom: dropdownPosition.bottom } : {}),
+                        }}
+                    >
+                        <button onClick={() => { onChange(false); setIsOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 hover:opacity-70 cursor-pointer text-left">
+                            <span className="w-2 h-2 rounded-full bg-[rgb(185,180,199)]"></span> <span className="text-xs">未完了</span>
+                        </button>
+                        <button onClick={() => { onChange(true); setIsOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 hover:opacity-70 cursor-pointer text-left">
+                            <span className="w-2 h-2 rounded-full bg-[rgb(163,220,154)]"></span> <span className="text-xs">完了</span>
+                        </button>
+                    </div>
+                </>,
+                document.body
+            )}
+        </div>
+    );
+};
 
 const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: string, name: string, icon: string | null) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -81,7 +162,12 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
             <button
                 ref={buttonRef}
                 onClick={toggleDropdown}
-                className={`h-8 flex items-center gap-2 px-2 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 shadow-sm transition-colors w-auto md:min-w-[140px] text-left ${isOpen ? 'ring-2 ring-cyan-500/20 border-cyan-500' : ''}`}
+                className={`h-8 flex items-center gap-2 px-2 rounded-lg border shadow-sm transition-colors w-auto md:min-w-[140px] text-left hover:opacity-70 cursor-pointer ${isOpen ? 'ring-2' : ''}`}
+                style={{
+                    background: isOpen ? 'var(--color-surface)' : 'var(--color-bg)',
+                    borderColor: isOpen ? 'var(--color-accent)' : 'var(--color-border)',
+                    boxShadow: isOpen ? '0 0 0 2px var(--color-accent-alpha)' : 'none'
+                }}
             >
                 <div className="relative w-5 h-5 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                     <Image
@@ -103,8 +189,10 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
                     />
 
                     <div
-                        className="drawer-ignore-click fixed z-[9999] bg-white rounded-lg shadow-xl border border-gray-100 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+                        className="drawer-ignore-click fixed z-[9999] rounded-lg shadow-xl border py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
                         style={{
+                            background: 'var(--color-card)',
+                            borderColor: 'var(--color-border)',
                             left: dropdownPosition.left,
                             width: dropdownPosition.width,
                             ...(dropdownPosition.top ? { top: dropdownPosition.top } : {}),
@@ -120,9 +208,11 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
                                     onChange(member.user_id, member.user_name, member.user_icon);
                                     setIsOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-cyan-50 transition-colors text-left
-                                    ${task.user_id === member.user_id ? 'bg-cyan-50 text-cyan-900' : 'text-gray-700'}
-                                `}
+                                className="w-full flex items-center gap-2 px-3 py-2 transition-colors text-left hover:bg-gray-50 hover:opacity-70 cursor-pointer"
+                                style={{
+                                    background: task.user_id === member.user_id ? 'var(--color-accent-alpha)' : 'transparent',
+                                    color: task.user_id === member.user_id ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
+                                }}
                             >
                                 <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                                     <Image
@@ -134,7 +224,7 @@ const UserSelector = ({ task, onChange }: { task: GanttTask, onChange: (id: stri
                                 </div>
                                 <span className="text-sm truncate">{member.user_name}</span>
                                 {task.user_id === member.user_id && (
-                                    <span className="ml-auto text-cyan-600 text-xs">✓</span>
+                                    <span className="ml-auto text-xs" style={{ color: 'var(--color-accent)' }}>✓</span>
                                 )}
                             </button>
                         ))}
@@ -371,6 +461,20 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
     };
 
 
+    // Status change handler
+    const handleStatusChange = async (taskId: number, newStatus: boolean) => {
+        // Optimistic update
+        setLocalTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+
+        try {
+            await setTaskStatus(taskId, newStatus);
+        } catch (error) {
+            console.error("Failed to update status", error);
+            setLocalTasks(tasks); // Revert on error
+        }
+    };
+
+
     return (
         <div ref={ganttRef} className="overflow-x-auto select-none flex">
             {/* タスク担当者用プルダウン */}
@@ -381,6 +485,17 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
                         key={task.id}
                         task={task}
                         onChange={(userId, userName, userIcon) => handleUserChange(userId, userName, userIcon, task.id)}
+                    />
+                ))}
+            </div>
+
+            {/* ステータス変更プルダウン */}
+            <div className="drawer-ignore-click rounded-lg mr-2 mt-[69px] w-auto md:min-w-[80px]">
+                {localTasks.map((task) => (
+                    <StatusSelector
+                        key={task.id}
+                        task={task}
+                        onChange={(status) => handleStatusChange(task.id, status)}
                     />
                 ))}
             </div>
@@ -408,21 +523,25 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
                             const dayText = weekdays[dayOfWeek];
                             const dateText = date.getDate();
 
-                            let dayColorClass = 'text-gray-500';
-                            if (dayOfWeek === 0) dayColorClass = 'text-red-500 font-semibold';
-                            else if (dayOfWeek === 6) dayColorClass = 'text-blue-500 font-semibold';
+                            let dayColorStyle = { color: 'var(--color-text-muted)' };
+                            if (dayOfWeek === 0) dayColorStyle = { color: '#ef4444' };
+                            else if (dayOfWeek === 6) dayColorStyle = { color: '#3b82f6' };
 
                             const isToday = toLocalDateString(date) === todayString;
-                            const dateBgClass = isToday ? 'bg-blue-100' : '';
+                            const dateBgStyle = isToday ? { background: 'var(--color-accent-alpha)' } : {};
 
                             return (
                                 <div
                                     key={i}
-                                    className={`text-[10px] text-center border-r border-gray-200 py-1 ${dateBgClass} flex flex-col justify-center items-center h-8`}
+                                    className="text-[10px] text-center border-r py-1 flex flex-col justify-center items-center h-8"
+                                    style={{
+                                        ...dateBgStyle,
+                                        borderColor: 'var(--color-border)'
+                                    }}
                                     translate="no"
                                 >
-                                    <div className="font-medium">{dateText}</div>
-                                    <div className={`${dayColorClass} text-[9px]`}>{dayText}</div>
+                                    <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{dateText}</div>
+                                    <div className="text-[9px]" style={dayColorStyle}>{dayText}</div>
                                 </div>
                             );
                         })}
@@ -436,11 +555,15 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
                     >
                         {dateHeaders.map((date, i) => {
                             const isToday = toLocalDateString(date) === todayString;
-                            const dateBgClass = isToday ? 'bg-blue-100' : '';
+                            const dateBgStyle = isToday ? { background: 'var(--color-accent-alpha)' } : {};
                             return (
                                 <div
                                     key={i}
-                                    className={`h-full border-r border-gray-300 ${dateBgClass}`}
+                                    className="h-full border-r"
+                                    style={{
+                                        ...dateBgStyle,
+                                        borderColor: 'var(--color-border)'
+                                    }}
                                 />
                             );
                         })}
@@ -464,17 +587,34 @@ const GanttChart = ({ tasks, baseDate }: { tasks: GanttTask[], baseDate: Date })
                             width = durationDays * DAY_WIDTH - 4;
                         }
 
+                        // 期限切れチェック: 期限が今日より前 かつ 未完了
+                        const isOverdue = new Date(task.end) < new Date(todayString) && !task.status;
+
                         return (
                             <div key={task.id} className="h-12 flex items-center border-b border-gray-100 relative">
 
                                 {/* タスクバー本体 */}
                                 <div
                                     title={`${task.title} (${task.start} ~ ${task.end})`}
-                                    className="absolute h-8 bg-cyan-600/60 rounded-md flex items-center px-2 font-bold text-sm group transition-all duration-200"
-                                    style={{ left: `${left}px`, width: `${width}px`, top: '8px' }}
+                                    className="absolute h-8 rounded-md flex items-center px-2 font-bold text-sm group transition-all duration-200"
+                                    style={{
+                                        left: `${left}px`,
+                                        width: `${width}px`,
+                                        top: '8px',
+                                        background: task.status ? 'rgba(163, 220, 154, 0.8)' : 'rgba(185, 180, 199, 0.8)',
+                                        color: '#4b5563', // Gray-600
+                                        textShadow: 'none', // Remove text shadow for cleaner look on light bg
+                                        border: '1px solid rgba(0,0,0,0.05)' // Subtle border
+                                    }}
                                 >
+                                    {/* Overdue Alert Icon */}
+                                    {isOverdue && (
+                                        <div className="absolute -top-2 -left-2 bg-white rounded-full p-0.5 shadow-sm z-20 border border-red-200">
+                                            <FaClock className="text-red-500" size={12} />
+                                        </div>
+                                    )}
                                     <Link href={`/detail/${task.id}?returnPath=/gantt`}>
-                                        <p className="whitespace-nowrap hover:text-gray-500">{task.title}</p>
+                                        <p className="whitespace-nowrap transition-colors duration-200 hover:text-gray-400 hover:opacity-80">{task.title}</p>
                                     </Link>
 
                                     {/* ドラッグハンドル */}

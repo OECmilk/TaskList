@@ -78,10 +78,11 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
             <div
                 onClick={handleClick} // 7. 新しいハンドラを onClick に設定
                 key={notification.id}
-                className={`p-4 border-b cursor-pointer transition-colors ${notification.is_read
-                    ? "bg-white hover:bg-gray-50"
-                    : "bg-orange-50 hover:bg-orange-100"
-                    }`}
+                className={`p-4 cursor-pointer transition-colors`}
+                style={{
+                    borderBottom: '1px solid var(--color-border)',
+                    background: notification.is_read ? 'var(--color-card)' : 'var(--color-accent-alpha)',
+                }}
             >
                 <div className="flex items-start gap-3">
 
@@ -94,12 +95,12 @@ const NotificationItem = ({ notification, setNotifications, setCountUnread }: No
                     />
 
                     <div className="flex-1">
-                        <p className="text-sm text-gray-800">
+                        <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                             <span className="font-semibold">{senderName}</span>
                             {` ${actionText} `}
-                            <span className="font-semibold text-cyan-700">{taskTitle}</span>
+                            <span className="font-semibold" style={{ color: 'var(--color-accent)' }}>{taskTitle}</span>
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
                             {formattedDate}
                         </p>
                     </div>

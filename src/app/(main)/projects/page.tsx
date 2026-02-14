@@ -53,7 +53,7 @@ export default async function ProjectsPage() {
   }
 
   return (
-    <div className="p-8 sm:p-10 h-full overflow-y-auto text-gray-800">
+    <div className="p-8 sm:p-10 h-full overflow-y-auto" style={{ color: 'var(--color-text-primary)' }}>
       <header className="flex justify-between items-center mt-2">
         <h1 className="text-2xl font-bold">Projects</h1>
         <CreateProjectButton />
@@ -71,9 +71,9 @@ export default async function ProjectsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 px-6 mt-8 bg-gray-50 rounded-lg border-2 border-dashed">
-            <h3 className="text-xl font-semibold text-gray-700">No projects yet</h3>
-            <p className="text-gray-500 mt-2">Get started by creating your first project.</p>
+          <div className="text-center py-20 px-6 mt-8 rounded-xl border-2 border-dashed" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+            <h3 className="text-xl font-semibold" style={{ color: 'var(--color-text-secondary)' }}>No projects yet</h3>
+            <p className="mt-2" style={{ color: 'var(--color-text-muted)' }}>Get started by creating your first project.</p>
           </div>
         )}
       </div>

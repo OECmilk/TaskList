@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { FaArrowRight } from "react-icons/fa";
-import { useState } from 'react'; 
+import { useState } from 'react';
 
 interface RouterBackButtonProps {
     returnPath: string; // 戻り先のパスを受け取る
@@ -43,7 +43,7 @@ const RouterBackButton = ({ returnPath }: RouterBackButtonProps) => {
         <button
             onClick={handleClose}
             disabled={isClosing}
-            className="text-gray-500 hover:text-gray-800 disabled:opacity-50"
+            className="text-gray-500 hover:opacity-70 disabled:opacity-50 cursor-pointer"
         >
             <FaArrowRight size={24} />
         </button>
